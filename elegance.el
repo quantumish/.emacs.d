@@ -387,6 +387,18 @@ function is a convenience wrapper used by `describe-package-1'."
  (insert-image (svg-image svg :ascent 'center)))
 )
 
+;; (defun todo-insert 
+;;   (tag "TODO" "white" "green"   12))
+
+;; (defun fixme-insert
+;;   (tag "FIXME" "white" "red"   12))
+
+;; (defun note-insert
+;;   (tag "NOTE" "white" "blue"   12))
+
+;; (global-set-key (kbd "C-c t") (lambda () (interactive) (tag "TODO" "white" "green"   12)))
+;; (global-set-key (kbd "C-c f") 'fixme-insert)
+;; (global-set-key (kbd "C-c n") 'note-insert)
 ;; (tag "IMPORTANT" "white" "blue"   12)
 ;; (tag "WARNING"   "white" "orange" 12)
 ;; (tag "DANGER"    "white" "red"    12)
