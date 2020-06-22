@@ -346,21 +346,49 @@ function is a convenience wrapper used by `describe-package-1'."
 
 (setq-default mode-line-format '(""))
 (setq-default header-line-format
-  '(:eval (mode-line-render
-   (format-mode-line
-    (list
-     (propertize "☰"
-                 'face `(:weight regular)
-                 'mouse-face 'header-line-highlight
-                 'help-echo  "Major mode menu"
-                 'local-map   mode-line-major-mode-keymap)
-     " %b "
-     '(:eval (if (and buffer-file-name (buffer-modified-p))
-                 (propertize "(modified)"
-              'face `(:foreground ,(face-foreground 'face-faded)))))))
-   (format-mode-line
-    (propertize "%3l:%2c "
+ '(:eval (mode-line-render
+  (format-mode-line
+   (list
+    (propertize "☰"
+                'face `(:weight regular)
+                'mouse-face 'header-line-highlight
+                'help-echo  "Major mode menu"
+                'local-map   mode-line-major-mode-keymap)
+    " %b "
+    '(:eval (if (and buffer-file-name (buffer-modified-p))
+                (propertize "(modified)"
+             'face `(:foreground ,(face-foreground 'face-faded)))))))
+  (format-mode-line
+   (propertize "%3l:%2c "
 	'face `(:foreground ,(face-foreground 'face-faded)))))))
 
+
+;; Rounded boxes using SVG:  
+
+(require 'svg)
+(defun tag (text &optional foreground background font-size)
+ (let* ((font-size   (or font-size 12))
+        ;; The char-width ratio depends on the font family
+        (char-width  (* font-size 0.58))
+        (char-height (+ font-size 1))
+        (hmargin char-width)
+        (vmargin (* font-size 0.175))
+        (radius  (/ font-size 4))
+        (background (or background "blue"))
+        (foreground (or foreground "white"))
+        (width  (+ (* char-width (length text)) (* hmargin 2)))
+        (height (+ char-height (* vmargin 2)))
+        (svg (svg-create width height)))
+ (svg-rectangle svg 0 0 width height :fill background :rx radius)
+ (svg-text svg text
+           :font-family "Roboto Mono" :font-weight "light"
+           :font-size font-size :fill foreground
+           :x hmargin :y char-height)
+ (insert-image (svg-image svg :ascent 'center)))
+)
+
+;; (tag "IMPORTANT" "white" "blue"   12)
+;; (tag "WARNING"   "white" "orange" 12)
+;; (tag "DANGER"    "white" "red"    12)
 
 (provide 'elegance)

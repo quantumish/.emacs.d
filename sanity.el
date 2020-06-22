@@ -26,6 +26,9 @@
 (tool-bar-mode 0)
 (tooltip-mode  0)
 (scroll-bar-mode 0)
+(global-auto-revert-mode t)
+(global-set-key [(meta up)] 'transpose-line-up)
+(global-set-key [(meta down)] 'transpose-line-down)
 
 (defun custom/kill-this-buffer ()
   (interactive) (kill-buffer (current-buffer)))
@@ -35,6 +38,8 @@
 (setq uniquify-buffer-name-style 'forward)
 
 (save-place-mode 1)
+
+(setq mac-command-modifier 'super mac-option-modifier 'meta)
 
 (ido-mode t)
 (setq ido-enable-flex-matching t)
