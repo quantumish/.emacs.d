@@ -11,7 +11,6 @@
 (package-install 'flycheck)
 (package-install 'lsp-mode)
 (package-install 'lsp-ui)
-(package-install 'markdown)
 (package-install 'company)
 (package-install 'company-box)
 (package-install 'company-lsp)
@@ -38,5 +37,11 @@
 (c +lsp)
 (c++ +lsp)
 (python +lsp)
+
+(global-set-key "\C-t" #'transpose-lines)
+(define-key ctl-x-map "\C-t" #'transpose-chars)
+
+(require 'yasnippet)
+(yas-global-mode 1)
 
 (provide 'functionality)

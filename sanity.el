@@ -44,7 +44,15 @@
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 
+(setq-default tab-width 4)
+(setq-default c-basic-offset 4)
+
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-x C-x") 'execute-extended-command)
+
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
 
 (provide 'sanity)
