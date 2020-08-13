@@ -3,7 +3,7 @@
 
 The goal is to have a minimal consistent vanilla emacs (i.e. no
 package) and yet elegant.  
-The defaul font is [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono)
+The default font is [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono)
 and optionally, you'll also need the [Fira Code](https://fonts.google.com/specimen/Fira+Code) font.
 
 **Usage**: `emacs -q -l sanity.el -l elegance.el Splash.org &`

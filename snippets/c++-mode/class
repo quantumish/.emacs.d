@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: class
+# key: class
+# --
+class ${1:Class}
+{
+public:
+    $1($2);
+};
+
+$1::$1(${2:args})
+{
+    ${0:statement};
+}

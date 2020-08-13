@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: forvec
+# key: forvec
+# --
+
+for (int i = 0; i < vector.size(); i++) {
+
+}

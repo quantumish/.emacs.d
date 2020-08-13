@@ -8,13 +8,6 @@
 (package-initialize)
 (package-refresh-contents)
 
-(package-install 'flycheck)
-(package-install 'lsp-mode)
-(package-install 'lsp-ui)
-(package-install 'company)
-(package-install 'company-box)
-(package-install 'company-lsp)
-
 (add-hook 'after-init-hook 'global-company-mode)
 
 (autoload 'markdown-mode "markdown-mode"
@@ -26,22 +19,25 @@
    "Major mode for editing GitHub Flavored Markdown files" t)
 (add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
 
-(require 'company-box)
-(add-hook 'company-mode-hook 'company-box-mode)
-
-(require 'company-lsp)
-(push 'company-lsp company-backends)
-
 (global-flycheck-mode)
-:lang
-(c +lsp)
-(c++ +lsp)
-(python +lsp)
 
 (global-set-key "\C-t" #'transpose-lines)
 (define-key ctl-x-map "\C-t" #'transpose-chars)
 
-(require 'yasnippet)
+(setq org-super-agenda-groups '((:name "Today"
+				:time-grid t
+				:scheduled today)
+			   (:name "Due today"
+				:deadline today)
+			   (:name "Important"
+				:priority "A")
+			   (:name "Overdue"
+				:deadline past)
+			   (:name "Due soon"
+				:deadline future)
+			   (:name "Waiting"
+			       :todo "WAIT")))
+
 (yas-global-mode 1)
 
 (provide 'functionality)

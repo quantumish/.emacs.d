@@ -1,3 +1,60 @@
+;; Some sane defaults
+;; Copyright 2020 Nicolas P. Rougier
+;;
+;; This file is not part of GNU Emacs.
+;;
+;; This program is free software: you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see <http://www.gnu.org/licenses/>
+
+(setq inhibit-startup-screen t)
+(setq inhibit-startup-echo-area-message t)
+(setq inhibit-startup-message t)
+(setq initial-scratch-message nil)
+(setq initial-major-mode 'org-mode)
+(setq-default indent-tabs-mode nil)
+(setq pop-up-windows nil)
+(tool-bar-mode 0)
+(tooltip-mode  0)
+(scroll-bar-mode 0)
+(global-auto-revert-mode t)
+(global-set-key [(meta up)] 'transpose-line-up)
+(global-set-key [(meta down)] 'transpose-line-down)
+
+(defun custom/kill-this-buffer ()
+  (interactive) (kill-buffer (current-buffer)))
+(global-set-key (kbd "C-x k") 'custom/kill-this-buffer)
+
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
+
+(save-place-mode 1)
+
+(setq mac-command-modifier 'super mac-option-modifier 'meta)
+
+(ido-mode t)
+(setq ido-enable-flex-matching t)
+
+(setq-default tab-width 4)
+(setq-default c-basic-offset 4)
+
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-x C-x") 'execute-extended-command)
+
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
 ;; A very minimal but elegant theme
 ;; Copyright 2020 Nicolas P. Rougier
 ;;
@@ -385,7 +442,7 @@ function is a convenience wrapper used by `describe-package-1'."
            :font-size font-size :fill foreground
            :x hmargin :y char-height)
  (insert-image (svg-image svg :ascent 'center)))
-)
+ )
 
 ;; (require writeroom-mode)
 ;; (require focus)
@@ -408,4 +465,71 @@ function is a convenience wrapper used by `describe-package-1'."
 ;; (tag "WARNING"   "white" "orange" 12)
 ;; (tag "DANGER"    "white" "red"    12)
 
-(provide 'elegance)
+;; Some functionality to go with it.
+;; David Freifeld
+
+(require 'package)
+(add-to-list 'package-archives
+             '("MELPA Stable" . "http://stable.melpa.org/packages/") t)
+(package-initialize)
+(package-refresh-contents)
+
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
+(autoload 'gfm-mode "markdown-mode"
+   "Major mode for editing GitHub Flavored Markdown files" t)
+(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+
+(global-flycheck-mode)
+(yas-global-mode 1)
+
+(global-set-key "\C-t" #'transpose-lines)
+(define-key ctl-x-map "\C-t" #'transpose-chars)
+
+(setq org-super-agenda-groups '((:name "Today"
+				:time-grid t
+				:scheduled today)
+			   (:name "Due today"
+				:deadline today)
+			   (:name "Important"
+				:priority "A")
+			   (:name "Overdue"
+				:deadline past)
+			   (:name "Due soon"
+				:deadline future)
+			   (:name "Waiting"
+			       :todo "WAIT")))
+
+(setq org-agenda-files '("~/Dropbox/org/inbox.org"
+                         "~/Dropbox/org/projects.org"
+                         "~/Dropbox/org/schedule.org"))
+
+(setq org-capture-templates '(("t" "Todo [inbox]" entry
+                               (file+headline "~/Dropbox/org/inbox.org" "Tasks")
+                               "* TODO %i%?")
+                              ("s" "Schedule" entry
+                               (file+headline "~/Dropbox/org/schedule.org" "Schedule")
+                               "* %i%? \n %U")))
+
+(setq org-refile-targets '(("~/Dropbox/org/projects.org" :maxlevel . 3)
+                           ("~/Dropbox/org/schedule.org" :maxlevel . 2)))
+
+(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "KILL(k)")))
+
+(setq org-agenda-custom-commands 
+      '(("o" "At the office" tags-todo "@office"
+         ((org-agenda-overriding-header "Office")))))
+
+(defun org-agenda-process-inbox-item ()
+  "Process a single item in the org-agenda."
+  (org-with-wide-buffer
+   (org-agenda-set-tags)
+   (org-agenda-priority)
+;   (call-interactively 'jethro/my-org-agenda-set-effort)
+   (org-agenda-refile nil nil t)))
+
+(provide 'init)
+;;; init.el ends here

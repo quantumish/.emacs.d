@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: lim
+# key: lim
+# --
+$\lim_{x \rightarrow x_0} f(x) = x$

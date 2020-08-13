@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: innfor
+# key: innforx
+# --
+for (int ${1:index} = 0; $1 < ${2:limit}; $1++) ${0:statement};

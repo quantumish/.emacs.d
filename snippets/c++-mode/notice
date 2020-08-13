@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: notice
+# key: notice
+# --
+//
+//  ${1:filename}.cpp
+//  ${2:project}
+//
+//  Created by David Freifeld
+//
+
+$0
