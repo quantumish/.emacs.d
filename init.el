@@ -50,6 +50,9 @@
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-x C-x") 'execute-extended-command)
 
+(global-set-key "\C-t" #'transpose-lines)
+(define-key ctl-x-map "\C-t" #'transpose-chars)
+
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
@@ -419,9 +422,7 @@ function is a convenience wrapper used by `describe-package-1'."
    (propertize "%3l:%2c "
 	'face `(:foreground ,(face-foreground 'face-faded)))))))
 
-
 ;; Rounded boxes using SVG:  
-
 (require 'svg)
 (defun tag (text &optional foreground background font-size)
  (let* ((font-size   (or font-size 12))
@@ -444,35 +445,39 @@ function is a convenience wrapper used by `describe-package-1'."
  (insert-image (svg-image svg :ascent 'center)))
  )
 
-;; (require writeroom-mode)
-;; (require focus)
-;; (writeroom-mode 1)
-;; (focus-mode 1)
+;; Prettify symbols mode is nice
+(add-hook 'org-mode-hook (lambda ()
+   "Beautify Org Checkbox Symbol"
+   (push '("TODO" . "") prettify-symbols-alist)
+   (push '("DONE" . "" ) prettify-symbols-alist)
+   (push '("WAIT" . "" ) prettify-symbols-alist)
+   (push '("NOPE" . "" ) prettify-symbols-alist)
+   (push '("[#A]" . "" ) prettify-symbols-alist)
+   (push '("[#B]" . "" ) prettify-symbols-alist)
+   (push '("[#C]" . "" ) prettify-symbols-alist)
+   (prettify-symbols-mode)))
 
-;; (defun todo-insert 
-;;   (tag "TODO" "white" "green"   12))
+(defface org-checkbox-done-text
+  '((t (:foreground "#71696A" :strike-through t)))
+  "Face for the text part of a checked org-mode checkbox.")
 
-;; (defun fixme-insert
-;;   (tag "FIXME" "white" "red"   12))
+(setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
+                           (?B . (:foreground "#f5cb22"))
+                           (?C . (:foreground "#6cad50"))))
 
-;; (defun note-insert
-;;   (tag "NOTE" "white" "blue"   12))
+(setq org-todo-keyword-faces
+      '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
+        ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
 
-;; (global-set-key (kbd "C-c t") (lambda () (interactive) (tag "TODO" "white" "green"   12)))
-;; (global-set-key (kbd "C-c f") 'fixme-insert)
-;; (global-set-key (kbd "C-c n") 'note-insert)
-;; (tag "IMPORTANT" "white" "blue"   12)
-;; (tag "WARNING"   "white" "orange" 12)
-;; (tag "DANGER"    "white" "red"    12)
+(setq org-fontify-done-headline t)
+
+(custom-set-faces
+ '(org-headline-done
+            ((((class color) (class color) (min-colors 16))
+              (:foreground "#cfd1d1")))))
 
 ;; Some functionality to go with it.
 ;; David Freifeld
-
-(require 'package)
-(add-to-list 'package-archives
-             '("MELPA Stable" . "http://stable.melpa.org/packages/") t)
-(package-initialize)
-(package-refresh-contents)
 
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)
@@ -485,9 +490,6 @@ function is a convenience wrapper used by `describe-package-1'."
 
 (global-flycheck-mode)
 (yas-global-mode 1)
-
-(global-set-key "\C-t" #'transpose-lines)
-(define-key ctl-x-map "\C-t" #'transpose-chars)
 
 (setq org-super-agenda-groups '((:name "Today"
 				:time-grid t
@@ -517,19 +519,11 @@ function is a convenience wrapper used by `describe-package-1'."
 (setq org-refile-targets '(("~/Dropbox/org/projects.org" :maxlevel . 3)
                            ("~/Dropbox/org/schedule.org" :maxlevel . 2)))
 
-(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "KILL(k)")))
+(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
 
 (setq org-agenda-custom-commands 
       '(("o" "At the office" tags-todo "@office"
          ((org-agenda-overriding-header "Office")))))
-
-(defun org-agenda-process-inbox-item ()
-  "Process a single item in the org-agenda."
-  (org-with-wide-buffer
-   (org-agenda-set-tags)
-   (org-agenda-priority)
-;   (call-interactively 'jethro/my-org-agenda-set-effort)
-   (org-agenda-refile nil nil t)))
 
 (provide 'init)
 ;;; init.el ends here
