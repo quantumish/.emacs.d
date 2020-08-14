@@ -354,6 +354,16 @@ function is a convenience wrapper used by `describe-package-1'."
   (set-face 'diff-refine-removed                          'face-faded)
   (set-face-attribute     'diff-refine-removed nil :strike-through t))
 
+
+;; Org
+(with-eval-after-load 'diff-mode
+  (set-face 'org-level-3                                 'face-strong)
+  (set-face 'org-level-4                                 'face-strong)
+  (set-face 'org-level-5                                 'face-strong)
+  (set-face 'org-level-6                                 'face-strong)
+  (set-face 'org-level-7                                 'face-strong)
+  (set-face 'org-level-8                                 'face-strong))
+
 ;; Term
 (with-eval-after-load 'term
   (setq eterm-256color-disable-bold nil)
@@ -445,6 +455,12 @@ function is a convenience wrapper used by `describe-package-1'."
  (insert-image (svg-image svg :ascent 'center)))
  )
 
+(setq org-ellipsis "…")
+(set-face-attribute 'org-ellipsis nil
+  :foreground "#999999"
+  :underline nil
+  :weight 'light)
+
 ;; Prettify symbols mode is nice
 (add-hook 'org-mode-hook (lambda ()
    "Beautify Org Checkbox Symbol"
@@ -455,6 +471,14 @@ function is a convenience wrapper used by `describe-package-1'."
    (push '("[#A]" . "" ) prettify-symbols-alist)
    (push '("[#B]" . "" ) prettify-symbols-alist)
    (push '("[#C]" . "" ) prettify-symbols-alist)
+   (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
+   (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
+   (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
+   (push '(":END:" . "―" ) prettify-symbols-alist)
+   (push '("#+STARTUP:" . "" ) prettify-symbols-alist)
+   (push '("#+TITLE: " . "" ) prettify-symbols-alist)
+   (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
+   (push '("#+NAME:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))
 
 (defface org-checkbox-done-text
