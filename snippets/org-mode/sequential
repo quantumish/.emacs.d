@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sequential
+# key: seq
+# --
+:PROPERTIES:
+:TRIGGER:  chain-siblings(TODO)
+:END:
