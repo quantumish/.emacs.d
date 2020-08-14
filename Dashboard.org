@@ -1,0 +1,84 @@
+
+       
+
+               [[file:data/logo.svg]]
+
+*Welcome back!*
+
+Jump to:
+- *[[file:~/Dropbox/org/inbox.org][Inbox]]*...............................................[[file:~/Dropbox/org/][Dropbox/org]]
+- *[[run:project][Recent project work]]*....................................[[*file:~/projects*][projects]]
+- *[[file:~/.emacs.d/init.el][Personal config.]]*.......................................[[file:~/.emacs.d][.emacs.d]]
+
+Look and feel:
+- [[elisp:(setq global-visual-line-mode 1)][Visual line mode]]
+- Centered text
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+:PROPERTIES:
+:header-args:    :python /usr/local/bin/python3
+:END:
+
+#+NAME: project
+#+BEGIN_SRC python :results output
+  import os
+  import stat
+  import time
+  from datetime import datetime
+  def searchdir(dir):
+      max = datetime(1970, 1, 1)
+      maxitem = None
+      for item in os.listdir(dir):
+          if (item[0] == "." or item[0] == "#"): continue
+          filestats = os.stat(dir + '/' + item)
+          access = time.ctime(filestats[stat.ST_ATIME])
+          accessdate = datetime.strptime(access, "%a %b %d %H:%M:%S %Y")
+          if (accessdate > max):
+              max = accessdate
+              maxitem = item
+      print(maxitem, max)
+      if (os.path.isdir(dir + '/' + maxitem)):
+          searchdir(dir + '/' + maxitem)
+      else:
+          os.system("timeout 2 emacsclient " + dir + '/' + maxitem)
+  searchdir("/Users/davidfreifeld/projects")
+
+#+END_SRC
+
+#+RESULTS: project
+: Waiting for Emacs...

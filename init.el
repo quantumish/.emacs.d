@@ -27,6 +27,7 @@
 (tooltip-mode  0)
 (scroll-bar-mode 0)
 (global-auto-revert-mode t)
+(server-start)
 
 (defun custom/kill-this-buffer ()
   (interactive) (kill-buffer (current-buffer)))
@@ -501,15 +502,13 @@ function is a convenience wrapper used by `describe-package-1'."
               (:foreground "#cfd1d1")))))
 
 ;; I'm tired of lsp-ui looking terrible
-(set-face-attribute 'lsp-ui-sideline-code-action nil
-  :foreground "#999999")
+;(set-face-attribute 'lsp-ui-sideline-code-action nil
+;  :foreground "#999999")
 (setq lsp-ui-doc-header t)
 (custom-set-faces
    '(lsp-ui-doc-background ((t :background "#fafafa")))
    '(lsp-ui-doc-header ((t :background "#f0f0f0")))
    '(lsp-ui-doc-url ((t :inherit link))))
-(set-face-attribute 'lsp-ui-sideline-code-action nil
-  :foreground "#999999")
 (setq lsp-ui-doc-border "orange")
 (setq lsp-ui-doc-position 'bottom)
 (setq lsp-ui-doc-delay 3)
@@ -550,10 +549,12 @@ function is a convenience wrapper used by `describe-package-1'."
    (makefile . t)
    (gnuplot . t)
    (haskell . t)))
+(setq org-src-tab-acts-natively t)
 
 (org-link-set-parameters
  "run"
  :follow #'org-babel-ref-resolve)
+(add-to-list 'org-file-apps '(directory . emacs))
 
 (setq org-confirm-babel-evaluate nil)
 
