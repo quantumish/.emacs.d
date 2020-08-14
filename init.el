@@ -501,6 +501,22 @@ function is a convenience wrapper used by `describe-package-1'."
 (setq org-modules (append org-modules '(org-crypt)))
 (setq org-modules (append org-modules '(org-id)))
 
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (python . t)
+   (latex . t)
+   (shell . t)
+   (C . t)
+   (makefile . t)
+   (gnuplot . t)
+   (haskell . t)))
+
+(org-link-set-parameters
+ "run"
+ :follow #'org-babel-ref-resolve)
+
+(setq org-confirm-babel-evaluate nil)
 
 (setq org-super-agenda-groups '((:name "Today"
 				:time-grid t
