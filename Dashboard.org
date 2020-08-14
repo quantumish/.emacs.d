@@ -1,17 +1,17 @@
 
        
 
-               [[file:data/logo.svg]]
+                    [[file:data/logo.svg]]
 
 *Welcome back!*
 
 Jump to:
-- *[[file:~/Dropbox/org/inbox.org][Inbox]]*...............................................[[file:~/Dropbox/org/][Dropbox/org]]
-- *[[run:project][Recent project work]]*....................................[[*file:~/projects*][projects]]
-- *[[file:~/.emacs.d/init.el][Personal config.]]*.......................................[[file:~/.emacs.d][.emacs.d]]
+- *[[file:~/Dropbox/org/inbox.org][Inbox]]*.......................................................[[file:~/Dropbox/org/][Dropbox/org]]
+- *[[run:project][Recent project work]]*............................................[[*file:~/projects*][projects]]
+- *[[file:~/.emacs.d/init.el][Personal config.]]*...............................................[[file:~/.emacs.d][.emacs.d]]
 
 Look and feel:
-- [[elisp:(setq global-visual-line-mode 1)][Visual line mode]]
+- *[[elisp:(setq global-visual-line-mode 1)][Visual line mode]]*
 - Centered text
 
 
@@ -81,4 +81,5 @@ Look and feel:
 #+END_SRC
 
 #+RESULTS: project
-: Waiting for Emacs...
+: Waiting for Emacs...('fathersday2020', datetime.datetime(2020, 8, 14, 11, 10, 7))
+: ('dad.asm', datetime.datetime(2020, 8, 13, 16, 21, 12))
