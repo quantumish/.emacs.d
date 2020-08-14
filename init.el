@@ -500,6 +500,21 @@ function is a convenience wrapper used by `describe-package-1'."
             ((((class color) (class color) (min-colors 16))
               (:foreground "#cfd1d1")))))
 
+;; I'm tired of lsp-ui looking terrible
+(set-face-attribute 'lsp-ui-sideline-code-action nil
+  :foreground "#999999")
+(setq lsp-ui-doc-header t)
+(custom-set-faces
+   '(lsp-ui-doc-background ((t :background "#fafafa")))
+   '(lsp-ui-doc-header ((t :background "#f0f0f0")))
+   '(lsp-ui-doc-url ((t :inherit link))))
+(set-face-attribute 'lsp-ui-sideline-code-action nil
+  :foreground "#999999")
+(setq lsp-ui-doc-border "orange")
+(setq lsp-ui-doc-position 'bottom)
+(setq lsp-ui-doc-delay 3)
+(setq lsp-ui-sideline-delay 1)3
+
 ;; Some functionality to go with it.
 ;; David Freifeld
 
