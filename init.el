@@ -27,8 +27,6 @@
 (tooltip-mode  0)
 (scroll-bar-mode 0)
 (global-auto-revert-mode t)
-(global-set-key [(meta up)] 'transpose-line-up)
-(global-set-key [(meta down)] 'transpose-line-down)
 
 (defun custom/kill-this-buffer ()
   (interactive) (kill-buffer (current-buffer)))
@@ -49,6 +47,8 @@
 
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-x C-x") 'execute-extended-command)
+(global-set-key (kbd "C-x C-z") nil)
+
 
 (global-set-key "\C-t" #'transpose-lines)
 (define-key ctl-x-map "\C-t" #'transpose-chars)
@@ -490,6 +490,17 @@ function is a convenience wrapper used by `describe-package-1'."
 
 (global-flycheck-mode)
 (yas-global-mode 1)
+
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+;; Sequential projects like OmniFocus
+(load "org-depend.el")
+;; Reset checkboxes for repeating tasks
+(load "org-checklist.el")
+;; Habit-tracking with Org Mode
+(setq org-modules (append org-modules '(org-habit)))
+(setq org-modules (append org-modules '(org-crypt)))
+(setq org-modules (append org-modules '(org-id)))
+
 
 (setq org-super-agenda-groups '((:name "Today"
 				:time-grid t
