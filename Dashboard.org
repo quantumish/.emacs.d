@@ -8,16 +8,12 @@
 Jump to:
 - *[[file:~/Dropbox/org/inbox.org][Inbox]]*.......................................................[[file:~/Dropbox/org/][Dropbox/org]]
 - *[[run:project][Recent project work]]*............................................[[*file:~/projects*][projects]]
-- *[[file:~/.emacs.d/init.el][Personal config.]]*...............................................[[file:~/.emacs.d][.emacs.d]]
+- *[[file:~/.emacs.d/init.el][Personal config.]]*..........................................[[file:~/.emacs.d/lisp][.emacs.d/lisp]]
 
 Look and feel:
 - *[[elisp:(setq global-visual-line-mode 1)][Visual line mode]]*
 - Centered text
-
-
-
-
-
+  
 
 
 

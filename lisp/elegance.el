@@ -16,6 +16,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses/>
 
+;; Modified by David Freifeld
+
 ;; Only necessary for the splash screen mockup
 ;; -------------------------------------------------------------------
 (with-eval-after-load 'org
@@ -24,7 +26,7 @@
   (setq org-startup-with-inline-images "inlineimages")
   (setq org-hide-emphasis-markers t)
   (setq org-confirm-elisp-link-function nil)
-  (setq org-ellipsis " …")
+  (setq org-ellipsis "…")
   (setq org-link-frame-setup '((file . find-file))))
 ;; -------------------------------------------------------------------
 
@@ -294,6 +296,16 @@ function is a convenience wrapper used by `describe-package-1'."
   (set-face 'diff-refine-removed                          'face-faded)
   (set-face-attribute     'diff-refine-removed nil :strike-through t))
 
+
+;; Org
+(with-eval-after-load 'diff-mode
+  (set-face 'org-level-3                                 'face-strong)
+  (set-face 'org-level-4                                 'face-strong)
+  (set-face 'org-level-5                                 'face-strong)
+  (set-face 'org-level-6                                 'face-strong)
+  (set-face 'org-level-7                                 'face-strong)
+  (set-face 'org-level-8                                 'face-strong))
+
 ;; Term
 (with-eval-after-load 'term
   (setq eterm-256color-disable-bold nil)
@@ -362,9 +374,7 @@ function is a convenience wrapper used by `describe-package-1'."
    (propertize "%3l:%2c "
 	'face `(:foreground ,(face-foreground 'face-faded)))))))
 
-
 ;; Rounded boxes using SVG:  
-
 (require 'svg)
 (defun tag (text &optional foreground background font-size)
  (let* ((font-size   (or font-size 12))
@@ -385,27 +395,7 @@ function is a convenience wrapper used by `describe-package-1'."
            :font-size font-size :fill foreground
            :x hmargin :y char-height)
  (insert-image (svg-image svg :ascent 'center)))
-)
-
-;; (require writeroom-mode)
-;; (require focus)
-;; (writeroom-mode 1)
-;; (focus-mode 1)
-
-;; (defun todo-insert 
-;;   (tag "TODO" "white" "green"   12))
-
-;; (defun fixme-insert
-;;   (tag "FIXME" "white" "red"   12))
-
-;; (defun note-insert
-;;   (tag "NOTE" "white" "blue"   12))
-
-;; (global-set-key (kbd "C-c t") (lambda () (interactive) (tag "TODO" "white" "green"   12)))
-;; (global-set-key (kbd "C-c f") 'fixme-insert)
-;; (global-set-key (kbd "C-c n") 'note-insert)
-;; (tag "IMPORTANT" "white" "blue"   12)
-;; (tag "WARNING"   "white" "orange" 12)
-;; (tag "DANGER"    "white" "red"    12)
+ )
 
 (provide 'elegance)
+
