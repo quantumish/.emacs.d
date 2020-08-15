@@ -28,5 +28,8 @@
 ;; Load misc Org Mode config
 (load "org-misc.el")
 
+;; Load some code by Nicolas Rougier to have messages in echo area
+;; (load "echo-message.el")
+
 (provide 'init)
 ;;; init.el ends here
