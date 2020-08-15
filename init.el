@@ -13,6 +13,9 @@
 ;; Load aesthetic improvements for coding (lsp faces, focus mode, etc.)
 (load "code-aesthetic.el")
 
+;; Load actual improvements for coding (lsp, company, so forth...)
+(load "code-features.el")
+
 ;; Load config for Org Mode GTD workflow
 (load "org-gtd.el")
 

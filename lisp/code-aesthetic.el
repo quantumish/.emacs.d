@@ -14,6 +14,13 @@
 (setq lsp-ui-doc-delay 3)
 (setq lsp-ui-sideline-delay 1)
 
+(custom-set-faces
+ '(company-tooltip-common ((t (:foreground "#00008b"))))
+ '(company-tooltip ((t (:foreground "#333333" :background "#f5f5f5"))))
+ '(company-scrollbar-fg ((t (:background "#999999"))))
+ '(company-scrollbar-bg ((t (:background "#f5f5f5"))))
+ '(company-tooltip-common-selection ((t (:foreground "green")))))
+
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
