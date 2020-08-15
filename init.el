@@ -28,8 +28,15 @@
 ;; Load misc Org Mode config
 (load "org-misc.el")
 
-;; Load some code by Nicolas Rougier to have messages in echo area
+;; Load experimental messages in echo area
 ;; (load "echo-message.el")
+
+;; Load experimental multiline modeline
+;; (load "multiline-modeline.el")
+
+;; Load broken plugin for indication of workload for calendar entries
+(load "material-colors.el")
+(load "year-calendar.el")
 
 (provide 'init)
 ;;; init.el ends here
