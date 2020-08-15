@@ -1,5 +1,6 @@
 ;; org-aesthetic.el --- Make Org Mode look nicer!
 
+(with-eval-after-load 'org
 (set-face-attribute 'org-ellipsis nil
   :foreground "#999999"
   :underline nil
@@ -19,6 +20,7 @@
 (set-face-attribute 'org-agenda-date-today nil
   :foreground "#333333"
   :weight 'regular)
+)
 
 ;; Prettify symbols mode is nice
 (add-hook 'org-mode-hook (lambda ()
