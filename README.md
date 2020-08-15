@@ -14,4 +14,5 @@ Currently on the chopping block:
 
 ## Screenshots
 A simple org mode buffer:
-<img src="screenshots/org-mode.png" width="50%">
+
+<img src="screenshots/org-mode.png" width="100%">
