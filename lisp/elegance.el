@@ -34,7 +34,7 @@
 ;; Default font and frame size
 (set-face-font 'default "Roboto Mono Light 14")
 (setq default-frame-alist
-      (append (list '(width  . 73) '(height . 41)
+      (append (list '(width  . 72) '(height . 40x)
                     '(vertical-scroll-bars . nil)
                     '(internal-border-width . 24)
                     '(font . "Roboto Mono Light 14"))))
@@ -54,8 +54,26 @@
 (set-default 'cursor-type  '(bar . 1))
 (blink-cursor-mode 0)
 
-;; Small fringe on the right only
-(fringe-mode '(0 . 6))
+;; No sound
+(setq visible-bell t)
+(setq ring-bell-function 'ignore)
+
+;; No Tooltips
+(tooltip-mode 0)
+
+;; Paren mode is part of the theme
+(show-paren-mode t)
+
+;; No fringe but nice glyphs for truncated and wrapped lines
+(fringe-mode '(0 . 0))
+(defface fallback '((t :family "Fira Code Light"
+                       :inherit 'face-faded)) "Fallback")
+(set-display-table-slot standard-display-table 'truncation
+                        (make-glyph-code ?… 'fallback))
+(set-display-table-slot standard-display-table 'wrap
+                        (make-glyph-code ?↩ 'fallback))
+(set-display-table-slot standard-display-table 'selective-display
+                        (string-to-vector " …"))
 
 ;; When we set a face, we take care of removing any previous settings
 (defun set-face (face style)
@@ -186,6 +204,11 @@ by setting a very light background color that is barely perceptible.")
   (set-face 'info-title-3                                'face-strong)
   (set-face 'info-title-4                               'face-strong))
 
+;; Bookmarks
+(with-eval-after-load 'bookmark
+  (set-face 'bookmark-menu-heading                       'face-strong)
+  (set-face 'bookmark-menu-bookmark                    'face-salient))
+
 ;; Message
 (with-eval-after-load 'message
   (set-face 'message-cited-text                           'face-faded)
@@ -198,6 +221,17 @@ by setting a very light background color that is barely perceptible.")
   (set-face 'message-header-xheader                          'default)
   (set-face 'message-mml                                 'face-popout)
   (set-face 'message-separator                           'face-faded))
+
+;; Outline
+(with-eval-after-load 'outline
+  (set-face 'outline-1                                   'face-strong)
+  (set-face 'outline-2                                   'face-strong)
+  (set-face 'outline-3                                   'face-strong)
+  (set-face 'outline-4                                   'face-strong)
+  (set-face 'outline-5                                   'face-strong)
+  (set-face 'outline-6                                   'face-strong)
+  (set-face 'outline-7                                   'face-strong)
+  (set-face 'outline-8                                  'face-strong))
 
 ;; Interface
 (with-eval-after-load 'cus-edit
@@ -297,14 +331,136 @@ function is a convenience wrapper used by `describe-package-1'."
   (set-face-attribute     'diff-refine-removed nil :strike-through t))
 
 
-;; Org
-(with-eval-after-load 'diff-mode
+;; Org-Agenda
+(with-eval-after-load 'org-agenda
+  (set-face 'org-agenda-calendar-event                    'default)
+  (set-face 'org-agenda-calendar-sexp                     'face-faded)
+  (set-face 'org-agenda-clocking                          'face-faded)
+  (set-face 'org-agenda-column-dateline                   'face-faded)
+  (set-face 'org-agenda-current-time                      'face-faded)
+  (set-face 'org-agenda-date                            'face-salient)
+  (set-face 'org-agenda-date-today        '(face-salient face-strong))
+  (set-face 'org-agenda-date-weekend                      'face-faded)
+  (set-face 'org-agenda-diary                             'face-faded)
+  (set-face 'org-agenda-dimmed-todo-face                  'face-faded)
+  (set-face 'org-agenda-done                              'face-faded)
+  (set-face 'org-agenda-filter-category                   'face-faded)
+  (set-face 'org-agenda-filter-effort                     'face-faded)
+  (set-face 'org-agenda-filter-regexp                     'face-faded)
+  (set-face 'org-agenda-filter-tags                       'face-faded)
+;;  (set-face 'org-agenda-property-face                     'face-faded)
+  (set-face 'org-agenda-restriction-lock                  'face-faded)
+  (set-face 'org-agenda-structure                        'face-faded))
+
+;; org mode
+(with-eval-after-load 'org
+  (set-face 'org-archived                                 'face-faded)
+  (set-face 'org-block                                    'face-faded)
+  (set-face 'org-block-begin-line                         'face-faded)
+  (set-face 'org-block-end-line                           'face-faded)
+  (set-face 'org-checkbox                                 'face-faded)
+  (set-face 'org-checkbox-statistics-done                 'face-faded)
+  (set-face 'org-checkbox-statistics-todo                 'face-faded)
+  (set-face 'org-clock-overlay                            'face-faded)
+  (set-face 'org-code                                     'face-faded)
+  (set-face 'org-column                                   'face-faded)
+  (set-face 'org-column-title                             'face-faded)
+  (set-face 'org-date                                     'face-faded)
+  (set-face 'org-date-selected                            'face-faded)
+  (set-face 'org-default                                  'face-faded)
+  (set-face 'org-document-info                            'face-faded)
+  (set-face 'org-document-info-keyword                    'face-faded)
+  (set-face 'org-document-title                           'face-faded)
+  (set-face 'org-done                                        'default)
+  (set-face 'org-drawer                                   'face-faded)
+  (set-face 'org-ellipsis                                 'face-faded)
+  (set-face 'org-footnote                                 'face-faded)
+  (set-face 'org-formula                                  'face-faded)
+  (set-face 'org-headline-done                            'face-faded)
+;;  (set-face 'org-hide                                     'face-faded)
+;;  (set-face 'org-indent                                   'face-faded)
+  (set-face 'org-latex-and-related                        'face-faded)
+  (set-face 'org-level-1                                 'face-strong)
+  (set-face 'org-level-2                                 'face-strong)
   (set-face 'org-level-3                                 'face-strong)
   (set-face 'org-level-4                                 'face-strong)
   (set-face 'org-level-5                                 'face-strong)
   (set-face 'org-level-6                                 'face-strong)
   (set-face 'org-level-7                                 'face-strong)
-  (set-face 'org-level-8                                 'face-strong))
+  (set-face 'org-level-8                                 'face-strong)
+  (set-face 'org-link                                   'face-salient)
+  (set-face 'org-list-dt                                  'face-faded)
+  (set-face 'org-macro                                    'face-faded)
+  (set-face 'org-meta-line                                'face-faded)
+  (set-face 'org-mode-line-clock                          'face-faded)
+  (set-face 'org-mode-line-clock-overrun                  'face-faded)
+  (set-face 'org-priority                                 'face-faded)
+  (set-face 'org-property-value                           'face-faded)
+  (set-face 'org-quote                                    'face-faded)
+  (set-face 'org-scheduled                                'face-faded)
+  (set-face 'org-scheduled-previously                     'face-faded)
+  (set-face 'org-scheduled-today                          'face-faded)
+  (set-face 'org-sexp-date                                'face-faded)
+  (set-face 'org-special-keyword                          'face-faded)
+  (set-face 'org-table                                    'face-faded)
+  (set-face 'org-tag                                      'face-faded)
+  (set-face 'org-tag-group                                'face-faded)
+  (set-face 'org-target                                   'face-faded)
+  (set-face 'org-time-grid                                'face-faded)
+  (set-face 'org-todo                                    'face-popout)
+  (set-face 'org-upcoming-deadline                        'face-faded)
+  (set-face 'org-verbatim                                 'face-faded)
+  (set-face 'org-verse                                    'face-faded)
+  (set-face 'org-warning                                'face-popout))
+
+;; Mu4e
+(with-eval-after-load 'mu4e
+  (set-face 'mu4e-attach-number-face                     'face-strong)
+  (set-face 'mu4e-cited-1-face                            'face-faded)
+  (set-face 'mu4e-cited-2-face                            'face-faded)
+  (set-face 'mu4e-cited-3-face                            'face-faded)
+  (set-face 'mu4e-cited-4-face                            'face-faded)
+  (set-face 'mu4e-cited-5-face                            'face-faded)
+  (set-face 'mu4e-cited-6-face                            'face-faded)
+  (set-face 'mu4e-cited-7-face                            'face-faded)
+  (set-face 'mu4e-compose-header-face                     'face-faded)
+  (set-face 'mu4e-compose-separator-face                  'face-faded)
+  (set-face 'mu4e-contact-face                          'face-salient)
+  (set-face 'mu4e-context-face                            'face-faded)
+  (set-face 'mu4e-draft-face                              'face-faded)
+  (set-face 'mu4e-flagged-face                            'face-faded)
+  (set-face 'mu4e-footer-face                             'face-faded)
+  (set-face 'mu4e-forwarded-face                          'face-faded)
+  (set-face 'mu4e-header-face                                'default)
+  (set-face 'mu4e-header-highlight-face                  'face-subtle)
+  (set-face 'mu4e-header-key-face                        'face-strong)
+  (set-face 'mu4e-header-marks-face                       'face-faded)
+  (set-face 'mu4e-header-title-face                      'face-strong)
+  (set-face 'mu4e-header-value-face                          'default)
+  (set-face 'mu4e-highlight-face                         'face-popout)
+  (set-face 'mu4e-link-face                             'face-salient)
+  (set-face 'mu4e-modeline-face                           'face-faded)
+  (set-face 'mu4e-moved-face                              'face-faded)
+  (set-face 'mu4e-ok-face                                 'face-faded)
+  (set-face 'mu4e-region-code                             'face-faded)
+  (set-face 'mu4e-replied-face                          'face-salient)
+  (set-face 'mu4e-special-header-value-face                  'default)
+  (set-face 'mu4e-system-face                             'face-faded)
+  (set-face 'mu4e-title-face                             'face-strong)
+  (set-face 'mu4e-trashed-face                            'face-faded)
+  (set-face 'mu4e-unread-face                            'face-strong)
+  (set-face 'mu4e-url-number-face                         'face-faded)
+  (set-face 'mu4e-view-body-face                             'default)
+  (set-face 'mu4e-warning-face                            'face-faded))
+
+;; Org
+;; (with-eval-after-load 'org-mode
+;;   (set-face 'org-level-3                                 'face-strong)
+;;   (set-face 'org-level-4                                 'face-strong)
+;;   (set-face 'org-level-5                                 'face-strong)
+;;   (set-face 'org-level-6                                 'face-strong)
+;;   (set-face 'org-level-7                                 'face-strong)
+;;   (set-face 'org-level-8                                 'face-strong))
 
 ;; Term
 (with-eval-after-load 'term
