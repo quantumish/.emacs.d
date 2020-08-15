@@ -469,7 +469,7 @@ function is a convenience wrapper used by `describe-package-1'."
   :foreground "#333333"
   :weight 'regular)
 
-(set-face-attribute 'org-agenda-dat-weekend nil
+(set-face-attribute 'org-agenda-date-weekend nil
   :foreground "#333333"
   :weight 'regular)
 
@@ -533,36 +533,260 @@ function is a convenience wrapper used by `describe-package-1'."
 ;; Some functionality to go with it.
 ;; David Freifeld
 
-(defface busy-1  '((t :foreground "black" :background "#eceff1")) "")
-(defface busy-2  '((t :foreground "black" :background "#cfd8dc")) "")
-(defface busy-3  '((t :foreground "black" :background "#b0bec5")) "")
-(defface busy-4  '((t :foreground "black" :background "#90a4ae")) "")
-(defface busy-5  '((t :foreground "white" :background "#78909c")) "")
-(defface busy-6  '((t :foreground "white" :background "#607d8b")) "")
-(defface busy-7  '((t :foreground "white" :background "#546e7a")) "")
-(defface busy-8  '((t :foreground "white" :background "#455a64")) "")
-(defface busy-9  '((t :foreground "white" :background "#37474f")) "")
-(defface busy-10 '((t :foreground "white" :background "#263238")) "")
+;; Material colors from https://material.io/design/color/
+(defconst levels
+  (list "L50"  "L100" "L200" "L300" "L400"
+        "L500" "L600" "L700" "L800" "L900"
+        "A100" "A200" "A400" "A700"))
+
+(defconst red
+  (list "#FFEBEE" "#FFCDD2" "#EF9A9A" "#E57373" "#EF5350"
+        "#F44336" "#E53935" "#D32F2F" "#C62828" "#B71C1C"
+        "#FF8A80" "#FF5252" "#FF1744" "#D50000"))
+
+(defconst pink
+  (list "#FCE4EC" "#F8BBD0" "#F48FB1" "#F06292" "#EC407A"
+        "#E91E63" "#D81B60" "#C2185B" "#AD1457" "#880E4F"
+        "#FF80AB" "#FF4081" "#F50057" "#C51162" ))
+
+(defconst purple
+  (list "#F3E5F5" "#E1BEE7" "#CE93D8" "#BA68C8" "#AB47BC"
+        "#9C27B0" "#8E24AA" "#7B1FA2" "#6A1B9A" "#4A148C"
+        "#EA80FC" "#E040FB" "#D500F9" "#AA00FF" ))
+
+(defconst deep-purple
+  (list "#EDE7F6" "#D1C4E9" "#B39DDB" "#9575CD" "#7E57C2"
+        "#673AB7" "#5E35B1" "#512DA8" "#4527A0" "#311B92"
+        "#B388FF" "#7C4DFF" "#651FFF" "#6200EA" ))
+
+(defconst indigo
+  (list "#E8EAF6" "#C5CAE9" "#9FA8DA" "#7986CB" "#5C6BC0"
+        "#3F51B5" "#3949AB" "#303F9F" "#283593" "#1A237E"
+        "#8C9EFF" "#536DFE" "#3D5AFE" "#304FFE" ))
+
+(defconst blue
+  (list "#E3F2FD" "#BBDEFB" "#90CAF9" "#64B5F6" "#42A5F5"
+        "#2196F3" "#1E88E5" "#1976D2" "#1565C0" "#0D47A1"
+        "#82B1FF" "#448AFF" "#2979FF" "#2962FF" ))
+
+(defconst light-blue
+  (list "#E1F5FE" "#B3E5FC" "#81D4FA" "#4FC3F7" "#29B6F6"
+        "#03A9F4" "#039BE5" "#0288D1" "#0277BD" "#01579B"
+        "#80D8FF" "#40C4FF" "#00B0FF" "#0091EA" ))
+
+(defconst cyan
+  (list "#E0F7FA" "#B2EBF2" "#80DEEA" "#4DD0E1" "#26C6DA"
+        "#00BCD4" "#00ACC1" "#0097A7" "#00838F" "#006064"
+        "#84FFFF" "#18FFFF" "#00E5FF" "#00B8D4" ))
+
+(defconst teal
+  (list "#E0F2F1" "#B2DFDB" "#80CBC4" "#4DB6AC" "#26A69A"
+        "#009688" "#00897B" "#00796B" "#00695C" "#004D40"
+        "#A7FFEB" "#64FFDA" "#1DE9B6" "#00BFA5" ))
+
+(defconst green
+  (list "#E8F5E9" "#C8E6C9" "#A5D6A7" "#81C784" "#66BB6A"
+        "#4CAF50" "#43A047" "#388E3C" "#2E7D32" "#1B5E20"
+        "#B9F6CA" "#69F0AE" "#00E676" "#00C853" ))
+
+(defconst light-green
+  (list "#F1F8E9" "#DCEDC8" "#C5E1A5" "#AED581" "#9CCC65"
+        "#8BC34A" "#7CB342" "#689F38" "#558B2F" "#33691E"
+        "#CCFF90" "#B2FF59" "#76FF03" "#64DD17" ))
+
+(defconst lime
+  (list "#F9FBE7" "#F0F4C3" "#E6EE9C" "#DCE775" "#D4E157"
+        "#CDDC39" "#C0CA33" "#AFB42B" "#9E9D24" "#827717"
+        "#F4FF81" "#EEFF41" "#C6FF00" "#AEEA00" ))
+
+(defconst yellow
+  (list "#FFFDE7" "#FFF9C4" "#FFF59D" "#FFF176" "#FFEE58"
+        "#FFEB3B" "#FDD835" "#FBC02D" "#F9A825" "#F57F17"
+        "#FFFF8D" "#FFFF00" "#FFEA00" "#FFD600" ))
+
+(defconst amber
+  (list "#FFF8E1" "#FFECB3" "#FFE082" "#FFD54F" "#FFCA28"
+        "#FFC107" "#FFB300" "#FFA000" "#FF8F00" "#FF6F00"
+        "#FFE57F" "#FFD740" "#FFC400" "#FFAB00" ))
+
+(defconst orange
+  (list "#FFF3E0" "#FFE0B2" "#FFCC80" "#FFB74D" "#FFA726"
+        "#FF9800" "#FB8C00" "#F57C00" "#EF6C00" "#E65100"
+        "#FFD180" "#FFAB40" "#FF9100" "#FF6D00" ))
+
+(defconst deep-orange
+  (list "#FBE9E7" "#FFCCBC" "#FFAB91" "#FF8A65" "#FF7043"
+        "#FF5722" "#F4511E" "#E64A19" "#D84315" "#BF360C"
+        "#FF9E80" "#FF6E40" "#FF3D00" "#DD2C00" ))
+
+(defconst brown
+  (list "#EFEBE9" "#D7CCC8" "#BCAAA4" "#A1887F" "#8D6E63"
+        "#795548" "#6D4C41" "#5D4037" "#4E342E" "#3E2723" ))
+
+(defconst grey
+  (list "#FAFAFA" "#F5F5F5" "#EEEEEE" "#E0E0E0" "#BDBDBD"
+        "#9E9E9E" "#757575" "#616161" "#424242" "#212121" ))
+
+(defconst blue-grey
+  (list "#ECEFF1" "#CFD8DC" "#B0BEC5" "#90A4AE" "#78909C"
+        "#607D8B" "#546E7A" "#455A64" "#37474F" "#263238" ))
+
+
+(require 'cl-lib)
+(defun material-color (palette level)
+   "Return the color from the given palette and specified level."
+   (nth (cl-position level levels :test #'equal) palette))
+
+(require 'calendar)
+(require 'holidays)
+(require 'material-colors)
+
+(setq org-agenda-start-on-weekday 1)
+(setq calendar-mark-holidays-flag t)
+(setq material-shade deep-orange)
+
+(defface calendar-face-level-1 nil "")
+(defface calendar-face-level-2 nil "")
+(defface calendar-face-level-3 nil "")
+(defface calendar-face-level-4 nil "")
+(defface calendar-face-level-5 nil "")
+(defface calendar-face-level-6 nil "")
+(defface calendar-face-level-7 nil "")
+(defface calendar-face-level-8 nil "")
+(defface calendar-face-level-9 nil "")
+(defface calendar-face-vacation nil "")
+(defface calendar-face-weekend nil "")
+
+
+(set-face-attribute 'calendar-face-level-1 nil
+                    :background (material-color material-shade "L50"))
+(set-face-attribute 'calendar-face-level-2 nil
+                    :background (material-color material-shade "L100"))
+(set-face-attribute 'calendar-face-level-3 nil
+                    :background (material-color material-shade "L200"))
+(set-face-attribute 'calendar-face-level-4 nil
+                    :background (material-color material-shade "L300"))
+(set-face-attribute 'calendar-face-level-5 nil
+                    :inherit 'face-strong
+                    :foreground "white"
+                    :background (material-color material-shade "L400"))
+(set-face-attribute 'calendar-face-level-6 nil
+                    :inherit 'face-strong
+                    :foreground "white"
+                    :background (material-color material-shade "L500"))
+(set-face-attribute 'calendar-face-level-7 nil
+                    :inherit 'face-strong
+                    :foreground "white"
+                    :background (material-color material-shade "L600"))
+(set-face-attribute 'calendar-face-level-8 nil
+                    :inherit 'face-strong
+                    :foreground "white"
+                    :background (material-color material-shade "L700"))
+(set-face-attribute 'calendar-face-level-9 nil
+                    :inherit 'face-strong
+                    :foreground "white"
+                    :background (material-color material-shade "L800"))
+(set-face-attribute 'calendar-face-vacation nil
+                    :inherit 'face-strong
+                    :background (material-color purple "L50")
+                    :foreground (material-color blue-grey "L900"))
+(set-face-attribute 'calendar-face-weekend nil
+                    :inherit 'default
+                    :background "white"
+                    :foreground (material-color blue-grey "L300"))
+
+
 
 (defadvice calendar-generate-month
   (after highlight-weekend-days (month year indent) activate)
   "Highlight weekend days"
   (dotimes (i 31)
-    (let ((date (list month (1+ i) year))
-          (count (length (org-agenda-get-day-entries
-                          "~/Dropbox/org/inbox.org" (list month (1+ i) year)))))
-      (cond ((= count 0) ())
-            ((= count 1) (calendar-mark-visible-date date 'busy-1))
-            ((= count 2) (calendar-mark-visible-date date 'busy-2))
-            ((= count 3) (calendar-mark-visible-date date 'busy-3))
-            ((= count 4) (calendar-mark-visible-date date 'busy-4))
-            ((= count 5) (calendar-mark-visible-date date 'busy-5))
-            ((= count 6) (calendar-mark-visible-date date 'busy-6))
-            ((= count 7) (calendar-mark-visible-date date 'busy-7))
-            ((= count 8) (calendar-mark-visible-date date 'busy-8))
-            ((= count 9) (calendar-mark-visible-date date 'busy-9))
-            (t  (calendar-mark-visible-date date 'busy-10)))
-)))
+    (let* ((date (list month (1+ i) year))
+           (file "~/Dropbox/org/schedule.org")
+           (entries (org-agenda-get-day-entries file date))
+           (count (length entries)))
+       
+      (cond ((= count 0) (if (and (not (equal date (calendar-current-date)))
+                                  (or (= (calendar-day-of-week date) 0)
+                                      (= (calendar-day-of-week date) 6)))
+                             (calendar-mark-visible-date date 'calendar-face-weekend)))
+            ((= count 1) (calendar-mark-visible-date date 'calendar-face-level-1))
+            ((= count 2) (calendar-mark-visible-date date 'calendar-face-level-2))
+            ((= count 3) (calendar-mark-visible-date date 'calendar-face-level-3))
+            ((= count 4) (calendar-mark-visible-date date 'calendar-face-level-4))
+            ((= count 5) (calendar-mark-visible-date date 'calendar-face-level-5))
+            ((= count 6) (calendar-mark-visible-date date 'calendar-face-level-6))
+            ((= count 7) (calendar-mark-visible-date date 'calendar-face-level-7))
+            ((= count 8) (calendar-mark-visible-date date 'calendar-face-level-8))
+            (t           (calendar-mark-visible-date date 'calendar-face-level-9)))
+      )))
+
+(defun calendar-cursor-to-visible-date (date)
+  "Move the cursor to date (if on the screen)"
+  (let* ((month        (- (calendar-extract-month date) 1))
+         (day          (- (calendar-extract-day date) 1))
+         (year         (calendar-extract-year date))
+         (month-start  (calendar-day-of-week (list (+ month 1) 1 year)))
+         (month-start  (% (+ month-start 6) 7))
+         (month-width  25)
+         (month-height 9)
+         (month-col    (* (% month 3) month-width))
+         (month-row    (+ (* (/ month 3) month-height) 3))
+         (day-col      (* (% (+ day month-start) 7) 3))
+         (day-row      (/ (+ day month-start) 7))
+         (row          (+ month-row day-row))
+         (col          (+ month-col day-col 1 1)))
+    (goto-line      row)
+    (move-to-column col)
+    ))
+
+(defun new-calendar-frame (char-width char-height)
+  ""
+  (interactive)
+  (select-frame (make-frame))
+  (set-frame-width (selected-frame) char-width)
+  (set-frame-height (selected-frame) char-height)
+  (set-frame-position (selected-frame)
+                      (/ (- (display-pixel-width)  (frame-outer-width))  2)
+                      (/ (- (display-pixel-height) (frame-outer-height)) 2))
+  (x-focus-frame nil)
+  (switch-to-buffer (generate-new-buffer "*Year Calendar*"))
+  (local-set-key (kbd "C-x C-c") 'kill-and-close)
+  (setq header-line-format nil)
+  (setq mode-line-format nil))
+
+(defun year-calendar (&optional year)
+  ""
+  (interactive)
+  (new-calendar-frame 74 36)
+  (let* ((month 0)
+         (year (if year year (string-to-number (format-time-string "%Y" )))))
+    (switch-to-buffer (get-buffer-create calendar-buffer))
+    (when (not (eq major-mode 'calendar-mode))
+      (calendar-mode))
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (dotimes (j 4)
+      (dotimes (i 3)
+        (calendar-generate-month
+          (setq month (+ month 1))
+          year
+          (+ 1 (* 25 i))))
+      (goto-char (point-max))
+      (insert (make-string (- 10 (count-lines (point-min) (point-max))) ?\n))
+      (widen)
+      (goto-char (point-max))
+      (narrow-to-region (point-max) (point-max)))
+    (widen)
+    (goto-char (point-min))
+    (setq buffer-read-only t)
+    (setq header-line-format nil)
+    (setq mode-line-format nil)
+    (let ((displayed-month  2) (displayed-year 2020))  (calendar-mark-holidays))
+    (let ((displayed-month  5) (displayed-year 2020))  (calendar-mark-holidays))
+    (let ((displayed-month  8) (displayed-year 2020))  (calendar-mark-holidays))
+    (let ((displayed-month 11) (displayed-year 2020))  (calendar-mark-holidays))
+    (calendar-cursor-to-visible-date (calendar-current-date))))
 
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)
@@ -661,7 +885,7 @@ function is a convenience wrapper used by `describe-package-1'."
                                "* %i%? \n %U")))
 
 ;; Project generation function from Karl Voit
-(defun my-mark-as-project ()
+(defun mark-as-project ()
 "This function makes sure that the current heading has
 (1) the tag :project:
 (2) has property COOKIE_DATA set to \"todo recursive\"
