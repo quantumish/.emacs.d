@@ -461,6 +461,21 @@ function is a convenience wrapper used by `describe-package-1'."
   :foreground "#999999"
   :underline nil
   :weight 'light)
+(set-face-attribute 'org-special-keyword nil
+  :foreground "#999999"
+  :weight 'light)
+
+(set-face-attribute 'org-agenda-date nil
+  :foreground "#333333"
+  :weight 'regular)
+
+(set-face-attribute 'org-agenda-dat-weekend nil
+  :foreground "#333333"
+  :weight 'regular)
+
+(set-face-attribute 'org-agenda-date-today nil
+  :foreground "#333333"
+  :weight 'regular)
 
 ;; Prettify symbols mode is nice
 (add-hook 'org-mode-hook (lambda ()
@@ -518,6 +533,37 @@ function is a convenience wrapper used by `describe-package-1'."
 ;; Some functionality to go with it.
 ;; David Freifeld
 
+(defface busy-1  '((t :foreground "black" :background "#eceff1")) "")
+(defface busy-2  '((t :foreground "black" :background "#cfd8dc")) "")
+(defface busy-3  '((t :foreground "black" :background "#b0bec5")) "")
+(defface busy-4  '((t :foreground "black" :background "#90a4ae")) "")
+(defface busy-5  '((t :foreground "white" :background "#78909c")) "")
+(defface busy-6  '((t :foreground "white" :background "#607d8b")) "")
+(defface busy-7  '((t :foreground "white" :background "#546e7a")) "")
+(defface busy-8  '((t :foreground "white" :background "#455a64")) "")
+(defface busy-9  '((t :foreground "white" :background "#37474f")) "")
+(defface busy-10 '((t :foreground "white" :background "#263238")) "")
+
+(defadvice calendar-generate-month
+  (after highlight-weekend-days (month year indent) activate)
+  "Highlight weekend days"
+  (dotimes (i 31)
+    (let ((date (list month (1+ i) year))
+          (count (length (org-agenda-get-day-entries
+                          "~/Dropbox/org/inbox.org" (list month (1+ i) year)))))
+      (cond ((= count 0) ())
+            ((= count 1) (calendar-mark-visible-date date 'busy-1))
+            ((= count 2) (calendar-mark-visible-date date 'busy-2))
+            ((= count 3) (calendar-mark-visible-date date 'busy-3))
+            ((= count 4) (calendar-mark-visible-date date 'busy-4))
+            ((= count 5) (calendar-mark-visible-date date 'busy-5))
+            ((= count 6) (calendar-mark-visible-date date 'busy-6))
+            ((= count 7) (calendar-mark-visible-date date 'busy-7))
+            ((= count 8) (calendar-mark-visible-date date 'busy-8))
+            ((= count 9) (calendar-mark-visible-date date 'busy-9))
+            (t  (calendar-mark-visible-date date 'busy-10)))
+)))
+
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
@@ -545,17 +591,23 @@ function is a convenience wrapper used by `describe-package-1'."
 (add-hook 'c-mode-common-hook 'code-visuals-hook)
 (add-hook 'python-mode-hook 'code-visuals-hook)
 
-(add-to-list 'load-path "~/.emacs.d/lisp/")
-;; Sequential projects like OmniFocus
-(load "org-depend.el")
-;; Reset checkboxes for repeating tasks
-(load "org-checklist.el")
-;; Habit-tracking with Org Mode
-(setq org-modules (append org-modules '(org-habit)))
-(setq org-modules (append org-modules '(org-crypt)))
-(setq org-modules (append org-modules '(org-id)))
+;; --------------------------
+;; Org Mode functionality
+;; --------------------------
 
-(org-babel-do-load-languages
+;; Load extra modules
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+(load "org-depend.el") ;; Sequential projects like OmniFocus
+(load "org-checklist.el") ;; Reset checkboxes for repeating tasks
+(setq org-modules (append org-modules '(org-habit))) ;; Habit-tracking with Org Mode
+(setq org-modules (append org-modules '(org-crypt))) ;; Encryption
+(setq org-modules (append org-modules '(org-id))) ;; Unique headline identifiers
+
+;; Define keywords
+(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
+
+;; Enable Org Babel features 
+(org-babel-do-load-languages ;; More languages!
  'org-babel-load-languages
  '((emacs-lisp . t)
    (python . t)
@@ -565,15 +617,22 @@ function is a convenience wrapper used by `describe-package-1'."
    (makefile . t)
    (gnuplot . t)
    (haskell . t)))
-(setq org-src-tab-acts-natively t)
+(setq org-confirm-babel-evaluate nil) ;; Don't ask me if I want to execute my code or not
+(setq org-src-tab-acts-natively t) ;; Indentation fix
 
-(org-link-set-parameters
+;; Enable org link features
+(org-link-set-parameters 
  "run"
- :follow #'org-babel-ref-resolve)
-(add-to-list 'org-file-apps '(directory . emacs))
+ :follow #'org-babel-ref-resolve) ;; Allow execution of Org Babel code from links
+(add-to-list 'org-file-apps '(directory . emacs)) ;; Allow links to open directories in Dired
 
-(setq org-confirm-babel-evaluate nil)
 
+;; Define agenda files
+(setq org-agenda-files '("~/Dropbox/org/inbox.org"
+                         "~/Dropbox/org/projects.org"
+                         "~/Dropbox/org/schedule.org"))
+
+;; Define "perspectives" that are seen throughout all agenda views
 (setq org-super-agenda-groups '((:name "Today"
 				:time-grid t
 				:scheduled today)
@@ -588,10 +647,12 @@ function is a convenience wrapper used by `describe-package-1'."
 			   (:name "Waiting"
 			       :todo "WAIT")))
 
-(setq org-agenda-files '("~/Dropbox/org/inbox.org"
-                         "~/Dropbox/org/projects.org"
-                         "~/Dropbox/org/schedule.org"))
+;; Define custom agenda views
+(setq org-agenda-custom-commands 
+      '(("o" "At the office" tags-todo "@office"
+         ((org-agenda-overriding-header "Office")))))
 
+;; GTD-ish capture templates
 (setq org-capture-templates '(("t" "Todo [inbox]" entry
                                (file+headline "~/Dropbox/org/inbox.org" "Tasks")
                                "* TODO %i%?")
@@ -599,14 +660,133 @@ function is a convenience wrapper used by `describe-package-1'."
                                (file+headline "~/Dropbox/org/schedule.org" "Schedule")
                                "* %i%? \n %U")))
 
+;; Project generation function from Karl Voit
+(defun my-mark-as-project ()
+"This function makes sure that the current heading has
+(1) the tag :project:
+(2) has property COOKIE_DATA set to \"todo recursive\"
+(3) has any TODO keyword and
+(4) a leading progress indicator"
+    (interactive)
+    (org-toggle-tag "project" 'on)
+    (org-set-property "COOKIE_DATA" "todo recursive")
+    (org-back-to-heading t)
+    (let* ((title (nth 4 (org-heading-components)))
+           (keyword (nth 2 (org-heading-components))))
+       (when (and (bound-and-true-p keyword) (string-prefix-p "[" title))
+           (message "TODO keyword and progress indicator found")
+           )
+       (when (and (not (bound-and-true-p keyword)) (string-prefix-p "[" title))
+           (message "no TODO keyword but progress indicator found")
+           (forward-whitespace 1)
+           (insert "NEXT ")
+           )
+       (when (and (not (bound-and-true-p keyword)) (not (string-prefix-p "[" title)))
+           (message "no TODO keyword and no progress indicator found")
+           (forward-whitespace 1)
+           (insert "NEXT [/] ")
+           )
+       (when (and (bound-and-true-p keyword) (not (string-prefix-p "[" title)))
+           (message "TODO keyword but no progress indicator found")
+           (forward-whitespace 2)
+           (insert "[/] ")
+           )
+       )
+    )
+
+(defun eos/org-id-new (&optional prefix)
+  "Create a new globally unique ID.
+
+An ID consists of two parts separated by a colon:
+- a prefix
+- a   unique   part   that   will   be   created   according   to
+  `org-id-method'.
+
+PREFIX  can specify  the  prefix,  the default  is  given by  the
+variable  `org-id-prefix'.  However,  if  PREFIX  is  the  symbol
+`none', don't  use any  prefix even if  `org-id-prefix' specifies
+one.
+
+So a typical ID could look like \"Org-4nd91V40HI\"."
+  (let* ((prefix (if (eq prefix 'none)
+                     ""
+                   (concat (or prefix org-id-prefix)
+                           "-"))) unique)
+    (if (equal prefix "-")
+        (setq prefix ""))
+    (cond
+     ((memq org-id-method
+            '(uuidgen uuid))
+      (setq unique (org-trim (shell-command-to-string org-id-uuid-program)))
+      (unless (org-uuidgen-p unique)
+        (setq unique (org-id-uuid))))
+     ((eq org-id-method 'org)
+      (let* ((etime (org-reverse-string (org-id-time-to-b36)))
+             (postfix (if org-id-include-domain
+                          (progn
+                            (require 'message)
+                            (concat "@"
+                                    (message-make-fqdn))))))
+        (setq unique (concat etime postfix))))
+     (t (error "Invalid `org-id-method'")))
+    (concat prefix (car (split-string unique "-")))))
+
+(defun eos/org-custom-id-get (&optional pom create prefix)
+  "Get the CUSTOM_ID property of the entry at point-or-marker POM.
+
+If POM is nil, refer to the entry at point. If the entry does not
+have an CUSTOM_ID, the function returns nil. However, when CREATE
+is non nil, create a CUSTOM_ID if none is present already. PREFIX
+will  be passed  through to  `eos/org-id-new'. In  any case,  the
+CUSTOM_ID of the entry is returned."
+  (interactive)
+  (org-with-point-at pom
+    (let* ((orgpath (mapconcat #'identity (org-get-outline-path) "-"))
+           (heading (replace-regexp-in-string
+                     "/\\|~\\|\\[\\|\\]" ""
+                     (replace-regexp-in-string
+                      "[[:space:]]+" "_" (if (string= orgpath "")
+                                  (org-get-heading t t t t)
+                                (concat orgpath "-" (org-get-heading t t t t))))))
+           (id (org-entry-get nil "CUSTOM_ID")))
+      (cond
+       ((and id
+             (stringp id)
+             (string-match "\\S-" id)) id)
+       (create (setq id (eos/org-id-new (concat prefix heading)))
+               (org-entry-put pom "CUSTOM_ID" id)
+               (org-id-add-location id
+                                    (buffer-file-name (buffer-base-buffer)))
+               id)))))
+
+(defun eos/org-add-ids-to-headlines-in-file ()
+  "Add CUSTOM_ID properties to all headlines in the current file
+which do not already have one.
+
+Only adds ids if the `auto-id' option is set to `t' in the file
+somewhere. ie, #+OPTIONS: auto-id:t"
+  (interactive)
+  (save-excursion
+    (widen)
+    (goto-char (point-min))
+    (when (re-search-forward "^#\\+OPTIONS:.*auto-id:t"
+                             (point-max)
+                             t)
+      (org-map-entries (lambda ()
+                         (eos/org-custom-id-get (point)
+                                                'create))))))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (add-hook 'before-save-hook
+                      (lambda ()
+                        (when (and (eq major-mode 'org-mode)
+                                   (eq buffer-read-only nil))
+                          (eos/org-add-ids-to-headlines-in-file))))))
+
+;; Filing
 (setq org-refile-targets '(("~/Dropbox/org/projects.org" :maxlevel . 3)
                            ("~/Dropbox/org/schedule.org" :maxlevel . 2)))
-
-(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
-
-(setq org-agenda-custom-commands 
-      '(("o" "At the office" tags-todo "@office"
-         ((org-agenda-overriding-header "Office")))))
 
 (provide 'init)
 ;;; init.el ends here
