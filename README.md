@@ -1,11 +1,17 @@
 
-# A very minimal but elegant emacs (I think)
+# Elegant Emacs: Expanded
 
-The goal is to have a minimal consistent vanilla emacs (i.e. no
-package) and yet elegant.  
-The default font is [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono)
-and optionally, you'll also need the [Fira Code](https://fonts.google.com/specimen/Fira+Code) font.
+The lovely [elegant emacs](https://github.com/rougier/elegant-emacs/) but with my own opinionated additions to it.
 
-**Usage**: `emacs -q -l sanity.el -l elegance.el Splash.org &`
+## To-do
+Currently on the chopping block:
 
-<img src="screenshots/screenshot-0.png" width="45%"><img src="screenshots/screenshot-1.png" width="45%"><img src="screenshots/screenshot-2.png" width="45%"><img src="screenshots/screenshot-3.png" width="45%"><img src="screenshots/screenshot-4.png" width="45%"><img src="screenshots/screenshot-5.png" width="45%"><img src="screenshots/screenshot-6.png" width="45%"><img src="screenshots/screenshot-7.png" width="45%"><img src="screenshots/screenshot-8.png" width="45%"><img src="screenshots/screenshot-9.png#0" width="45%">
+- Expanding and testing out the Org Mode GTD workflow
+- Establishing and using the Org Mode project management config.
+- Figuring out how to integrate some of [Rougier](https://github.com/rougier)'s other Emacs hacks.
+- Integrating LSP, company, and IDE-like features while still retaining minimalism.
+- More config centered around coding 
+
+## Screenshots
+A simple org mode buffer:
+<img src="screenshots/org-mode.png" width="50%">
