@@ -52,6 +52,7 @@
 (global-set-key (kbd "C-x C-x") 'execute-extended-command)
 (global-set-key (kbd "C-x C-z") nil)
 
+(global-visual-line-mode 1)
 
 (global-set-key "\C-t" #'transpose-lines)
 (define-key ctl-x-map "\C-t" #'transpose-chars)

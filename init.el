@@ -29,7 +29,7 @@
 (load "org-misc.el")
 
 ;; Load experimental messages in echo area
-;; (load "echo-message.el")
+(load "echo-message.el")
 
 ;; Load experimental multiline modeline
 ;; (load "multiline-modeline.el")

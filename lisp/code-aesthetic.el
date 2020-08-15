@@ -35,10 +35,9 @@
 (defun code-features-hook ()
   ;; LSP, flycheck, and co.
   (lsp)
-  (lsp-ui-mode 1)
-  (flycheck-mode 1)
-  (visual-line-mode 1))
+  (lsp-ui-mode 1))
 (add-hook 'c-mode-common-hook 'code-visuals-hook)
+(add-hook 'c-mode-common-hook 'code-features-hook)
 (add-hook 'python-mode-hook 'code-visuals-hook)
 
 (provide 'code-aesthetic)
