@@ -19,11 +19,9 @@
 ;; Load config for Org Mode GTD workflow
 (load "org-gtd.el")
 
-;; Load org contributionn package for task dependencies (sequential projects)
-(load "org-depend.el")
-
-;; Load org contributionn package for clearing checklists of recurring tasks
-(load "org-checklist.el")
+;; Load org contribution packages
+(load "external/org-depend.el")
+(load "external/org-checklist.el")
 
 ;; Load config for project management with Org Mode
 (load "org-project.el")

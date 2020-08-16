@@ -27,7 +27,8 @@
   (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
   )
 
-(load "disaster.el")
+(load "external/disaster.el")
+;; TODO: Fix custom disaster.el toggle opcodes functions
 (defun disaster-show-opcodes
     (interactive)
   (defcustom disaster-objdump "objdump -d -source -line-numbers"

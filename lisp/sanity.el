@@ -50,7 +50,10 @@
 
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-x C-x") 'execute-extended-command)
-(global-set-key (kbd "C-x C-z") nil)
+
+(load "external/transpose-frame.el")
+;; TODO: Tranpose frame does not actually work. Fix sometime.
+(global-set-key (kbd "C-x C-z") 'tranpose-frame)
 
 (global-visual-line-mode 1)
 
