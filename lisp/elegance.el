@@ -507,7 +507,7 @@ function is a convenience wrapper used by `describe-package-1'."
 (defun mode-line-render (left right)
   "Return a string of `window-width' length containing left, and
    right aligned respectively."
-  (let* ((available-width (- (window-total-width) (length left) )))
+  (let* ((available-width (- (- (window-total-width) (length left) ) 1)))
     (format (format "%%s %%%ds" available-width) left right)))
 (define-key mode-line-major-mode-keymap [header-line]
   (lookup-key mode-line-major-mode-keymap [mode-line]))
