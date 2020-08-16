@@ -370,7 +370,7 @@ function is a convenience wrapper used by `describe-package-1'."
   (set-face 'org-default                                  'face-faded)
   (set-face 'org-document-info                            'face-faded)
   (set-face 'org-document-info-keyword                    'face-faded)
-  (set-face 'org-document-title                           'face-faded)
+  (set-face 'org-document-title                         'face-salient)
   (set-face 'org-done                                        'default)
   (set-face 'org-drawer                                   'face-faded)
   (set-face 'org-ellipsis                                 'face-faded)

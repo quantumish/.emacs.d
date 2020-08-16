@@ -2,24 +2,20 @@
 
 (with-eval-after-load 'org
 (set-face-attribute 'org-ellipsis nil
-  :foreground "#999999"
-  :underline nil
-  :weight 'light)
+                    :foreground "#999999"
+                    :underline nil
+                    :weight 'light)
 (set-face-attribute 'org-special-keyword nil
-  :foreground "#999999"
-  :weight 'light)
-
-(set-face-attribute 'org-agenda-date nil
-  :foreground "#333333"
-  :weight 'regular)
-
-(set-face-attribute 'org-agenda-date-weekend nil
-  :foreground "#333333"
-  :weight 'regular)
-
-(set-face-attribute 'org-agenda-date-today nil
-  :foreground "#333333"
-  :weight 'regular)
+                    :foreground "#999999"
+                    :weight 'light)
+(set-face-attribute 'org-document-title nil
+                    :weight 'bold)
+(set-face-attribute 'org-checkbox-statistics-todo nil
+                    :foreground "#f5381b"
+                    :weight 'bold)
+(set-face-attribute 'org-checkbox-statistics-done nil
+                    :foreground "#6cad50"
+                    :weight 'bold)
 )
 
 ;; Prettify symbols mode is nice
@@ -32,6 +28,9 @@
    (push '("[#A]" . "" ) prettify-symbols-alist)
    (push '("[#B]" . "" ) prettify-symbols-alist)
    (push '("[#C]" . "" ) prettify-symbols-alist)
+   (push '("[ ]" . "") prettify-symbols-alist)
+   (push '("[X]" . "" ) prettify-symbols-alist)
+   (push '("[-]" . "" ) prettify-symbols-alist)
    (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
    (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
    (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
@@ -40,6 +39,8 @@
    (push '("#+TITLE: " . "" ) prettify-symbols-alist)
    (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
    (push '("#+NAME:" . "" ) prettify-symbols-alist)
+   (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
+   (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))
 
 (defface org-checkbox-done-text
