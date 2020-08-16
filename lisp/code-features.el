@@ -27,5 +27,24 @@
   (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
   )
 
+(load "disaster.el")
+(defun disaster-show-opcodes
+    (interactive)
+  (defcustom disaster-objdump "objdump -d -source -line-numbers"
+    "The command name and flags for running objdump."
+    :group 'disaster
+    :type 'string)
+  )
+(defun disaster-hide-opcodes
+    (interactive)
+  (defcustom disaster-objdump "objdump -d -source -line-numbers --no-show-raw-insn"
+    "The command name and flags for running objdump."
+    :group 'disaster
+    :type 'string)
+  )
+(with-eval-after-load 'c
+  (define-key c-mode-base-map (kbd "C-c d") 'disaster)
+  )
+
 (provide 'code-features)
 ;;; code-features.el ends here

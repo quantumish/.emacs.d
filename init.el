@@ -38,8 +38,8 @@
 ;; (load "multiline-modeline.el")
 
 ;; Load broken plugin for indication of workload for calendar entries
-(load "material-colors.el")
-(load "year-calendar.el")
+;; (load "material-colors.el")
+;; (load "year-calendar.el")
 
 (provide 'init)
 ;;; init.el ends here

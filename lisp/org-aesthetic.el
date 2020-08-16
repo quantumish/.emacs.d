@@ -1,5 +1,8 @@
 ;; org-aesthetic.el --- Make Org Mode look nicer!
 
+;; Load elisp code for hiding properties drawer
+(load "org-hide-properties.el")
+
 (with-eval-after-load 'org
 (set-face-attribute 'org-ellipsis nil
                     :foreground "#999999"
