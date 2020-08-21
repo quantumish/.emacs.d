@@ -20,7 +20,11 @@
    '(company-tooltip ((t (:foreground "#333333" :background "#f5f5f5"))))
    '(company-scrollbar-fg ((t (:background "#999999"))))
    '(company-scrollbar-bg ((t (:background "#f5f5f5"))))
-   '(company-tooltip-common-selection ((t (:foreground "green"))))))
+   '(company-tooltip-common-selection ((t (:foreground "#999999")))))
+  (setq company-frontends '(company-preview-frontend))
+  (set-face-attribute 'company-preview nil
+                    :foreground "#999999"
+                    :background "#FFFFFF"))
 
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)

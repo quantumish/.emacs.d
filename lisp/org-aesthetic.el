@@ -19,6 +19,11 @@
 (set-face-attribute 'org-checkbox-statistics-done nil
                     :foreground "#6cad50"
                     :weight 'bold)
+(company-mode 1)
+(setq company-frontends '(company-preview-frontend))
+(set-face-attribute 'company-preview nil
+                    :foreground "#999999"
+                    :background "#FFFFFF")
 )
 
 ;; Prettify symbols mode is nice

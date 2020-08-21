@@ -41,3 +41,26 @@
 
 (provide 'init)
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(company-frontends (quote (company-preview-frontend)))
+ '(package-selected-packages
+   (quote
+    (powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(company-scrollbar-bg ((t (:background "#f5f5f5"))))
+ '(company-scrollbar-fg ((t (:background "#999999"))))
+ '(company-tooltip ((t (:foreground "#333333" :background "#f5f5f5"))))
+ '(company-tooltip-common ((t (:foreground "#00008b"))))
+ '(company-tooltip-common-selection ((t (:foreground "green"))))
+ '(lsp-ui-doc-background ((t :background "#fafafa")))
+ '(lsp-ui-doc-header ((t :background "#f0f0f0")))
+ '(lsp-ui-doc-url ((t :inherit link)))
+ '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))
