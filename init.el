@@ -18,6 +18,7 @@
 
 ;; Load config for Org Mode GTD workflow
 (load "org-gtd.el")
+(load "word-processing.el")
 
 ;; Load org contribution packages
 (load "external/org-depend.el")
@@ -30,7 +31,7 @@
 (load "org-misc.el")
 
 ;; Load experimental messages in echo area
-(load "echo-message.el")
+;; (load "echo-message.el")
 
 ;; Load experimental multiline modeline
 ;; (load "multiline-modeline.el")
@@ -49,7 +50,7 @@
  '(company-frontends (quote (company-preview-frontend)))
  '(package-selected-packages
    (quote
-    (powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
+    (pandoc-mode powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
