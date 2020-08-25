@@ -1,3 +1,5 @@
+
+(package-initialize) 
 ;; Set the load path
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (load "external/elcord.el")
@@ -51,7 +53,7 @@
  '(company-frontends (quote (company-preview-frontend)))
  '(package-selected-packages
    (quote
-    (## pandoc-mode powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
+    (org-roam-server org-capture-pop-frame org-cliplink idle-org-agenda company-org-roam use-package org-roam ## pandoc-mode powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

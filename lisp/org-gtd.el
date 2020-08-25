@@ -31,6 +31,6 @@
                            ("~/Dropbox/org/schedule.org" :maxlevel . 1)
                            ("~/Dropbox/org/schoolwork.org" :maxlevel . 1)))
 
-(global-set-key (kbd "C-c c") 'org-capture)
+;(global-set-key (kbd "C-c c") 'org-capture)
 
 (provide 'org-gtd)

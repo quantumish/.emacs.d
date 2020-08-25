@@ -34,8 +34,8 @@
   ;; Makes code buffers look nicer
   (olivetti-mode 1)
   (olivetti-set-width 100)
-  (visual-line-mode 1)
-  (global-set-key (kbd "C-c c-c") 'flyspell-auto-correct-word))
+  (visual-line-mode 1))
+  ;(global-set-key (kbd "C-c c-c") 'flyspell-auto-correct-word))
 
 (add-hook 'org-mode-hook 'word-processing-hook)
 (add-hook 'org-mode-hook
