@@ -5,10 +5,9 @@
 
 *Welcome back!*
 
-[[elisp:((defun foo () (interactive) (org-agenda) (execute-kbd-macro (kbd "<escape>")))
-(global-set-key (kbd "C-`") 'foo))]
-
 Jump to:
 - *[[file:~/Dropbox/org/inbox.org][Inbox]]*.......................................................[[file:~/Dropbox/org/][Dropbox/org]]
+*- [[elisp:deft][Notes]]*.....................................................[[file:~/Dropbox/notes/][Dropbox/notes]]
 - *[[elisp:(projectile-switch-project)][Project]]*........................................................[[*file:~/projects*][projects]]
 - *[[file:~/.emacs.d/init.el][Personal config.]]*..........................................[[file:~/.emacs.d/lisp][.emacs.d/lisp]]
+

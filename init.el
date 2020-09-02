@@ -21,6 +21,8 @@
 
 ;; Load config for Org Mode GTD workflow
 (load "org-gtd.el")
+
+;; Load config for word processing
 (load "word-processing.el")
 
 ;; Load org contribution packages
@@ -32,6 +34,9 @@
 
 ;; Load misc Org Mode config
 (load "org-misc.el")
+
+;; Load notetaking setup
+(load "org-notes.el")
 
 ;; Load experimental messages in echo area
 ;; (load "echo-message.el")
@@ -45,6 +50,7 @@
 
 (provide 'init)
 ;;; init.el ends here
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -53,7 +59,7 @@
  '(company-frontends (quote (company-preview-frontend)))
  '(package-selected-packages
    (quote
-    (org-roam-server org-capture-pop-frame org-cliplink idle-org-agenda company-org-roam use-package org-roam ## pandoc-mode powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
+    (deft persp-mode calfw-org calfw org-roam-server org-capture-pop-frame org-cliplink idle-org-agenda company-org-roam use-package org-roam ## pandoc-mode powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line lsp-ui haskell-mode focus flycheck diff-hl company-box cmake-mode auctex all-the-icons))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -67,4 +73,5 @@
  '(lsp-ui-doc-background ((t :background "#fafafa")))
  '(lsp-ui-doc-header ((t :background "#f0f0f0")))
  '(lsp-ui-doc-url ((t :inherit link)))
+ '(org-document-title ((t (:inherit face-salient :weight bold :height 1.25))))
  '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))

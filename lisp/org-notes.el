@@ -25,3 +25,11 @@
         org-roam-server-network-label-truncate t
         org-roam-server-network-label-truncate-length 60
         org-roam-server-network-label-wrap-length 20))
+
+(setq org-roam-capture-templates '(("d" "default" plain (function org-roam--capture-get-point)
+     "%?"
+     :file-name "%<%Y%m%d%H%M%S>-${slug}"
+     :head "\n#+TITLE: ${title}\n#+ROAM_TAGS: unresearched\n\n"
+     :unnarrowed t)))
+
+(require 'org-roam-protocol)

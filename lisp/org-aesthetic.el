@@ -42,6 +42,7 @@
    (push '("#+TITLE: " . "" ) prettify-symbols-alist)
    (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
    (push '("#+NAME:" . "" ) prettify-symbols-alist)
+   (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
    (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))
