@@ -1,7 +1,7 @@
 
        
 
-                    [[file:data/logo.svg]]
+                                 [[file:data/logo.svg]]
 
 *Welcome back!*
 

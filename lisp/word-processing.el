@@ -1,7 +1,7 @@
 (setq ispell-program-name "aspell")
 
-(add-to-list 'load-path "~/textlint/")
-(load "textlint.el")
+;; (add-to-list 'load-path "~/textlint/")
+;; (load "textlint.el")
 
 ;; (load "external/langtool.el")
 ;; (setq langtool-language-tool-jar "~/Downloads/LanguageTool-5.0/languagetool-commandline.jar")

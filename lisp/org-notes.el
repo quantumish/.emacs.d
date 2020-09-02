@@ -26,6 +26,16 @@
         org-roam-server-network-label-truncate-length 60
         org-roam-server-network-label-wrap-length 20))
 
+(use-package company-org-roam
+  :ensure t
+  ;; You may want to pin in case the version from stable.melpa.org is not working
+  ; :pin melpa
+  :config
+  (push 'company-org-roam company-backends))
+
+(require 'deft)
+(setq deft-directory "~/Dropbox/notes/")
+
 (setq org-roam-capture-templates '(("d" "default" plain (function org-roam--capture-get-point)
      "%?"
      :file-name "%<%Y%m%d%H%M%S>-${slug}"
