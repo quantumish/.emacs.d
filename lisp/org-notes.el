@@ -7,7 +7,7 @@
       :bind (:map org-roam-mode-map
               (("C-c n l" . org-roam)
                ("C-c n f" . org-roam-find-file)
-               ("C-c n g" . org-roam-graph-show))
+               ("C-c n b" . org-roam-db-build-cache))
               :map org-mode-map
               (("C-c n i" . org-roam-insert))
               (("C-c n I" . org-roam-insert-immediate))))
@@ -41,5 +41,18 @@
      :file-name "%<%Y%m%d%H%M%S>-${slug}"
      :head "\n#+TITLE: ${title}\n#+ROAM_TAGS: unresearched\n\n"
      :unnarrowed t)))
+
+(setq org-html-head "<link rel=\"stylesheet\" href=\"https://sandyuraz.com/styles/org.min.css\">")
+(setq org-publish-project-alist
+      '(("github.io"
+         :base-directory "~/Dropbox/publicnotes/"
+         :base-extension "org"
+         :publishing-directory "~/richardfeynmanrocks.github.io/notes/"
+         :recursive t
+         :publishing-function org-html-publish-to-html
+         :headline-levels 4
+         :html-extension "html"
+         :html-head "<link rel=\"stylesheet\" href=\"https://sandyuraz.com/styles/org.min.css\">"
+         )))
 
 (require 'org-roam-protocol)

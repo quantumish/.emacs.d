@@ -29,11 +29,22 @@
 (tooltip-mode  0)
 (scroll-bar-mode 0)
 (global-auto-revert-mode t)
-(server-start)
+;(server-start)
 
 (defun custom/kill-this-buffer ()
   (interactive) (kill-buffer (current-buffer)))
 (global-set-key (kbd "C-x k") 'custom/kill-this-buffer)
+
+(global-set-key (kbd "C-y") 'yank)
+
+(defun agenda-wrapper ()
+  (interactive)
+  (org-agenda nil "a")
+  (org-agenda-month-view))
+(global-set-key (kbd "C-c a") 'agenda-wrapper)
+;;(run-with-idle-timer 1 10 'org-agenda nil "a") 
+
+(global-set-key (kbd "C-?") 'beacon-blink)
 
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
@@ -56,6 +67,7 @@
 (global-set-key (kbd "C-x C-z") 'tranpose-frame)
 
 (global-visual-line-mode 1)
+(global-company-mode 1)
 
 (global-set-key "\C-t" #'transpose-lines)
 (define-key ctl-x-map "\C-t" #'transpose-chars)

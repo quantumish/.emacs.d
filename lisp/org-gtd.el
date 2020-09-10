@@ -9,13 +9,7 @@
                          "~/Dropbox/org/schoolwork.org"
                          ))
 
-;; Define "perspectives" that are seen throughout all agenda views
-(setq org-super-agenda-groups '(
-                                (:name "Burn"
-                                       :effort< 60)
-                                ))
-
-;; Define custom agenda views
+;; Define custom agenda views (just a test for now)
 (setq org-agenda-custom-commands 
       '(("o" "At the office" tags-todo "@office"
          ((org-agenda-overriding-header "Office")))))
@@ -31,6 +25,8 @@
                            ("~/Dropbox/org/schedule.org" :maxlevel . 1)
                            ("~/Dropbox/org/schoolwork.org" :maxlevel . 1)))
 
-;(global-set-key (kbd "C-c c") 'org-capture)
-
+(global-set-key (kbd "C-c c") 'org-capture)
+;(run-with-idle-timer 300 t (lambda () (org-agenda nil "a"))
 (provide 'org-gtd)
+
+

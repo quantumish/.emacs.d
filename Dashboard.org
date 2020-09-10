@@ -1,13 +1,23 @@
 
        
 
-                                 [[file:data/logo.svg]]
+                    [[file:data/logo.svg]]
 
-*Welcome back!*
+#+TITLE: Dashboard
+*Welcome back to the One True Editor!*
 
 Jump to:
-- *[[file:~/Dropbox/org/inbox.org][Inbox]]*.......................................................[[file:~/Dropbox/org/][Dropbox/org]]
-*- [[elisp:deft][Notes]]*.....................................................[[file:~/Dropbox/notes/][Dropbox/notes]]
-- *[[elisp:(projectile-switch-project)][Project]]*........................................................[[*file:~/projects*][projects]]
-- *[[file:~/.emacs.d/init.el][Personal config.]]*..........................................[[file:~/.emacs.d/lisp][.emacs.d/lisp]]
+ 
+   *[[file:~/Dropbox/org/inbox.org][Inbox]]*.......................................................[[file:~/Dropbox/org/][Dropbox/org]]
+   *[[elisp:deft][Notes]]*.....................................................[[file:~/Dropbox/notes/][Dropbox/notes]]
+   *[[elisp:(projectile-switch-project)][Project]]*........................................................[[*file:~/projects/*][projects]]
+   *[[file:~/.emacs.d/init.el][Personal config.]]*..........................................[[file:~/.emacs.d/lisp][.emacs.d/lisp]]
 
+Keybind review:
+  
+   Browse directory ..... =[C-x]= =[d]=        Go to line ......... =[M-g]= =[M-g]=
+   Save as ............ =[C-x]= =[C-w]=        Paste older ........ =[C-y]= =[M-y]=
+   Kill from mark............ =[C-w]=    
+
+Plan: 
+                        [[file:~/Dropbox/org/projects.org][projects]] - [[file:~/Dropbox/org/schoolwork.org][schoolwork]] - [[file:~/Dropbox/org/routine.org][routine]]

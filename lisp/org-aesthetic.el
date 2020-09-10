@@ -21,6 +21,8 @@
                     :weight 'bold)
 )
 
+(setq org-fontify-quote-and-verse-blocks t)
+
 ;; Prettify symbols mode is nice
 (add-hook 'org-mode-hook (lambda ()
    "Beautify Org Checkbox Symbol"
@@ -43,6 +45,8 @@
    (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
    (push '("#+NAME:" . "" ) prettify-symbols-alist)
    (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
+   (push '("#+HTML_HEAD:" . "" ) prettify-symbols-alist)
+   (push '("#+AUTHOR:" . "" ) prettify-symbols-alist)
    (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))
@@ -65,5 +69,8 @@
  '(org-headline-done
             ((((class color) (class color) (min-colors 16))
               (:foreground "#cfd1d1")))))
+
+(require 'calfw)
+(require 'calfw-org)
 
 (provide 'org-aesthetic)
