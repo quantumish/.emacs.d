@@ -32,8 +32,8 @@
    (push '("NOPE" . "" ) prettify-symbols-alist)
    (push '("[#A]" . "" ) prettify-symbols-alist)
    (push '("[#B]" . "" ) prettify-symbols-alist)
-   (push '("[#C]" . "" ) prettify-symbols-alist)
-   (push '("[ ]" . "") prettify-symbols-alist)
+   (push '("[#C]" . "") prettify-symbols-alist)
+   (push '("[ ]" . "" ) prettify-symbols-alist)
    (push '("[X]" . "" ) prettify-symbols-alist)
    (push '("[-]" . "" ) prettify-symbols-alist)
    (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
@@ -51,10 +51,6 @@
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))
 
-(defface org-checkbox-done-text
-  '((t (:foreground "#71696A" :strike-through t)))
-  "Face for the text part of a checked org-mode checkbox.")
-
 (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
                            (?B . (:foreground "#f5cb22"))
                            (?C . (:foreground "#6cad50"))))
@@ -62,6 +58,10 @@
 (setq org-todo-keyword-faces
       '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
         ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
+
+(defface org-checkbox-done-text
+  '((t (:foreground "#71696A" :strike-through t)))
+  "Face for the text part of a checked org-mode checkbox.")
 
 (setq org-fontify-done-headline t)
 

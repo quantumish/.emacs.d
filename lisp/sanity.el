@@ -37,13 +37,6 @@
 
 (global-set-key (kbd "C-y") 'yank)
 
-(defun agenda-wrapper ()
-  (interactive)
-  (org-agenda nil "a")
-  (org-agenda-month-view))
-(global-set-key (kbd "C-c a") 'agenda-wrapper)
-;;(run-with-idle-timer 1 10 'org-agenda nil "a") 
-
 (global-set-key (kbd "C-?") 'beacon-blink)
 
 (require 'uniquify)
