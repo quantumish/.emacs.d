@@ -51,6 +51,11 @@
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))
 
+(defun hide-wrapper ()
+  (interactive)
+  (org-cycle-hide-drawers 'all))
+(global-set-key (kbd "s-b") 'hide-wrapper)
+
 (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
                            (?B . (:foreground "#f5cb22"))
                            (?C . (:foreground "#6cad50"))))
