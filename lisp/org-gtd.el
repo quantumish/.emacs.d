@@ -41,9 +41,7 @@
           ;;          (org-agenda-overriding-header "\nDeadlines")))
           (tags-todo "inbox"
                      ((org-agenda-prefix-format "  %?-12t% s")
-                      (org-agenda-overriding-header "\nInbox\n")))
-          (tags "CLOSED>=\"<today>\""
-                ((org-agenda-overriding-header "\nCompleted today\n")))))))
+                      (org-agenda-overriding-header "\nInbox\n")))))))
 
 ;; GTD-ish capture templates
 (setq org-capture-templates '(("t" "Todo" entry
@@ -76,7 +74,8 @@
         (todo   . " ")
         (tags   . " %i %-12:c")
         (search . " %i %-12:c")))
-
+(setq org-agenda-start-on-weekday nil)
+(setq org-agenda-start-day nil)
 (provide 'org-gtd)
 
 
