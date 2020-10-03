@@ -47,6 +47,7 @@
    (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
    (push '("#+HTML_HEAD:" . "" ) prettify-symbols-alist)
    (push '("#+AUTHOR:" . "" ) prettify-symbols-alist)
+   (push '("#+SUBTITLE:" . "" ) prettify-symbols-alist)
    (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (prettify-symbols-mode)))

@@ -24,12 +24,14 @@
           (todo "TODO"
                 ((org-agenda-skip-function
                   '(org-agenda-skip-entry-if 'notdeadline))
+                 (org-agenda-files '("~/Dropbox/org/schoolwork.org"))
                  (org-agenda-sorting-strategy '(deadline-up))
                  (org-agenda-prefix-format "  %i %-12:c [%e] ")
                  (org-agenda-overriding-header "\nDeadlines\n")))
           (todo "TODO"
                 ((org-agenda-skip-function
                   '(org-agenda-skip-entry-if 'deadline))
+                 (org-agenda-files '("~/Dropbox/org/projects.org" "~/Dropbox/org/schoolwork.org"))
                  (org-agenda-prefix-format "  %i %-12:c [%e] ")
                  (org-agenda-overriding-header "\nTasks\n")))
           ;; (agenda nil
