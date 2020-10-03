@@ -15,6 +15,7 @@
 (setq org-agenda-compact-blocks t)
 (setq org-agenda-block-separator "")
 
+;; Older custom view that didn't need org-super-agenda
 (setq org-agenda-custom-commands
       '(("g" "Get Things Done (GTD)"
          ((agenda ""
@@ -56,8 +57,18 @@
                                (file+headline "~/Dropbox/org/inbox.org" "Tasks")
                                "* TODO %i%? \n Context: %A")))
 (setq org-refile-targets '(("~/Dropbox/org/projects.org" :maxlevel . 2)
+                           ("~/Dropbox/org/extra.org" :maxlevel . 2)
                            ("~/Dropbox/org/schedule.org" :maxlevel . 1)
                            ("~/Dropbox/org/schoolwork.org" :maxlevel . 1)))
+
+(let ((org-super-agenda-groups
+       '(
+         (:name "Projects"
+                :auto-parent(:file-path "projects"))
+         (:name "Unprocessed"
+                :file-path "inbox")
+         )))
+  (org-agenda nil "g"))
 
 (global-set-key (kbd "C-c c") 'org-capture)
 (defun agenda-wrapper ()

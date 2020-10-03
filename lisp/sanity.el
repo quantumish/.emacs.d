@@ -49,6 +49,9 @@
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 
+(set-face-attribute 'secondary-selection nil
+                    :background "#ffffff")
+
 (setq-default tab-width 4)
 (setq-default c-basic-offset 4)
 
