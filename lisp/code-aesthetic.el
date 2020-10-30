@@ -45,4 +45,9 @@
 (add-hook 'c-mode-common-hook 'code-visuals-hook)
 (add-hook 'python-mode-hook 'code-visuals-hook)
 
+(add-hook 'c-mode-common-hook (lambda ()
+    (push '("std::" . "") prettify-symbols-alist)
+    (push '("Eigen::" . "" ) prettify-symbols-alist)
+    ))
+
 (provide 'code-aesthetic)

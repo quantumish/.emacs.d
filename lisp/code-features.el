@@ -5,6 +5,12 @@
 ;;   (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 ;;   )
 
+;; use-package lsp-pyright
+ ;;  :ensure t
+ ;;  :hook (python-mode . (lambda ()
+ ;;                          (require 'lsp-pyright)
+ ;;                          (lsp))))  ; or lsp-deferred
+
 (with-eval-after-load 'company
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 1)
@@ -24,8 +30,16 @@
       (append (if (consp backend) backend (list backend))
               '(:with company-yasnippet))))
   
-  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
-  )
+  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
+
+(require 'ccls)
+(setq ccls-executable "/usr/local/bin/ccls")
+;; (use-package lsp-ui :commands lsp-ui-mode)
+;; (use-package company-lsp :commands company-lsp)
+
+;; (use-package ccls
+;;   :hook ((c-mode c++-mode objc-mode cuda-mode) .
+;;          (lambda () (require 'ccls) (lsp))))
 
 (load "external/disaster.el")
 ;; TODO: Fix custom disaster.el toggle opcodes functions
