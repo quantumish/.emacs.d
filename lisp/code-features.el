@@ -32,14 +32,27 @@
   
   (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
 
-(require 'ccls)
-(setq ccls-executable "/usr/local/bin/ccls")
-;; (use-package lsp-ui :commands lsp-ui-mode)
-;; (use-package company-lsp :commands company-lsp)
+(use-package lsp-mode
+  :hook (c-common-mode . lsp))
 
-;; (use-package ccls
-;;   :hook ((c-mode c++-mode objc-mode cuda-mode) .
-;;          (lambda () (require 'ccls) (lsp))))
+(use-package lsp-ui)
+(setq lsp-enable-on-type-formatting nil)
+(setq lsp-enable-indentation nil)
+(use-package ccls
+  :after projectile
+  :custom
+  (ccls-args nil)
+  (ccls-executable (executable-find "ccls"))
+  (projectile-project-root-files-top-down-recurring
+   (append '("compile_commands.json" ".ccls")
+           projectile-project-root-files-top-down-recurring))
+  :config (push ".ccls-cache" projectile-globally-ignored-directories))
+
+
+;; (use-package google-c-style
+;;   :hook ((c-mode c++-mode) . google-set-c-style)
+;;          (c-mode-common . google-make-newline-indent))
+
 
 (load "external/disaster.el")
 ;; TODO: Fix custom disaster.el toggle opcodes functions

@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: todo
-# key: todo
-# --
-(tag "TODO" "white" "green"   12)

@@ -45,6 +45,7 @@
 (save-place-mode 1)
 
 (setq mac-command-modifier 'super mac-option-modifier 'meta)
+(setq mac-control-modifier 'control)
 
 (ido-mode t)
 (setq ido-enable-flex-matching t)
@@ -63,7 +64,7 @@
 (global-set-key (kbd "C-x C-z") 'tranpose-frame)
 
 (global-visual-line-mode 1)
-(global-company-mode 1)
+(yas-global-mode 1)
 
 (global-set-key "\C-t" #'transpose-lines)
 (define-key ctl-x-map "\C-t" #'transpose-chars)
@@ -72,3 +73,4 @@
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
+

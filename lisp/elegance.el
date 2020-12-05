@@ -88,6 +88,7 @@
 
 ;; Default face
 (set-background-color "#ffffff")
+; 333333
 (set-foreground-color "#333333")
 (setq frame-background-mode 'light)
 
@@ -98,6 +99,7 @@ or attention. It should be of high constrast when compared to
 other faces. This can be realized (for example) by setting an
 intense background color, typically a shade of red.")
 
+; ffa07a
 (defface face-popout '((t :foreground "#ffa07a"))
 "Popout face is used for information that need to attract
 attention. To achieve such effect, the hue of the face has to be
@@ -110,6 +112,7 @@ for example titles, keywords, directory, etc. It has to be the
 same color as the default color and only the weight differs by
 one level (e.g., light/regular or regular/bold).")
 
+; 00008b
 (defface face-salient '((t :foreground "#00008b"))
 "Salient face is used for information that are more important
 than the others while being of the same nature. It is made by

@@ -90,8 +90,8 @@ This should be zero for most fonts but some fonts may need this."
 
 (defface svg-tag-default-face
   `((t :foreground "white"
-       :background "orange"
-       :box (:line-width 1 :color "orange" :style nil)
+       :background "#6cad50"
+       :box (:line-width 1 :color "#6cad50" :style nil)
        :family ,(face-attribute 'default :family)
        :weight ,(face-attribute 'default :weight)
        :height 120))

@@ -12,14 +12,14 @@
                     :foreground "#999999"
                     :weight 'light)
 (set-face-attribute 'org-document-title nil
+                    :height 2.0
                     :weight 'bold)
 (set-face-attribute 'org-checkbox-statistics-todo nil
                     :foreground "#f5381b"
                     :weight 'bold)
 (set-face-attribute 'org-checkbox-statistics-done nil
                     :foreground "#6cad50"
-                    :weight 'bold)
-)
+                    :weight 'bold))
 
 (setq org-fontify-quote-and-verse-blocks t)
 
@@ -50,6 +50,8 @@
    (push '("#+SUBTITLE:" . "" ) prettify-symbols-alist)
    (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
+   (push '("#+FILETAGS:" . "" ) prettify-symbols-alist)
+   (push '("#+ATTR_ORG: :width 65\n" . "") prettify-symbols-alist)
    (prettify-symbols-mode)))
 
 (defun hide-wrapper ()

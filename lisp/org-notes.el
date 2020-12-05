@@ -39,7 +39,7 @@
 (setq org-roam-capture-templates '(("d" "default" plain (function org-roam--capture-get-point)
      "%?"
      :file-name "%<%Y%m%d%H%M%S>-${slug}"
-     :head "\n#+TITLE: ${title}\n#+ROAM_TAGS: unresearched\n\n"
+     :head "\n#+TITLE: ${title}\n#+ROAM_TAGS: unresearched\n#+SETUPFILE:~/Dropbox/setupfile.org\n"
      :unnarrowed t)))
 
 (setq org-html-head "<link rel=\"stylesheet\" href=\"https://sandyuraz.com/styles/org.min.css\">")
@@ -54,5 +54,30 @@
          :html-extension "html"
          :html-head "<link rel=\"stylesheet\" href=\"https://sandyuraz.com/styles/org.min.css\">"
          )))
+(global-set-key (kbd "C-c l") 'org-latex-export-to-pdf)
+;;Eliminates the necessity for the save command before compilation is completed
+(setq TeX-save-query nil)
 
+(setq yas-triggers-in-field t)
+;;Function that combines two commands 1. revert pdfoutput buffer 2. pdf-outline
+(defun my-TeX-revert-document-buffer (file)
+  (TeX-revert-document-buffer file)
+  (pdf-outline))
+
+;; Add custom function to the TeX compilation hook
+(add-hook 'TeX-after-compilation-finished-functions #'my-TeX-revert-document-buffer)
 (require 'org-roam-protocol)
+
+(with-eval-after-load "ox-latex"
+  (add-to-list 'org-latex-classes
+               '("koma-article" "\\documentclass{lectures}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+(require 'ox-latex)
+(setq org-latex-to-pdf-process 
+  '("xelatex -interaction nonstopmode %f"
+     "xelatex -interaction nonstopmode %f")) ;; for multiple passes
+(setenv "PATH" "/usr/local/texlive/2020/texmf-dist/tex/latex:$PATH" t)
