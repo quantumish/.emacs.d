@@ -7,9 +7,10 @@
 (load "external/elcord.el")
 
 ;; Load an elegant theme
-(load "elegance.el")
-
-(load "solo-jazz-theme.el")
+(load "sanity.el")
+;; (load "elegance.el") Byeee
+;; (load "solo-jazz-theme.el")
+(load "themeage.el") ;; theme config
 
 ;; Load aesthetic improvements for Org Mode (icons, custom faces, etc.)
 (load "org-aesthetic.el")
@@ -66,28 +67,3 @@
 (provide 'init)
 ;;; init.el ends here
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-frontends '(company-preview-frontend))
- '(org-agenda-files
-   '("~/livi.org" "~/Dropbox/org/inbox.org" "~/Dropbox/org/projects.org" "~/Dropbox/org/schedule.org" "~/Dropbox/org/classes.org" "~/Dropbox/org/extra.org" "~/Dropbox/org/routine.org" "~/Dropbox/org/schoolwork.org"))
- '(package-selected-packages
-   '(ivy-prescient ivy-omni-org counsel-osx-app all-the-icons-ivy ivy-todo ivy-mpdel counsel ivy-posframe google-c-style company-lsp lsp-ui mini-frame pdf-tools wakatime-mode lsp-mode ccls lsp-jedi emojify lsp-pyright floobits ns-auto-titlebar flycheck smooth-scrolling beacon neotree rainbow-mode deft persp-mode calfw-org calfw org-roam-server org-capture-pop-frame org-cliplink idle-org-agenda company-org-roam use-package org-roam ## pandoc-mode powerthesaurus define-word yasnippet yaml-mode writeroom-mode undo-tree treemacs projectile posframe org-super-agenda olivetti modern-cpp-font-lock minibuffer-line haskell-mode focus diff-hl company-box cmake-mode auctex all-the-icons)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-scrollbar-bg ((t (:background "#f5f5f5"))))
- '(company-scrollbar-fg ((t (:background "#999999"))))
- '(company-tooltip ((t (:foreground "#333333" :background "#f5f5f5"))))
- '(company-tooltip-common ((t (:foreground "#00008b"))))
- '(company-tooltip-common-selection ((t (:foreground "#999999"))))
- '(lsp-ui-doc-background ((t :background "#fafafa")))
- '(lsp-ui-doc-header ((t :background "#f0f0f0")))
- '(lsp-ui-doc-url ((t :inherit link)))
- '(org-document-title ((t (:inherit face-salient :weight bold :height 1.25))))
- '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))

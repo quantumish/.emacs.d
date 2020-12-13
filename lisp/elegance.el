@@ -46,7 +46,7 @@
 
 ;; Underline line at descent position, not baseline position
 (setq x-underline-at-descent-line t)
-
+.
 ;; No ugly button for checkboxes
 (setq widget-image-enable nil)
 
@@ -145,25 +145,25 @@ by setting a very light background color that is barely perceptible.")
 (set-face-attribute 'cursor nil
                                :background (face-foreground 'default))
 
-;; Modeline
-(set-face-attribute 'mode-line nil
-		    :height .85
-                    :foreground (face-background 'default)
-                    :background (face-foreground 'default)
-		    :box `(:line-width 2
-                           :color ,(face-foreground 'default)
-			   :style nil))
+;; ;; Modeline
+;; (set-face-attribute 'mode-line nil
+;; 		    :height .85
+;;                     :foreground (face-background 'default)
+;;                     :background (face-foreground 'default)
+;; 		    :box `(:line-width 2
+;;                            :color ,(face-foreground 'default)
+;; 			   :style nil))
 
-(set-face 'mode-line-highlight 'face-popout)
-(set-face 'mode-line-emphasis  'face-strong)
-(set-face 'mode-line-buffer-id 'face-strong)
-(set-face-attribute 'mode-line-inactive nil
-		    :height .85
-                    :foreground (face-foreground 'face-faded)
-                    :background (face-background 'face-subtle)
-		    :box `(:line-width 2
-                           :color ,(face-background 'face-subtle)
-			   :style nil))
+;; (set-face 'mode-line-highlight 'face-popout)
+;; (set-face 'mode-line-emphasis  'face-strong)
+;; (set-face 'mode-line-buffer-id 'face-strong)
+;; (set-face-attribute 'mode-line-inactive nil
+;; 		    :height .85
+;;                     :foreground (face-foreground 'face-faded)
+;;                     :background (face-background 'face-subtle)
+;; 		    :box `(:line-width 2
+;;                            :color ,(face-background 'face-subtle)
+;; 			   :style nil))
 
 ;; Semantic
 (set-face 'shadow                                         'face-faded)

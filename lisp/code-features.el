@@ -48,6 +48,10 @@
            projectile-project-root-files-top-down-recurring))
   :config (push ".ccls-cache" projectile-globally-ignored-directories))
 
+(defun code-features-hook ()
+  ;; Makes code buffers look nicer
+  (smartparens-mode))
+(add-hook 'c-mode-common-hook 'code-features-hook)
 
 ;; (use-package google-c-style
 ;;   :hook ((c-mode c++-mode) . google-set-c-style)
