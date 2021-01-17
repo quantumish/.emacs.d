@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: binprint
+# key: bprint
+# --
+printf(""BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(${1:byte}));

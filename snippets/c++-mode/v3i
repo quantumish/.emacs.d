@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: v3i
+# key: v3i
+# --
+Eigen::Vector3i
