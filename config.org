@@ -6,6 +6,19 @@
 (package-initialize) 
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 #+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package xwwp-full
+  ;;   :load-path "~/.emacs.d/xwwp"
+  ;;   :custom
+  ;;   (xwwp-follow-link-completion-system 'ivy)
+  ;;   :bind (:map xwidget-webkit-mode-map
+  ;;               ("v" . xwwp-follow-link)
+  ;;               ("t" . xwwp-ace-toggle)))
+
+#+END_SRC
+
+
 * Sane Defaults
 #+BEGIN_SRC emacs-lisp
 (require 'uniquify)
@@ -127,6 +140,58 @@ Wrapped lines glyphs from Elegant Emacs:
   ;;                         (string-to-vector " …"))
 #+END_SRC
 
+** Misc
+A dashboard!
+#+BEGIN_SRC emacs-lisp
+(use-package dashboard
+  :demand
+  :diminish (dashboard-mode)
+  :bind
+  (;("C-z d" . open-dashboard)
+   :map dashboard-mode-map
+   (("n" . dashboard-next-line)
+    ("p" . dashboard-previous-line)
+    ("N" . dashboard-next-section)
+    ("F" . dashboard-previous-section)))
+  :custom
+  (dashboard-banner-logo-title "The One True Editor")
+  (dashboard-startup-banner (expand-file-name "data/logo.svg" user-emacs-directory))
+  (dashboard-items '((recents  . 7)
+                     (bookmarks . 7)
+                     (agenda . 5)))
+  (initial-buffer-choice (lambda () (get-buffer dashboard-buffer-name)))
+  (dashboard-set-heading-icons t)
+  (dashboard-set-navigator t)
+  (dashboard-navigator-buttons
+   (if (featurep 'all-the-icons)
+       `(((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust -0.05)
+           "M-EMACS" "Browse M-EMACS Homepage"
+           (lambda (&rest _) (browse-url "https://github.com/MatthewZMD/.emacs.d")))
+          (,(all-the-icons-fileicon "elisp" :height 1.0 :v-adjust -0.1)
+           "Configuration" "" (lambda (&rest _) (edit-configs)))
+          (,(all-the-icons-faicon "cogs" :height 1.0 :v-adjust -0.1)
+           "Update" "" (lambda (&rest _) (auto-package-update-now)))))
+     `((("" "M-EMACS" "Browse M-EMACS Homepage"
+         (lambda (&rest _) (browse-url "https://github.com/MatthewZMD/.emacs.d")))
+        ("" "Configuration" "" (lambda (&rest _) (edit-configs)))
+        ("" "Update" "" (lambda (&rest _) (auto-package-update-now)))))))
+  :custom-face
+  (dashboard-banner-logo-title ((t (:family "Roboto Mono Light" :height 123))))
+  :config
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  (dashboard-setup-startup-hook)
+  ;; Open Dashboard function
+  (defun open-dashboard ()
+    "Open the *dashboard* buffer and jump to the first widget."
+    (interactive)
+    (if (get-buffer dashboard-buffer-name)
+        (kill-buffer dashboard-buffer-name))
+    (dashboard-insert-startupify-lists)
+    (switch-to-buffer dashboard-buffer-name)
+    (goto-char (point-min))
+    (delete-other-windows)))
+#+END_SRC
 ** Tweaks
 
 #+BEGIN_SRC emacs-lisp
@@ -135,10 +200,22 @@ Wrapped lines glyphs from Elegant Emacs:
 (global-visual-line-mode 1)
 #+END_SRC
 
-* General Keybinds
+* General Functionality
 
-Some basics:
+** Bindings
+Unbind what I don't like, then add some custom binds.
 #+BEGIN_SRC emacs-lisp
+;; Unbind unneeded keys
+(global-set-key (kbd "M-z") nil)
+(global-set-key (kbd "M-/") nil)
+;; Adjust font size like web browsers
+(global-set-key (kbd "C-=") #'text-scale-increase)
+(global-set-key (kbd "C-+") #'text-scale-increase)
+(global-set-key (kbd "C--") #'text-scale-decrease)
+;; Move up/down paragraph
+(global-set-key (kbd "M-n") #'forward-paragraph)
+(global-set-key (kbd "M-p") #'backward-paragraph)
+
 (defun custom/kill-this-buffer ()
   (interactive) (kill-buffer (current-buffer)))
 (global-set-key (kbd "C-x k") 'custom/kill-this-buffer)
@@ -147,9 +224,13 @@ Some basics:
 
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-x C-x") 'execute-extended-command)
+(global-set-key (kbd "C-c C-l") #'evaluate-buffer)
 
 (global-set-key "\C-t" #'transpose-lines)
 (define-key ctl-x-map "\C-t" #'transpose-chars)
+
+;; Sort of a HACK to make ivy keybinds work
+(define-key global-map (kbd "C-z") (make-sparse-keymap))
 #+END_SRC
 
 Then some package-specific stuff.
@@ -161,11 +242,73 @@ Then some package-specific stuff.
 ;; FIXME: Tranpose frame does not actually work. Fix sometime.
 (global-set-key (kbd "C-x C-z") 'tranpose-frame)
 #+END_SRC
-
-* General Packages
+** CRUX
 #+BEGIN_SRC emacs-lisp
-(yas-global-mode)
+(use-package crux
+  :bind
+  (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
+   ("C-x 4 t" . crux-transpose-windows)
+   ("C-x K" . crux-kill-other-buffers)
+   ("C-k" . crux-smart-kill-line))
+  :config
+  (crux-with-region-or-buffer indent-region)
+  (crux-with-region-or-buffer untabify)
+  (crux-with-region-or-point-to-eol kill-ring-save)
+  (defalias 'rename-file-and-buffer #'crux-rename-file-and-buffer))
 #+END_SRC
+
+** Ivy
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy
+    :diminish
+    :init
+    (use-package amx :defer t)
+    (use-package counsel :diminish :config (counsel-mode 1))
+    (use-package swiper :defer t)
+    (ivy-mode 1)
+    :bind
+    (("C-s"     . swiper-isearch)
+     ;("C-z s"   . counsel-rg)
+     ;("C-z b"   . counsel-buffer-or-recentf)
+     ;("C-z C-b" . counsel-ibuffer)
+     ("M-x"     . counsel-M-x)
+     ("C-x C-f" . counsel-find-file)
+     ("<f1> f"  . counsel-describe-function)
+     ("<f1> v"  . counsel-describe-variable)
+     ("<f1> o"  . counsel-describe-symbol)
+     ("<f1> l"  . counsel-find-library)
+     ("<f2> i"  . counsel-info-lookup-symbol)
+     ("<f2> u"  . counsel-unicode-char)
+     ("C-c g"   . counsel-git)
+     ("C-c o"   . ivy-omni-org)
+     ("C-c j"   . counsel-git-grep)
+     ("C-c k"   . counsel-ag)
+     ("C-x l"   . counsel-locate)
+     ("C-s-o"   . counsel-rhythmbox)
+     (:map ivy-minibuffer-map
+           ("C-r" . ivy-previous-line-or-history)
+           ("M-RET" . ivy-immediate-done))
+     (:map counsel-find-file-map
+           ("C-~" . counsel-goto-local-home)))
+    :custom
+    (ivy-use-virtual-buffers t)
+    (ivy-height 10)
+    (ivy-on-del-error-function nil)
+    (ivy-magic-slash-non-match-action 'ivy-magic-slash-non-match-create)
+    (ivy-count-format "[%d/%d] ")
+    (ivy-wrap t)
+    :config
+    (defun counsel-goto-local-home ()
+        "Go to the $HOME of the local machine."
+        (interactive)
+      (ivy--cd "~/")))
+#+END_SRC
+
+** Yasnippet
+ #+BEGIN_SRC emacs-lisp
+ (yas-global-mode)
+ #+END_SRC
 
 * Completion
 
@@ -216,6 +359,26 @@ Change faces of todo states and priorities. While we're at it, fontify the text 
               (:foreground "#cfd1d1")))))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp
+(with-eval-after-load 'org
+(set-face-attribute 'org-ellipsis nil
+                    :foreground "#999999"
+                    :underline nil
+                    :weight 'light)
+(set-face-attribute 'org-special-keyword nil
+                    :foreground "#999999"
+                    :weight 'light)
+(set-face-attribute 'org-document-title nil
+                    :height 2.0
+                    :weight 'bold)
+(set-face-attribute 'org-checkbox-statistics-todo nil
+                    :foreground "#f5381b"
+                    :weight 'bold)
+(set-face-attribute 'org-checkbox-statistics-done nil
+                    :foreground "#6cad50"
+                    :weight 'bold))
+#+END_SRC
+
 *** Icons
 #+BEGIN_SRC emacs-lisp
 ;; Prettify symbols mode is nice despite the fact I may be abusing it
@@ -228,9 +391,9 @@ Change faces of todo states and priorities. While we're at it, fontify the text 
    (push '("[#A]" . "" ) prettify-symbols-alist)
    (push '("[#B]" . "" ) prettify-symbols-alist)
    (push '("[#C]" . "") prettify-symbols-alist)
-   (push '("[ ]" . "" ) prettify-symbols-alist)
-   (push '("[X]" . "" ) prettify-symbols-alist)
-   (push '("[-]" . "" ) prettify-symbols-alist)
+   (push '("[ ]"  . "" ) prettify-symbols-alist)
+   (push '("[X]"  . "" ) prettify-symbols-alist)
+   (push '("[-]"  . "" ) prettify-symbols-alist)
    (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
    (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
    (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
@@ -690,84 +853,6 @@ Tab width should be 4.
     :ensure t)
 #+END_SRC
 
-
-*** Company
-Set up company-mode for completions and use yasnippet snippets as a backend.
-#+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'company
-  (setq company-idle-delay 0)
-  (setq company-minimum-prefix-length 1)
-  (company-tng-configure-default)
-  (let ((map company-active-map))
-    (define-key map (kbd "<tab>") 'company-complete-selection)
-    (define-key map (kbd "RET") 'nil))
-  (setq company-tooltip-limit 1) ;; Minimum is 3 :(
-
-  ;; Add yasnippet support for all company backends
-  ;; https://github.com/syl20bnr/spacemacs/pull/179
-  (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
-  
-  (defun company-mode/backend-with-yas (backend)
-    (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
-        backend
-      (append (if (consp backend) backend (list backend))
-              '(:with company-yasnippet))))
-  
-  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
-#+END_SRC
-*** TWEAKME lsp
-lsp mode and UI addons - only C specific stuff right now.
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :hook (c-common-mode . lsp))
-
-(use-package lsp-ui)
-(setq lsp-enable-on-type-formatting nil)
-(setq lsp-enable-indentation nil)
-(use-package ccls
-  :after projectile
-  :custom
-  (ccls-args nil)
-  (ccls-executable (executable-find "ccls"))
-  (projectile-project-root-files-top-down-recurring
-   (append '("compile_commands.json" ".ccls")
-           projectile-project-root-files-top-down-recurring))
-  :config (push ".ccls-cache" projectile-globally-ignored-directories))
-#+END_SRC
-*** disaster
-Compile and dissassemble code at point.
-#+BEGIN_SRC emacs-lisp
-(load "external/disaster.el")
-;; TODO: Fix custom disaster.el toggle opcodes functions
-(defun disaster-show-opcodes
-    (interactive)
-  (defcustom disaster-objdump "objdump -d -source -line-numbers"
-    "The command name and flags for running objdump."
-    :group 'disaster
-    :type 'string)
-  )
-(defun disaster-hide-opcodes
-    (interactive)
-  (defcustom disaster-objdump "objdump -d -source -line-numbers --no-show-raw-insn"
-    "The command name and flags for running objdump."
-    :group 'disaster
-    :type 'string)
-  )
-(with-eval-after-load 'c
-  (define-key c-mode-base-map (kbd "C-c d") 'disaster)
-  )
-
-#+END_SRC
-
-*** Hook
-#+BEGIN_SRC emacs-lisp
-(defun code-features-hook ()
-  ;; Makes code buffers look nicer
-  (smartparens-mode))
-(add-hook 'c-mode-common-hook 'code-features-hook)
-
-#+END_SRC
-
 ** FIXME Aesthetics
 *** Markdown
 #+BEGIN_SRC emacs-lisp
@@ -809,6 +894,22 @@ Compile and dissassemble code at point.
                     :foreground "#999999"
                     :background nil))
 
+#+END_SRC
+*** hl-todo
+#+BEGIN_SRC emacs-lisp
+(global-hl-todo-mode)
+(setq hl-todo-keyword-faces
+      '(("TODO"   . "#99bb66")
+        ("FIXME"  . "#ff6655")
+        ("DEBUG"  . "#a9a1e1")
+        ("HACK"   . "#6c78dd")
+        ("NOTE"   . "#44b9b1")))
+(define-key hl-todo-mode-map (kbd "C-c p") 'hl-todo-previous)
+(define-key hl-todo-mode-map (kbd "C-c n") 'hl-todo-next)
+(define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
+(define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
+;; We already have todos in Org Mode!
+(add-hook 'org-mode-hook (lambda () (hl-todo-mode -1))) 
 #+END_SRC
 *** Hook
 #+BEGIN_SRC emacs-lisp
@@ -1219,6 +1320,7 @@ Compile and dissassemble code at point.
 #+END_SRC
 
 * Server
+
 #+BEGIN_SRC  emacs-lisp
 (server-start)
 #+END_SRC 

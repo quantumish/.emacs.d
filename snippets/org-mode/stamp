@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: stamp
+# key: stamp
+# --
+Timestamp: `(current-time-string)`

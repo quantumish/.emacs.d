@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mxf
+# key: mxf
+# --
+Eigen::MatrixXf

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: v3d
+# key: v3d
+# --
+Eigen::Vector3d

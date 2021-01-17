@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: example
+# key: ex
+# --
+\begin{example}{${1:title}}{${2:ref}}
+$3
+\end{example}
+$0
