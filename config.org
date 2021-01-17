@@ -20,6 +20,20 @@
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
+(require 'package)
+
+(defun package-fixer ()
+  (interactive)
+  (setq package-archives '(("ELPA" . "http://tromey.com/elpa/") 
+                           ("gnu" . "http://elpa.gnu.org/packages/")))
+  
+  (add-to-list 'package-archives
+               '("melpa" . "https://melpa.org/packages/") t)
+  
+  (package-initialize)
+  (setq url-http-attempt-keepalives nil)
+  (setq package-check-signature nil))   ;
+(package-fixer)
 #+END_SRC
 
 * General Aesthetics
@@ -28,25 +42,21 @@
 First, let's remove all of the grosser parts of default Emacs.
 
 #+BEGIN_SRC emacs-lisp
-(setq inhibit-startup-screen t)
-(setq inhibit-startup-echo-area-message t)
-(setq inhibit-startup-message t)
-(setq initial-scratch-message nil)
-(setq initial-major-mode 'org-mode)
-(setq-default indent-tabs-mode nil)
-(setq pop-up-windows nil)
-(tool-bar-mode 0)
-(tooltip-mode  0)
-(scroll-bar-mode 0)
-(blink-cursor-mode 0)
-(global-auto-revert-mode t)
-(setq visible-bell t)
-(setq ring-bell-function 'ignore)
-(setq widget-image-enable nil)
-(fringe-mode '(0 . 0))
+  (setq-default indent-tabs-mode nil)
+  (setq pop-up-windows nil)
+  (tool-bar-mode 0)
+  (tooltip-mode  0)
+  (scroll-bar-mode 0)
+  (blink-cursor-mode 0)
+  (global-auto-revert-mode t)
+  (setq visible-bell t)
+  (menu-bar-mode 0)
+  (setq ring-bell-function 'ignore)
+  (setq widget-image-enable nil)
+  (fringe-mode '(0 . 0))
 
-(set-face-attribute 'secondary-selection nil
-                    :background nil)
+  (set-face-attribute 'secondary-selection nil
+					  :background nil)
 #+END_SRC
 
 ** Theming
@@ -57,7 +67,7 @@ First, let's remove all of the grosser parts of default Emacs.
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-one t)
+  (load-theme 'ewal-doom-one t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -73,44 +83,48 @@ First, let's remove all of the grosser parts of default Emacs.
 
 (setq neo-window-width 35)
 #+END_SRC
+
 *** ADDME Elegant Emacs
 Font:
 #+BEGIN_SRC emacs-lisp
-;; Default font and frame size
-(set-face-font 'default "Roboto Mono Light 14")
-(setq default-frame-alist
-      (append (list '(width  . 72) '(height . 40x)
-                    '(vertical-scroll-bars . nil)
-                    '(internal-border-width . 24)
-                    '(font . "Roboto Mono Light 14"))))
-(set-frame-parameter (selected-frame)
-                     'internal-border-width 24)
+  ;; Default font and frame size
+  (set-face-font 'default "Roboto Mono Light 12")
+  (setq default-frame-alist
+        (append (list '(width  . 72) '(height . 40)
+                      '(vertical-scroll-bars . nil)
+                      '(internal-border-width . 24)
+                      '(font . "Roboto Mono Light 12")))) 
+  (set-frame-parameter (selected-frame)
+                       'internal-border-width 24)
 #+END_SRC
+
+#+RESULTS:
+
 
 Useful function for face setting:
 #+BEGIN_SRC emacs-lisp
-;; When we set a face, we take care of removing any previous settings
-(defun set-face (face style)
-  "Reset a face and make it inherit style."
-  (set-face-attribute face nil
-   :foreground 'unspecified :background 'unspecified
-   :family     'unspecified :slant      'unspecified
-   :weight     'unspecified :height     'unspecified
-   :underline  'unspecified :overline   'unspecified
-   :box        'unspecified :inherit    style))
+  ;; ;; When we set a face, we take care of removing any previous settings
+  ;; (defun set-face (face style)
+  ;;   "Reset a face and make it inherit style."
+  ;;   (set-face-attribute face nil
+  ;;    :foreground 'unspecified :background 'unspecified
+  ;;    :family     'unspecified :slant      'unspecified
+  ;;    :weight     'unspecified :height     'unspecified
+  ;;    :underline  'unspecified :overline   'unspecified
+  ;;    :box        'unspecified :inherit    style))
 
 #+END_SRC
 
 Wrapped lines glyphs from Elegant Emacs:
 #+BEGIN_SRC emacs-lisp
-(defface fallback '((t :family "Fira Code Light"
-                       :inherit 'face-faded)) "Fallback")
-(set-display-table-slot standard-display-table 'truncation
-                        (make-glyph-code ?… 'fallback))
-(set-display-table-slot standard-display-table 'wrap
-                        (make-glyph-code ?↩ 'fallback))
-(set-display-table-slot standard-display-table 'selective-display
-                        (string-to-vector " …"))
+  ;; (defface fallback '((t :family "Fira Code Light"
+  ;;                        :inherit 'face-faded)) "Fallback")
+  ;; (set-display-table-slot standard-display-table 'truncation
+  ;;                         (make-glyph-code ?… 'fallback))
+  ;; (set-display-table-slot standard-display-table 'wrap
+  ;;                         (make-glyph-code ?↩ 'fallback))
+  ;; (set-display-table-slot standard-display-table 'selective-display
+  ;;                         (string-to-vector " …"))
 #+END_SRC
 
 ** Tweaks
@@ -228,13 +242,15 @@ Change faces of todo states and priorities. While we're at it, fontify the text 
    (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
    (push '("#+HTML_HEAD:" . "" ) prettify-symbols-alist)
    (push '("#+AUTHOR:" . "" ) prettify-symbols-alist)
-   (push '("#+SUBTITLE:" . "" ) prettify-symbols-alist)
+   (push '("#+SUBTITLE:" . "" ) prettify-symbols-
+alist)
    (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
    (push '("DEADLINE:" . "" ) prettify-symbols-alist)
    (push '("#+FILETAGS:" . "" ) prettify-symbols-alist)
-   (push '("#+ATTR_ORG: :width 65\n" . "") prettify-symbols-alist)
    (prettify-symbols-mode)))
 #+END_SRC
+
+#+RESULTS:
 
 *** Misc
 
@@ -344,7 +360,7 @@ See [[https://github.com/rougier/emacs-gtd][this]] for details.
           (todo "TODO"
                 ((org-agenda-skip-function
                   '(org-agenda-skip-entry-if 'deadline))
-                 (org-agenda-files '("~/Dropbox/org/projects.org" "~/Dropbox/org/schoolwork.org"))
+                 (org-agenda-files '("~/Dropbox/org/projects.org" "~/Dropbox/org/schoolwork.org" "~/Dropbox/org/plan.org"))
                  (org-agenda-prefix-format "  %i %-12:c [%e] ")
                  (org-agenda-overriding-header "\nTasks\n")))
           ;; (agenda nil
@@ -359,6 +375,9 @@ See [[https://github.com/rougier/emacs-gtd][this]] for details.
                       (org-agenda-overriding-header "\nInbox\n")))))))
 
 #+END_SRC
+
+#+RESULTS:
+
 *** Agenda Config
 #+BEGIN_SRC emacs-lisp
 (setq org-agenda-hide-tags-regexp ".")
@@ -665,6 +684,13 @@ Tab width should be 4.
 (setq-default c-basic-offset 4)
 #+END_SRC
 ** Features
+*** vterm
+#+BEGIN_SRC emacs-lisp
+(use-package vterm
+    :ensure t)
+#+END_SRC
+
+
 *** Company
 Set up company-mode for completions and use yasnippet snippets as a backend.
 #+BEGIN_SRC emacs-lisp
@@ -756,18 +782,18 @@ Compile and dissassemble code at point.
 #+END_SRC
 *** lsp
 #+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'lsp-ui
-  (set-face-attribute 'lsp-ui-sideline-code-action nil
-                      :foreground "#999999")
-  (setq lsp-ui-doc-header t)
-  (custom-set-faces
-   '(lsp-ui-doc-background ((t :background "#fafafa")))
-   '(lsp-ui-doc-header ((t :background "#f0f0f0")))
-   '(lsp-ui-doc-url ((t :inherit link))))
-  (setq lsp-ui-doc-border "#999999")
-  (setq lsp-ui-doc-position 'bottom)
-  (setq lsp-ui-doc-delay 3)
-  (setq lsp-ui-sideline-delay 1))
+  (with-eval-after-load 'lsp-ui
+    (set-face-attribute 'lsp-ui-sideline-code-action nil
+                        :foreground "#999999")
+    (setq lsp-ui-doc-header t)
+    (custom-set-faces
+     '(lsp-ui-doc-background ((t :background "#fafafa")))
+     '(lsp-ui-doc-header ((t :background "#f0f0f0")))
+     '(lsp-ui-doc-url ((t :inherit link))))
+     (setq lsp-ui-doc-border "#999999")
+     (setq lsp-ui-doc-position 'bottom)
+     (setq lsp-ui-doc-delay 3)
+     (setq lsp-ui-sideline-delay 1))
 #+END_SRC
 *** company
 #+BEGIN_SRC emacs-lisp
@@ -972,96 +998,227 @@ Compile and dissassemble code at point.
 
 
 #+END_SRC
+
 ** mu4e
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(require 'mu4e)
+  ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+  ;; (require 'mu4e)
 
-(setq message-send-mail-function 'smtpmail-send-it
-     smtpmail-stream-type 'starttls
-     smtpmail-default-smtp-server "smtp.gmail.com"
-     smtpmail-smtp-server "smtp.gmail.com"
-     smtpmail-smtp-service 587)
+  ;; (setq message-send-mail-function 'smtpmail-send-it
+  ;;      smtpmail-stream-type 'starttls
+  ;;      smtpmail-default-smtp-server "smtp.gmail.com"
+  ;;      smtpmail-smtp-server "smtp.gmail.com"
+  ;;      smtpmail-smtp-service 587)
 
-(setq mu4e-sent-messages-behavior 'delete)
-;; allow for updating mail using 'U' in the main view:
-(setq mu4e-get-mail-command "offlineimap")
+  ;; (setq mu4e-sent-messages-behavior 'delete)
+  ;; ;; allow for updating mail using 'U' in the main view:
+  ;; (setq mu4e-get-mail-command "offlineimap")
 
-;; shortcuts
-(setq mu4e-maildir-shortcuts
-    '( ("/INBOX"               . ?i)
-       ("/[Gmail].Sent Mail"   . ?s)))
+  ;; ;; shortcuts
+  ;; (setq mu4e-maildir-shortcuts
+  ;;     '( ("/INBOX"               . ?i)
+  ;;        ("/[Gmail].Sent Mail"   . ?s)))
 
-;; something about ourselves
-(setq
-   user-mail-address "davidemacsclient@gmail.com"
-   user-full-name  "David Freifeld"
-   mu4e-compose-signature
-    (concat
-      "Cheers,\n"
-      "David Freifeld\n"))
+  ;; ;; something about ourselves
+  ;; (setq
+  ;;    user-mail-address "davidemacsclient@gmail.com"
+  ;;    user-full-name  "David Freifeld"
+  ;;    mu4e-compose-signature
+  ;;     (concat
+  ;;       "Cheers,\n"
+  ;;       "David Freifeld\n"))
 
-;; show images
-(setq mu4e-show-images t)
+  ;; ;; show images
+  ;; (setq mu4e-show-images t)
 
-;; use imagemagick, if available
-(when (fboundp 'imagemagick-register-types)
-  (imagemagick-register-types))
+  ;; ;; use imagemagick, if available
+  ;; (when (fboundp 'imagemagick-register-types)
+  ;;   (imagemagick-register-types))
 
-;; convert html emails properly
-;; Possible options:
-;;   - html2text -utf8 -width 72
-;;   - textutil -stdin -format html -convert txt -stdout
-;;   - html2markdown | grep -v '&nbsp_place_holder;' (Requires html2text pypi)
-;;   - w3m -dump -cols 80 -T text/html
-;;   - view in browser (provided below)
-(setq mu4e-html2text-command "textutil -stdin -format html -convert txt -stdout")
+  ;; ;; convert html emails properly
+  ;; ;; Possible options:
+  ;; ;;   - html2text -utf8 -width 72
+  ;; ;;   - textutil -stdin -format html -convert txt -stdout
+  ;; ;;   - html2markdown | grep -v '&nbsp_place_holder;' (Requires html2text pypi)
+  ;; ;;   - w3m -dump -cols 80 -T text/html
+  ;; ;;   - view in browser (provided below)
+  ;; (setq mu4e-html2text-command "textutil -stdin -format html -convert txt -stdout")
 
-;; spell check
-(add-hook 'mu4e-compose-mode-hook
-        (defun my-do-compose-stuff ()
-           "My settings for message composition."
-           (set-fill-column 72)
-           (flyspell-mode)))
+  ;; ;; spell check
+  ;; (add-hook 'mu4e-compose-mode-hook
+  ;;         (defun my-do-compose-stuff ()
+  ;;            "My settings for message composition."
+  ;;            (set-fill-column 72)
+  ;;            (flyspell-mode)))
 
-;; add option to view html message in a browser
-;; `aV` in view to activate
-(add-to-list 'mu4e-view-actions
-  '("ViewInBrowser" . mu4e-action-view-in-browser) t)
+  ;; ;; add option to view html message in a browser
+  ;; ;; `aV` in view to activate
+  ;; (add-to-list 'mu4e-view-actions
+  ;;   '("ViewInBrowser" . mu4e-action-view-in-browser) t)
 
-;; fetch mail every 10 mins
-(setq mu4e-update-interval 600)
+  ;; ;; fetch mail every 10 mins
+  ;; (setq mu4e-update-interval 600)
 
 #+END_SRC
 ** posframes
 #+BEGIN_SRC emacs-lisp
-(selectrum-mode 1)
-;; (ivy-mode 1)
-;; (counsel-mode 1)
-;; (ivy-posframe-mode 1)
-;; (ivy-prescient-mode 1)
-(setq ivy-use-virtual-buffers t)
-(setq enable-recursive-minibuffers t)
-;; enable this if you want `swiper' to use it
-;; (setq search-default-mode #'char-fold-to-regexp)
-(global-set-key "\C-s" 'swiper)
-(global-set-key (kbd "C-c C-l") 'eval-buffer)
-(global-set-key (kbd "M-x") 'counsel-M-x)
-(global-set-key (kbd "C-x C-f") 'counsel-find-file)
-(global-set-key (kbd "<f1> f") 'counsel-describe-function)
-(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-(global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
-(global-set-key (kbd "<f1> l") 'counsel-find-library)
-(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-(global-set-key (kbd "C-c g") 'counsel-git)
-(global-set-key (kbd "C-c o") 'ivy-omni-org)
-(global-set-key (kbd "C-c j") 'counsel-git-grep)
-(global-set-key (kbd "C-c k") 'counsel-ag)
-(global-set-key (kbd "C-x l") 'counsel-locate)
-(global-set-key (kbd "C-s-o") 'counsel-rhythmbox)
-(define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
-;;
+  (ivy-mode 1)
+  (counsel-mode 1)
+  ;; (ivy-posframe-mode 1)
+  (ivy-prescient-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t)
+  ;; enable this if you want `swiper' to use it
+  ;; (setq search-default-mode #'char-fold-to-regexp)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-l") 'eval-buffer)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+  (global-set-key (kbd "<f1> l") 'counsel-find-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c o") 'ivy-omni-org)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-s-o") 'counsel-rhythmbox)
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+  ;;
 
 
 #+END_SRC
+** writer
+#+BEGIN_SRC elisp
+      ;; ---------------------------------------------------------------------
+      ;; GNU Emacs / N Λ N O - Emacs made simple
+      ;; Copyright (C) 2020 - N Λ N O developers 
+      ;;
+      ;; This program is free software; you can redistribute it and/or modify
+      ;; it under the terms of the GNU General Public License as published by
+      ;; the Free Software Foundation, either version 3 of the License, or
+      ;; (at your option) any later version.
+      ;;
+      ;; This program is distributed in the hope that it will be useful,
+      ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+      ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      ;; GNU General Public License for more details.
+      ;;
+      ;; You should have received a copy of the GNU General Public License
+      ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+      ;; ---------------------------------------------------------------------
+
+      (require 'org)
+      (defun writer-mode--num-format (numbering)
+        "Alternative numbering format for org-num.
+      First level: 1 | xxx
+      Second level: 1.1 — xxx
+      Third level: 1.1.1 - xxx
+      etc.
+      """
+        (if (= (length numbering) 1)
+            (propertize (concat (mapconcat
+                                 #'number-to-string
+                                 numbering ".") " | " )
+                        'face `(:family "Roboto Condensed"
+                                :height 175
+                                )) ; :foreground ,nano-color-faded
+          (propertize (concat (mapconcat
+                               #'number-to-string
+                               numbering ".") " — " )
+                      'face `(:family "Roboto Condensed"
+                              ))))
+
+      ;; Specific face for headline stars
+      (font-lock-add-keywords 'writer-mode
+                   '(("^*+ " 0 `(:family "Roboto Mono"
+                                 :height 140
+                                 :foreground ,nano-color-faded) prepend)
+                     ) 'append)
+
+      (defun writer-mode--compute-prefixes ()
+        "Compute prefix strings for regular text and headlines."
+
+        (setq org-indent--heading-line-prefixes
+              (make-vector org-indent--deepest-level nil))
+        (setq org-indent--inlinetask-line-prefixes
+              (make-vector org-indent--deepest-level nil))
+        (setq org-indent--text-line-prefixes
+              (make-vector org-indent--deepest-level nil))
+
+        (let* ((min-indent 5)
+               (indent (+ 1 (seq-max 
+                        (org-element-map
+                            (org-element-parse-buffer) 'headline
+                          #'(lambda (item)
+                              (org-element-property :level item))))))
+               (indent (max indent min-indent)))
+
+        (dotimes (n org-indent--deepest-level)
+          (aset org-indent--heading-line-prefixes n
+                (make-string
+                 (min indent (max 0 (- indent 1 n))) ?\s))
+          (aset org-indent--inlinetask-line-prefixes n
+                (make-string indent ?\s))
+          (aset org-indent--text-line-prefixes n
+                (make-string indent ?\s)))))
+
+
+
+      (define-derived-mode writer-mode org-mode "NΛNO writer"
+
+        ;; Faces
+        ;; (face-remap-add-relative 'org-level-1
+        ;;                          :overline nano-color-subtle
+        ;;                          :family "Roboto" :height 180)
+        ;; (face-remap-add-relative 'org-level-2
+        ;;                          :family "Roboto" :height 160)
+        ;; (face-remap-add-relative 'org-level-3
+        ;;                          :family "Roboto" :height 150)
+        ;; (face-remap-add-relative 'org-document-info
+        ;;                          :inherit 'nano-face-faded)
+        ;; (face-remap-add-relative 'org-document-title
+        ;;                          :foreground nano-color-foreground
+        ;;                          :family "Roboto Slab" 
+        ;;                          :height 200
+        ;;                          :weight 'medium)
+        ;; hide title / author ... keywords
+        (setq-local org-hidden-keywords '(title author date startup))
+
+        ;; Header line
+        (setq header-line-format nil)
+
+        ;; Layout
+        (setq fill-column 72)
+        (setq-default line-spacing 1)
+
+        ;; Indentation
+        (setq org-startup-folded nil)  
+        (org-indent-mode)
+        (setq org-level-color-stars-only nil)
+        (setq org-hide-leading-stars nil)
+        (advice-add 'org-indent--compute-prefixes :override
+                    #'writer-mode--compute-prefixes)
+
+        ;; Numbering
+        (setq org-num-skip-unnumbered t)
+        (setq org-num-skip-footnotes t)
+        (setq org-num-max-level 2)
+        (setq org-num-face nil)
+        (org-num-mode)
+        (setq org-num-format-function 'writer-mode--num-format))
+#+END_SRC
+** exwm
+#+BEGIN_SRC emacs-lisp
+(require 'exwm)
+(require 'exwm-config)
+(exwm-config-example)
+#+END_SRC
+
+* Server
+#+BEGIN_SRC  emacs-lisp
+(server-start)
+#+END_SRC 
