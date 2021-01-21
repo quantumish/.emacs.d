@@ -75,26 +75,36 @@ First, let's remove all of the grosser parts of default Emacs.
 ** Theming
 *** Doom
 #+BEGIN_SRC emacs-lisp
-(use-package doom-themes
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'ewal-doom-one t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
+  (use-package doom-themes
+    :config
+    ;; Global settings (defaults)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+          doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    (load-theme 'ewal-doom-one t)
   
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
-  (doom-themes-treemacs-config)
+    ;; Enable flashing mode-line on errors
+    (doom-themes-visual-bell-config)
   
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+    ;; Enable custom neotree theme (all-the-icons must be installed!)
+    (doom-themes-neotree-config)
+    ;; or for treemacs users
+    (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+    (doom-themes-treemacs-config)
+  
+    ;; Corrects (and improves) org-mode's native fontification.
+    (doom-themes-org-config))
 
-(setq neo-window-width 35)
+  (setq neo-window-width 35)
+  (setq doom-modeline-height 40)
+  (doom-modeline-mode)
+  (setq centaur-tabs-height 16)
+  (setq centaur-tabs-style "bar")
+  (setq centaur-tabs-set-icons t)
+  (setq centaur-tabs-set-bar 'left)
+  (setq x-underline-at-descent-line t)
+  (centaur-tabs-mode)
+
+  (solaire-global-mode)
 #+END_SRC
 
 *** ADDME Elegant Emacs
@@ -110,9 +120,6 @@ Font:
   (set-frame-parameter (selected-frame)
                        'internal-border-width 24)
 #+END_SRC
-
-#+RESULTS:
-
 
 Useful function for face setting:
 #+BEGIN_SRC emacs-lisp
@@ -139,66 +146,19 @@ Wrapped lines glyphs from Elegant Emacs:
   ;; (set-display-table-slot standard-display-table 'selective-display
   ;;                         (string-to-vector " …"))
 #+END_SRC
-
-** Misc
-A dashboard!
-#+BEGIN_SRC emacs-lisp
-(use-package dashboard
-  :demand
-  :diminish (dashboard-mode)
-  :bind
-  (;("C-z d" . open-dashboard)
-   :map dashboard-mode-map
-   (("n" . dashboard-next-line)
-    ("p" . dashboard-previous-line)
-    ("N" . dashboard-next-section)
-    ("F" . dashboard-previous-section)))
-  :custom
-  (dashboard-banner-logo-title "The One True Editor")
-  (dashboard-startup-banner (expand-file-name "data/logo.svg" user-emacs-directory))
-  (dashboard-items '((recents  . 7)
-                     (bookmarks . 7)
-                     (agenda . 5)))
-  (initial-buffer-choice (lambda () (get-buffer dashboard-buffer-name)))
-  (dashboard-set-heading-icons t)
-  (dashboard-set-navigator t)
-  (dashboard-navigator-buttons
-   (if (featurep 'all-the-icons)
-       `(((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust -0.05)
-           "M-EMACS" "Browse M-EMACS Homepage"
-           (lambda (&rest _) (browse-url "https://github.com/MatthewZMD/.emacs.d")))
-          (,(all-the-icons-fileicon "elisp" :height 1.0 :v-adjust -0.1)
-           "Configuration" "" (lambda (&rest _) (edit-configs)))
-          (,(all-the-icons-faicon "cogs" :height 1.0 :v-adjust -0.1)
-           "Update" "" (lambda (&rest _) (auto-package-update-now)))))
-     `((("" "M-EMACS" "Browse M-EMACS Homepage"
-         (lambda (&rest _) (browse-url "https://github.com/MatthewZMD/.emacs.d")))
-        ("" "Configuration" "" (lambda (&rest _) (edit-configs)))
-        ("" "Update" "" (lambda (&rest _) (auto-package-update-now)))))))
-  :custom-face
-  (dashboard-banner-logo-title ((t (:family "Roboto Mono Light" :height 123))))
-  :config
-  (dashboard-modify-heading-icons '((recents . "file-text")
-                                    (bookmarks . "book")))
-  (dashboard-setup-startup-hook)
-  ;; Open Dashboard function
-  (defun open-dashboard ()
-    "Open the *dashboard* buffer and jump to the first widget."
-    (interactive)
-    (if (get-buffer dashboard-buffer-name)
-        (kill-buffer dashboard-buffer-name))
-    (dashboard-insert-startupify-lists)
-    (switch-to-buffer dashboard-buffer-name)
-    (goto-char (point-min))
-    (delete-other-windows)))
+    
 #+END_SRC
 ** Tweaks
 
 #+BEGIN_SRC emacs-lisp
-(set-default 'cursor-type  '(bar . 1))
-(setq-default line-spacing 0)
-(global-visual-line-mode 1)
+  (set-default 'cursor-type  '(bar . 1))
+  (setq-default line-spacing 0)
+  (global-visual-line-mode 1)
+  (set-face-attribute 'variable-pitch nil
+                      :family "Google Sans")
 #+END_SRC
+
+#+RESULTS:
 
 * General Functionality
 
@@ -320,7 +280,39 @@ Then some package-specific stuff.
 * Org
 ** Aesthetics
 
-*** Simple Tweaks
+*** Icons
+#+BEGIN_SRC emacs-lisp
+  ;; Prettify symbols mode is nice despite the fact I may be abusing it
+  (add-hook 'org-mode-hook (lambda ()
+     "Beautify Org Checkbox Symbol"
+     (push '("TODO" . " ") prettify-symbols-alist) 
+     (push '("DONE" . " " ) prettify-symbols-alist)
+     (push '("WAIT" . " " ) prettify-symbols-alist)
+     (push '("NOPE" . " " ) prettify-symbols-alist)
+     (push '("[#A]" . ""  ) prettify-symbols-alist)
+     (push '("[#B]" . ""  ) prettify-symbols-alist)
+     (push '("[#C]" . "" ) prettify-symbols-alist)
+     (push '("[ ]"  . "" ) prettify-symbols-alist)
+     (push '("[X]"  . "" ) prettify-symbols-alist)
+     (push '("[-]"  . "" ) prettify-symbols-alist)
+     (push '("#+BEGIN_SRC" . " " ) prettify-symbols-alist)
+     (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
+     (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
+     (push '(":END:" . "―" ) prettify-symbols-alist)
+     (push '("#+STARTUP:" . "" ) prettify-symbols-alist)
+     (push '("#+TITLE: " . "" ) prettify-symbols-alist)
+     (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
+     (push '("#+NAME:" . "" ) prettify-symbols-alist)
+     (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
+     (push '("#+HTML_HEAD:" . "" ) prettify-symbols-alist)
+     (push '("#+AUTHOR:" . "" ) prettify-symbols-alist)
+     (push '("#+SUBTITLE:" . "" ) prettify-symbols-alist)
+     (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
+     (push '("DEADLINE:" . "" ) prettify-symbols-alist)
+     (push '("#+FILETAGS:" . "" ) prettify-symbols-alist)
+     (prettify-symbols-mode))) 
+#+END_SRC
+
 #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'org
   (setq org-display-inline-images t)
@@ -359,6 +351,7 @@ Change faces of todo states and priorities. While we're at it, fontify the text 
               (:foreground "#cfd1d1")))))
 #+END_SRC
 
+
 #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'org
 (set-face-attribute 'org-ellipsis nil
@@ -378,42 +371,6 @@ Change faces of todo states and priorities. While we're at it, fontify the text 
                     :foreground "#6cad50"
                     :weight 'bold))
 #+END_SRC
-
-*** Icons
-#+BEGIN_SRC emacs-lisp
-;; Prettify symbols mode is nice despite the fact I may be abusing it
-(add-hook 'org-mode-hook (lambda ()
-   "Beautify Org Checkbox Symbol"
-   (push '("TODO" . "") prettify-symbols-alist)
-   (push '("DONE" . "" ) prettify-symbols-alist)
-   (push '("WAIT" . "" ) prettify-symbols-alist)
-   (push '("NOPE" . "" ) prettify-symbols-alist)
-   (push '("[#A]" . "" ) prettify-symbols-alist)
-   (push '("[#B]" . "" ) prettify-symbols-alist)
-   (push '("[#C]" . "") prettify-symbols-alist)
-   (push '("[ ]"  . "" ) prettify-symbols-alist)
-   (push '("[X]"  . "" ) prettify-symbols-alist)
-   (push '("[-]"  . "" ) prettify-symbols-alist)
-   (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
-   (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
-   (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
-   (push '(":END:" . "―" ) prettify-symbols-alist)
-   (push '("#+STARTUP:" . "" ) prettify-symbols-alist)
-   (push '("#+TITLE: " . "" ) prettify-symbols-alist)
-   (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
-   (push '("#+NAME:" . "" ) prettify-symbols-alist)
-   (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
-   (push '("#+HTML_HEAD:" . "" ) prettify-symbols-alist)
-   (push '("#+AUTHOR:" . "" ) prettify-symbols-alist)
-   (push '("#+SUBTITLE:" . "" ) prettify-symbols-
-alist)
-   (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
-   (push '("DEADLINE:" . "" ) prettify-symbols-alist)
-   (push '("#+FILETAGS:" . "" ) prettify-symbols-alist)
-   (prettify-symbols-mode)))
-#+END_SRC
-
-#+RESULTS:
 
 *** Misc
 
@@ -853,6 +810,96 @@ Tab width should be 4.
     :ensure t)
 #+END_SRC
 
+*** Flycheck
+#+BEGIN_SRC emacs-lisp
+(load "external/flycheck-google-cpplint")
+(eval-after-load 'flycheck
+  '(progn
+     (require 'flycheck-google-cpplint)
+     ;; Add Google C++ Style checker.
+     ;; In default, syntax checked by Clang and Cppcheck.
+     (flycheck-add-next-checker 'c/c++-cppcheck
+                                '(warning . c/c++-googlelint))))
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
+#+END_SRC
+
+*** Company
+Set up company-mode for completions and use yasnippet snippets as a backend.
+#+BEGIN_SRC emacs-lisp
+(with-eval-after-load 'company
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 1)
+  (company-tng-configure-default)
+  (let ((map company-active-map))
+    (define-key map (kbd "<tab>") 'company-complete-selection)
+    (define-key map (kbd "RET") 'nil))
+  (setq company-tooltip-limit 1) ;; Minimum is 3 :(
+
+  ;; Add yasnippet support for all company backends
+  ;; https://github.com/syl20bnr/spacemacs/pull/179
+  (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+  
+  (defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+        backend
+      (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+  
+  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
+#+END_SRC
+*** TWEAKME lsp
+lsp mode and UI addons - only C specific stuff right now.
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-mode
+  :hook (c-common-mode . lsp))
+
+(use-package lsp-ui)
+(setq lsp-enable-on-type-formatting nil)
+(setq lsp-enable-indentation nil)
+(use-package ccls
+  :after projectile
+  :custom
+  (ccls-args nil)
+  (ccls-executable (executable-find "ccls"))
+  (projectile-project-root-files-top-down-recurring
+   (append '("compile_commands.json" ".ccls")
+           projectile-project-root-files-top-down-recurring))
+  :config (push ".ccls-cache" projectile-globally-ignored-directories))
+#+END_SRC
+*** disaster
+Compile and dissassemble code at point.
+#+BEGIN_SRC emacs-lisp
+(load "external/disaster.el")
+;; TODO: Fix custom disaster.el toggle opcodes functions
+(defun disaster-show-opcodes
+    (interactive)
+  (defcustom disaster-objdump "objdump -d -source -line-numbers"
+    "The command name and flags for running objdump."
+    :group 'disaster
+    :type 'string)
+  )
+(defun disaster-hide-opcodes
+    (interactive)
+  (defcustom disaster-objdump "objdump -d -source -line-numbers --no-show-raw-insn"
+    "The command name and flags for running objdump."
+    :group 'disaster
+    :type 'string)
+  )
+(with-eval-after-load 'c
+  (define-key c-mode-base-map (kbd "C-c d") 'disaster)
+  )
+
+#+END_SRC
+
+*** Hook
+#+BEGIN_SRC emacs-lisp
+(defun code-features-hook ()
+  (lsp-mode)
+  (company-mode))
+(add-hook 'c-mode-common-hook 'code-features-hook)
+
+#+END_SRC
+
 ** FIXME Aesthetics
 *** Markdown
 #+BEGIN_SRC emacs-lisp
@@ -867,33 +914,18 @@ Tab width should be 4.
 #+END_SRC
 *** lsp
 #+BEGIN_SRC emacs-lisp
+  (setq lsp-headerline-breadcrumb-enable nil)
   (with-eval-after-load 'lsp-ui
-    (set-face-attribute 'lsp-ui-sideline-code-action nil
-                        :foreground "#999999")
-    (setq lsp-ui-doc-header t)
-    (custom-set-faces
-     '(lsp-ui-doc-background ((t :background "#fafafa")))
-     '(lsp-ui-doc-header ((t :background "#f0f0f0")))
-     '(lsp-ui-doc-url ((t :inherit link))))
-     (setq lsp-ui-doc-border "#999999")
-     (setq lsp-ui-doc-position 'bottom)
-     (setq lsp-ui-doc-delay 3)
-     (setq lsp-ui-sideline-delay 1))
+    (setq lsp-ui-doc-header nil)
+    (setq lsp-ui-doc-position 'bottom)
+    (setq lsp-ui-doc-delay 5)
+    (setq lsp-ui-sideline-delay 1))
 #+END_SRC
+
 *** company
 #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'company
-  (custom-set-faces
-   '(company-tooltip-common ((t (:foreground "#00008b"))))
-   '(company-tooltip ((t (:foreground "#333333" :background "#f5f5f5"))))
-   '(company-scrollbar-fg ((t (:background "#999999"))))
-   '(company-scrollbar-bg ((t (:background "#f5f5f5"))))
-   '(company-tooltip-common-selection ((t (:foreground "#999999")))))
-  (setq company-frontends '(company-preview-frontend))
-  (set-face-attribute 'company-preview nil
-                    :foreground "#999999"
-                    :background nil))
-
+  (setq company-frontends '(company-preview-frontend)))
 #+END_SRC
 *** hl-todo
 #+BEGIN_SRC emacs-lisp
@@ -916,10 +948,11 @@ Tab width should be 4.
 (defun code-visuals-hook ()
   ;; Makes code buffers look nicer
   (olivetti-mode 1)
-  (olivetti-set-width 100)
+  (olivetti-set-width 130)
   (focus-mode 1)
   (visual-line-mode 1)
-  (lsp-ui-mode 1))
+  (lsp-ui-mode 1)
+  (lsp-headerline-breadcrumb-mode 0))
 (add-hook 'c-mode-common-hook 'code-visuals-hook)
 (add-hook 'python-mode-hook 'code-visuals-hook)
 
@@ -928,6 +961,7 @@ Tab width should be 4.
     (push '("Eigen::" . "" ) prettify-symbols-alist)
     ))
 #+END_SRC
+
 * Writing
 ** Distractionless
 #+BEGIN_SRC emacs-lisp
@@ -1192,132 +1226,19 @@ Tab width should be 4.
 
 
 #+END_SRC
-** writer
-#+BEGIN_SRC elisp
-      ;; ---------------------------------------------------------------------
-      ;; GNU Emacs / N Λ N O - Emacs made simple
-      ;; Copyright (C) 2020 - N Λ N O developers 
-      ;;
-      ;; This program is free software; you can redistribute it and/or modify
-      ;; it under the terms of the GNU General Public License as published by
-      ;; the Free Software Foundation, either version 3 of the License, or
-      ;; (at your option) any later version.
-      ;;
-      ;; This program is distributed in the hope that it will be useful,
-      ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-      ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-      ;; GNU General Public License for more details.
-      ;;
-      ;; You should have received a copy of the GNU General Public License
-      ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-      ;; ---------------------------------------------------------------------
-
-      (require 'org)
-      (defun writer-mode--num-format (numbering)
-        "Alternative numbering format for org-num.
-      First level: 1 | xxx
-      Second level: 1.1 — xxx
-      Third level: 1.1.1 - xxx
-      etc.
-      """
-        (if (= (length numbering) 1)
-            (propertize (concat (mapconcat
-                                 #'number-to-string
-                                 numbering ".") " | " )
-                        'face `(:family "Roboto Condensed"
-                                :height 175
-                                )) ; :foreground ,nano-color-faded
-          (propertize (concat (mapconcat
-                               #'number-to-string
-                               numbering ".") " — " )
-                      'face `(:family "Roboto Condensed"
-                              ))))
-
-      ;; Specific face for headline stars
-      (font-lock-add-keywords 'writer-mode
-                   '(("^*+ " 0 `(:family "Roboto Mono"
-                                 :height 140
-                                 :foreground ,nano-color-faded) prepend)
-                     ) 'append)
-
-      (defun writer-mode--compute-prefixes ()
-        "Compute prefix strings for regular text and headlines."
-
-        (setq org-indent--heading-line-prefixes
-              (make-vector org-indent--deepest-level nil))
-        (setq org-indent--inlinetask-line-prefixes
-              (make-vector org-indent--deepest-level nil))
-        (setq org-indent--text-line-prefixes
-              (make-vector org-indent--deepest-level nil))
-
-        (let* ((min-indent 5)
-               (indent (+ 1 (seq-max 
-                        (org-element-map
-                            (org-element-parse-buffer) 'headline
-                          #'(lambda (item)
-                              (org-element-property :level item))))))
-               (indent (max indent min-indent)))
-
-        (dotimes (n org-indent--deepest-level)
-          (aset org-indent--heading-line-prefixes n
-                (make-string
-                 (min indent (max 0 (- indent 1 n))) ?\s))
-          (aset org-indent--inlinetask-line-prefixes n
-                (make-string indent ?\s))
-          (aset org-indent--text-line-prefixes n
-                (make-string indent ?\s)))))
-
-
-
-      (define-derived-mode writer-mode org-mode "NΛNO writer"
-
-        ;; Faces
-        ;; (face-remap-add-relative 'org-level-1
-        ;;                          :overline nano-color-subtle
-        ;;                          :family "Roboto" :height 180)
-        ;; (face-remap-add-relative 'org-level-2
-        ;;                          :family "Roboto" :height 160)
-        ;; (face-remap-add-relative 'org-level-3
-        ;;                          :family "Roboto" :height 150)
-        ;; (face-remap-add-relative 'org-document-info
-        ;;                          :inherit 'nano-face-faded)
-        ;; (face-remap-add-relative 'org-document-title
-        ;;                          :foreground nano-color-foreground
-        ;;                          :family "Roboto Slab" 
-        ;;                          :height 200
-        ;;                          :weight 'medium)
-        ;; hide title / author ... keywords
-        (setq-local org-hidden-keywords '(title author date startup))
-
-        ;; Header line
-        (setq header-line-format nil)
-
-        ;; Layout
-        (setq fill-column 72)
-        (setq-default line-spacing 1)
-
-        ;; Indentation
-        (setq org-startup-folded nil)  
-        (org-indent-mode)
-        (setq org-level-color-stars-only nil)
-        (setq org-hide-leading-stars nil)
-        (advice-add 'org-indent--compute-prefixes :override
-                    #'writer-mode--compute-prefixes)
-
-        ;; Numbering
-        (setq org-num-skip-unnumbered t)
-        (setq org-num-skip-footnotes t)
-        (setq org-num-max-level 2)
-        (setq org-num-face nil)
-        (org-num-mode)
-        (setq org-num-format-function 'writer-mode--num-format))
-#+END_SRC
 ** exwm
 #+BEGIN_SRC emacs-lisp
 (require 'exwm)
 (require 'exwm-config)
 (exwm-config-example)
 #+END_SRC
+** many-cursors
+   #+BEGIN_SRC emacs-lisp
+     (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+     (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+     (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+     (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+   #+END_SRC
 
 * Server
 
