@@ -3,7 +3,7 @@
 
 * Startup
 #+BEGIN_SRC emacs-lisp
-(package-initialize) 
+(package-initialize)
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 #+END_SRC
 
@@ -37,12 +37,12 @@
 
 (defun package-fixer ()
   (interactive)
-  (setq package-archives '(("ELPA" . "http://tromey.com/elpa/") 
+  (setq package-archives '(("ELPA" . "http://tromey.com/elpa/")
                            ("gnu" . "http://elpa.gnu.org/packages/")))
-  
+
   (add-to-list 'package-archives
                '("melpa" . "https://melpa.org/packages/") t)
-  
+
   (package-initialize)
   (setq url-http-attempt-keepalives nil)
   (setq package-check-signature nil))   ;
@@ -69,7 +69,7 @@ First, let's remove all of the grosser parts of default Emacs.
   (fringe-mode '(0 . 0))
 
   (set-face-attribute 'secondary-selection nil
-					  :background nil)
+                      :background nil)
 #+END_SRC
 
 ** Theming
@@ -81,16 +81,16 @@ First, let's remove all of the grosser parts of default Emacs.
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'ewal-doom-one t)
-  
+
     ;; Enable flashing mode-line on errors
     (doom-themes-visual-bell-config)
-  
+
     ;; Enable custom neotree theme (all-the-icons must be installed!)
     (doom-themes-neotree-config)
     ;; or for treemacs users
     (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
     (doom-themes-treemacs-config)
-  
+
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
 
@@ -116,7 +116,7 @@ Font:
         (append (list '(width  . 72) '(height . 40)
                       '(vertical-scroll-bars . nil)
                       '(internal-border-width . 24)
-                      '(font . "Roboto Mono Light 12")))) 
+                      '(font . "Roboto Mono Light 12"))))
   (set-frame-parameter (selected-frame)
                        'internal-border-width 24)
 #+END_SRC
@@ -146,7 +146,7 @@ Wrapped lines glyphs from Elegant Emacs:
   ;; (set-display-table-slot standard-display-table 'selective-display
   ;;                         (string-to-vector " …"))
 #+END_SRC
-    
+
 #+END_SRC
 ** Tweaks
 
@@ -285,10 +285,10 @@ Then some package-specific stuff.
   ;; Prettify symbols mode is nice despite the fact I may be abusing it
   (add-hook 'org-mode-hook (lambda ()
      "Beautify Org Checkbox Symbol"
-     (push '("TODO" . " ") prettify-symbols-alist) 
-     (push '("DONE" . " " ) prettify-symbols-alist)
-     (push '("WAIT" . " " ) prettify-symbols-alist)
-     (push '("NOPE" . " " ) prettify-symbols-alist)
+     (push '("TODO" . "") prettify-symbols-alist)
+     (push '("DONE" . "" ) prettify-symbols-alist)
+     (push '("WAIT" . "" ) prettify-symbols-alist)
+     (push '("NOPE" . "" ) prettify-symbols-alist)
      (push '("[#A]" . ""  ) prettify-symbols-alist)
      (push '("[#B]" . ""  ) prettify-symbols-alist)
      (push '("[#C]" . "" ) prettify-symbols-alist)
@@ -310,7 +310,7 @@ Then some package-specific stuff.
      (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
      (push '("DEADLINE:" . "" ) prettify-symbols-alist)
      (push '("#+FILETAGS:" . "" ) prettify-symbols-alist)
-     (prettify-symbols-mode))) 
+     (prettify-symbols-mode)))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -333,43 +333,44 @@ Misc variables to be set before config starts:
 
 Change faces of todo states and priorities. While we're at it, fontify the text section of completed checlnoc
 #+BEGIN_SRC emacs-lisp
-(setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
-                          (?B . (:foreground "#f5cb22"))
-                          (?C . (:foreground "#6cad50"))))
+  ;; (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
+  ;;                           (?B . (:foreground "#f5cb22"))
+  ;;                           (?C . (:foreground "#6cad50"))))
 
-(setq org-todo-keyword-faces
-      '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
-        ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
+  (setq org-todo-keyword-faces
+        '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
+          ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
 
-(defface org-checkbox-done-text
-  '((t (:foreground "#71696A" :strike-through t)))
-  "Face for the text part of a checked org-mode checkbox.")
+  ;; (defface org-checkbox-done-text
+  ;;   '((t (:foreground "#71696A" :strike-through t)))
+  ;;   "Face for the text part of a checked org-mode checkbox.")
 
-(custom-set-faces
- '(org-headline-done
-            ((((class color) (class color) (min-colors 16))
-              (:foreground "#cfd1d1")))))
+  ;; (custom-set-faces
+  ;;  '(org-headline-done
+  ;;             ((((class color) (class color) (min-colors 16))
+  ;;               (:foreground "#cfd1d1")))))
 #+END_SRC
 
 
+
 #+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'org
-(set-face-attribute 'org-ellipsis nil
-                    :foreground "#999999"
-                    :underline nil
-                    :weight 'light)
-(set-face-attribute 'org-special-keyword nil
-                    :foreground "#999999"
-                    :weight 'light)
-(set-face-attribute 'org-document-title nil
-                    :height 2.0
-                    :weight 'bold)
-(set-face-attribute 'org-checkbox-statistics-todo nil
-                    :foreground "#f5381b"
-                    :weight 'bold)
-(set-face-attribute 'org-checkbox-statistics-done nil
-                    :foreground "#6cad50"
-                    :weight 'bold))
+  ;; (with-eval-after-load 'org
+  ;; (set-face-attribute 'org-ellipsis nil
+  ;;                     :foreground "#999999"
+  ;;                     :underline nil
+  ;;                     :weight 'light)
+  ;; (set-face-attribute 'org-special-keyword nil
+  ;;                     :foreground "#999999"
+  ;;                     :weight 'light)
+  ;; (set-face-attribute 'org-document-title nil
+  ;;                     :height 2.0
+  ;;                     :weight 'bold)
+  ;; (set-face-attribute 'org-checkbox-statistics-todo nil
+  ;;                     :foreground "#f5381b"
+  ;;                     :weight 'bold)
+  ;; (set-face-attribute 'org-checkbox-statistics-done nil
+  ;;                     :foreground "#6cad50"
+  ;;                     :weight 'bold))
 #+END_SRC
 
 *** Misc
@@ -425,7 +426,7 @@ Make a wrapper for it:
 
 ** Getting Things Done (GTD)
 *** Basic Process
-Declare agenda files: 
+Declare agenda files:
 #+BEGIN_SRC emacs-lisp
 (setq org-agenda-files '("~/Dropbox/org/inbox.org"
                          "~/Dropbox/org/projects.org"
@@ -648,7 +649,7 @@ Sort of dead.
   ;;                                    (eq buffer-read-only nil))
   ;;                           (eos/org-add-ids-to-headlines-in-file))))))
 
-#+END_SRC 
+#+END_SRC
 ** Notetaking
 *** Org-Roam
 First, let's use org-roam for associative notes.
@@ -752,7 +753,7 @@ Org roam capture template provides a simple template for new notes.
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 (require 'ox-latex)
-(setq org-latex-to-pdf-process 
+(setq org-latex-to-pdf-process
   '("xelatex -interaction nonstopmode %f"
      "xelatex -interaction nonstopmode %f")) ;; for multiple passes
 (setenv "PATH" "/usr/local/texlive/2020/texmf-dist/tex/latex:$PATH" t)
@@ -776,7 +777,7 @@ More config:
 ;; Define keywords
 (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
 
-;; Enable Org Babel features 
+;; Enable Org Babel features
 (org-babel-do-load-languages ;; More languages!
  'org-babel-load-languages
  '((emacs-lisp . t)
@@ -791,7 +792,7 @@ More config:
 (setq org-src-tab-acts-natively t) ;; Indentation fix
 
 ;; Enable org link features
-(org-link-set-parameters 
+(org-link-set-parameters
  "run"
  :follow #'org-babel-ref-resolve) ;; Allow execution of Org Babel code from links
 (add-to-list 'org-file-apps '(directory . emacs)) ;; Allow links to open directories in Dired
@@ -838,13 +839,13 @@ Set up company-mode for completions and use yasnippet snippets as a backend.
   ;; Add yasnippet support for all company backends
   ;; https://github.com/syl20bnr/spacemacs/pull/179
   (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
-  
+
   (defun company-mode/backend-with-yas (backend)
     (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
         backend
       (append (if (consp backend) backend (list backend))
               '(:with company-yasnippet))))
-  
+
   (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
 #+END_SRC
 *** TWEAKME lsp
@@ -941,25 +942,30 @@ Compile and dissassemble code at point.
 (define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
 (define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
 ;; We already have todos in Org Mode!
-(add-hook 'org-mode-hook (lambda () (hl-todo-mode -1))) 
+(add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
 #+END_SRC
 *** Hook
 #+BEGIN_SRC emacs-lisp
-(defun code-visuals-hook ()
-  ;; Makes code buffers look nicer
-  (olivetti-mode 1)
-  (olivetti-set-width 130)
-  (focus-mode 1)
-  (visual-line-mode 1)
-  (lsp-ui-mode 1)
-  (lsp-headerline-breadcrumb-mode 0))
-(add-hook 'c-mode-common-hook 'code-visuals-hook)
-(add-hook 'python-mode-hook 'code-visuals-hook)
+  (defun code-visuals-hook ()
+    ;; Makes code buffers look nicer
+    (olivetti-mode 1)
+    (olivetti-set-width 130)
+    (focus-mode 1)
+    (visual-line-mode 1)
+    (lsp-ui-mode 1)
+    (lsp-headerline-breadcrumb-mode 0))
+  (add-hook 'c-mode-common-hook 'code-visuals-hook)
+  (add-hook 'python-mode-hook 'code-visuals-hook)
 
-(add-hook 'c-mode-common-hook (lambda ()
-    (push '("std::" . "") prettify-symbols-alist)
-    (push '("Eigen::" . "" ) prettify-symbols-alist)
-    ))
+  (add-hook 'c-mode-common-hook (lambda ()
+                                  (c-set-offset 'innamespace 0)
+                                  (push '("std::" . "") prettify-symbols-alist)
+                                  (push '("Eigen::" . "" ) prettify-symbols-alist)
+                                  ))
+  (defun clean-whitespace-hook ()
+    (whitespace-cleanup))
+  (add-hook 'before-save-hook #'clean-whitespace-hook)
+
 #+END_SRC
 
 * Writing
@@ -1120,7 +1126,7 @@ Compile and dissassemble code at point.
   (defun svg-tag-keyboard (text)
     (svg-tag-make (substring text 1 -1) 'svg-tag-keyboard-face 1 1 2))
 
-  (setq svg-tag-tags 
+  (setq svg-tag-tags
           '((":TODO:"                     . svg-tag-todo)
             (":NOTE:"                     . svg-tag-note)
             (":BAD:"                      . svg-tag-bad)
@@ -1244,4 +1250,4 @@ Compile and dissassemble code at point.
 
 #+BEGIN_SRC  emacs-lisp
 (server-start)
-#+END_SRC 
+#+END_SRC
