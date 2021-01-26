@@ -24,6 +24,9 @@
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
 
+
+(setq-default tab-width 4)
+(setq c-basic-offset 4)
 (save-place-mode 1)
 
 (setq mac-command-modifier 'super mac-option-modifier 'meta)
@@ -120,6 +123,8 @@ Font:
   (set-frame-parameter (selected-frame)
                        'internal-border-width 24)
 #+END_SRC
+
+#+RESULTS:
 
 Useful function for face setting:
 #+BEGIN_SRC emacs-lisp
@@ -295,7 +300,7 @@ Then some package-specific stuff.
      (push '("[ ]"  . "" ) prettify-symbols-alist)
      (push '("[X]"  . "" ) prettify-symbols-alist)
      (push '("[-]"  . "" ) prettify-symbols-alist)
-     (push '("#+BEGIN_SRC" . " " ) prettify-symbols-alist)
+     (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
      (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
      (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
      (push '(":END:" . "―" ) prettify-symbols-alist)
@@ -333,45 +338,52 @@ Misc variables to be set before config starts:
 
 Change faces of todo states and priorities. While we're at it, fontify the text section of completed checlnoc
 #+BEGIN_SRC emacs-lisp
-  ;; (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
-  ;;                           (?B . (:foreground "#f5cb22"))
-  ;;                           (?C . (:foreground "#6cad50"))))
+  (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
+                            (?B . (:foreground "#f5cb22"))
+                            (?C . (:foreground "#6cad50"))))
 
   (setq org-todo-keyword-faces
         '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
           ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
 
-  ;; (defface org-checkbox-done-text
-  ;;   '((t (:foreground "#71696A" :strike-through t)))
-  ;;   "Face for the text part of a checked org-mode checkbox.")
+  (defface org-checkbox-done-text
+    '((t (:foreground "#71696A" :strike-through t)))
+    "Face for the text part of a checked org-mode checkbox.")
 
-  ;; (custom-set-faces
-  ;;  '(org-headline-done
-  ;;             ((((class color) (class color) (min-colors 16))
-  ;;               (:foreground "#cfd1d1")))))
+  (custom-set-faces
+   '(org-headline-done
+              ((((class color) (class color) (min-colors 16))
+                (:foreground "#cfd1d1")))))
 #+END_SRC
+
+#+RESULTS:
 
 
 
 #+BEGIN_SRC emacs-lisp
-  ;; (with-eval-after-load 'org
-  ;; (set-face-attribute 'org-ellipsis nil
-  ;;                     :foreground "#999999"
-  ;;                     :underline nil
-  ;;                     :weight 'light)
-  ;; (set-face-attribute 'org-special-keyword nil
-  ;;                     :foreground "#999999"
-  ;;                     :weight 'light)
-  ;; (set-face-attribute 'org-document-title nil
-  ;;                     :height 2.0
-  ;;                     :weight 'bold)
-  ;; (set-face-attribute 'org-checkbox-statistics-todo nil
-  ;;                     :foreground "#f5381b"
-  ;;                     :weight 'bold)
-  ;; (set-face-attribute 'org-checkbox-statistics-done nil
-  ;;                     :foreground "#6cad50"
-  ;;                     :weight 'bold))
+  (set-face-attribute 'org-hide nil
+                        :foreground "brightblack"
+                        :background nil)
+      (with-eval-after-load 'org
+      (set-face-attribute 'org-ellipsis nil
+                          :foreground "#999999"
+                          :underline nil
+                          :weight 'light)
+      (set-face-attribute 'org-special-keyword nil
+                          :foreground "#999999"
+                          :weight 'light)
+      (set-face-attribute 'org-document-title nil
+                          :height 2.0
+                          :weight 'bold)
+      (set-face-attribute 'org-checkbox-statistics-todo nil
+                          :foreground "#f5381b"
+                          :weight 'bold)
+      (set-face-attribute 'org-checkbox-statistics-done nil
+                          :foreground "#6cad50"
+                          :weight 'bold))
 #+END_SRC
+
+#+RESULTS:
 
 *** Misc
 
@@ -690,12 +702,12 @@ org-roam-server provides a nice graph view.
 
 company-org-roam provides a backend for company and makes linking way easier.
 #+BEGIN_SRC emacs-lisp
-(use-package company-org-roam
-  :ensure t
-  ;; You may want to pin in case the version from stable.melpa.org is not working
-  ; :pin melpa
-  :config
-  (push 'company-org-roam company-backends))
+  ;; (use-package company-org-roam
+  ;;   :ensure t
+  ;;   ;; You may want to pin in case the version from stable.melpa.org is not working
+  ;;   ; :pin melpa
+  ;;   :config
+  ;;   (push 'company-org-roam company-backends))
 #+END_SRC
 
 Define deft directory for quick searches.
@@ -1142,63 +1154,63 @@ Compile and dissassemble code at point.
 
 ** mu4e
 #+BEGIN_SRC emacs-lisp
-  ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-  ;; (require 'mu4e)
+  (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
+    (require 'mu4e)
 
-  ;; (setq message-send-mail-function 'smtpmail-send-it
-  ;;      smtpmail-stream-type 'starttls
-  ;;      smtpmail-default-smtp-server "smtp.gmail.com"
-  ;;      smtpmail-smtp-server "smtp.gmail.com"
-  ;;      smtpmail-smtp-service 587)
+    (setq message-send-mail-function 'smtpmail-send-it
+         smtpmail-stream-type 'starttls
+         smtpmail-default-smtp-server "smtp.gmail.com"
+         smtpmail-smtp-server "smtp.gmail.com"
+         smtpmail-smtp-service 587)
 
-  ;; (setq mu4e-sent-messages-behavior 'delete)
-  ;; ;; allow for updating mail using 'U' in the main view:
-  ;; (setq mu4e-get-mail-command "offlineimap")
+    (setq mu4e-sent-messages-behavior 'delete)
+    ;; allow for updating mail using 'U' in the main view:
+    (setq mu4e-get-mail-command "offlineimap")
 
-  ;; ;; shortcuts
-  ;; (setq mu4e-maildir-shortcuts
-  ;;     '( ("/INBOX"               . ?i)
-  ;;        ("/[Gmail].Sent Mail"   . ?s)))
+    ;; shortcuts
+    (setq mu4e-maildir-shortcuts
+        '( ("/INBOX"               . ?i)
+           ("/[Gmail].Sent Mail"   . ?s)))
 
-  ;; ;; something about ourselves
-  ;; (setq
-  ;;    user-mail-address "davidemacsclient@gmail.com"
-  ;;    user-full-name  "David Freifeld"
-  ;;    mu4e-compose-signature
-  ;;     (concat
-  ;;       "Cheers,\n"
-  ;;       "David Freifeld\n"))
+    ;; something about ourselves
+    (setq
+       user-mail-address "freifeld.david@gmail.com"
+       user-full-name  "David Freifeld"
+       mu4e-compose-signature
+        (concat
+          "Cheers,\n"
+          "David Freifeld\n"))
 
-  ;; ;; show images
-  ;; (setq mu4e-show-images t)
+    ;; show images
+    (setq mu4e-show-images t)
 
-  ;; ;; use imagemagick, if available
-  ;; (when (fboundp 'imagemagick-register-types)
-  ;;   (imagemagick-register-types))
+    ;; use imagemagick, if available
+    (when (fboundp 'imagemagick-register-types)
+      (imagemagick-register-types))
 
-  ;; ;; convert html emails properly
-  ;; ;; Possible options:
-  ;; ;;   - html2text -utf8 -width 72
-  ;; ;;   - textutil -stdin -format html -convert txt -stdout
-  ;; ;;   - html2markdown | grep -v '&nbsp_place_holder;' (Requires html2text pypi)
-  ;; ;;   - w3m -dump -cols 80 -T text/html
-  ;; ;;   - view in browser (provided below)
-  ;; (setq mu4e-html2text-command "textutil -stdin -format html -convert txt -stdout")
+    ;; convert html emails properly
+    ;; Possible options:
+    ;;   - html2text -utf8 -width 72
+    ;;   - textutil -stdin -format html -convert txt -stdout
+    ;;   - html2markdown | grep -v '&nbsp_place_holder;' (Requires html2text pypi)
+    ;;   - w3m -dump -cols 80 -T text/html
+    ;;   - view in browser (provided below)
+    (setq mu4e-html2text-command "pandoc -f HTML -t org")
 
-  ;; ;; spell check
-  ;; (add-hook 'mu4e-compose-mode-hook
-  ;;         (defun my-do-compose-stuff ()
-  ;;            "My settings for message composition."
-  ;;            (set-fill-column 72)
-  ;;            (flyspell-mode)))
+    ;; spell check
+    (add-hook 'mu4e-compose-mode-hook
+            (defun my-do-compose-stuff ()
+               "My settings for message composition."
+               (set-fill-column 72)
+               (flyspell-mode)))
 
-  ;; ;; add option to view html message in a browser
-  ;; ;; `aV` in view to activate
-  ;; (add-to-list 'mu4e-view-actions
-  ;;   '("ViewInBrowser" . mu4e-action-view-in-browser) t)
+    ;; add option to view html message in a browser
+    ;; `aV` in view to activate
+    (add-to-list 'mu4e-view-actions
+      '("ViewInBrowser" . mu4e-action-view-in-browser) t)
 
-  ;; ;; fetch mail every 10 mins
-  ;; (setq mu4e-update-interval 600)
+    ;; fetch mail every 10 mins
+    (setq mu4e-update-interval 600)
 
 #+END_SRC
 ** posframes
