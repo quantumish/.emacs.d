@@ -275,13 +275,6 @@ Then some package-specific stuff.
  (yas-global-mode)
  #+END_SRC
 
-* Completion
-
-#+BEGIN_SRC emacs-lisp
-(ido-mode t)
-(setq ido-enable-flex-matching t)
-#+END_SRC
-
 * Org
 ** Aesthetics
 
@@ -839,32 +832,74 @@ Tab width should be 4.
 *** Company
 Set up company-mode for completions and use yasnippet snippets as a backend.
 #+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'company
-  (setq company-idle-delay 0)
-  (setq company-minimum-prefix-length 1)
-  (company-tng-configure-default)
-  (let ((map company-active-map))
-    (define-key map (kbd "<tab>") 'company-complete-selection)
-    (define-key map (kbd "RET") 'nil))
-  (setq company-tooltip-limit 1) ;; Minimum is 3 :(
+  (use-package company
+      :ensure t
+      :config
+      (add-to-list 'company-backends 'company-capf)
+      (push '(company-capf :with company-yasnippet) company-backends)
+      (setq company-idle-delay 0)
+      (setq company-minimum-prefix-length 1)
+      (global-unset-key (kbd "TAB"))
+      (global-set-key (kbd "TAB") 'company-indent-or-complete-common)
+      ;; Add yasnippet support for all company backends
+      ;; https://github.com/syl20bnr/spacemacs/pull/179
+      (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
 
-  ;; Add yasnippet support for all company backends
-  ;; https://github.com/syl20bnr/spacemacs/pull/179
-  (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+      (defun company-mode/backend-with-yas (backend)
+        (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+            backend
+          (append (if (consp backend) backend (list backend))
+                  '(:with company-yasnippet))))
 
-  (defun company-mode/backend-with-yas (backend)
-    (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
-        backend
-      (append (if (consp backend) backend (list backend))
-              '(:with company-yasnippet))))
+      (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+      (global-company-mode))
 
-  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
 #+END_SRC
+
+#+RESULTS:
+: t
+
 *** TWEAKME lsp
 lsp mode and UI addons - only C specific stuff right now.
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
-  :hook (c-common-mode . lsp))
+    :init
+    (setq lsp-enable-snippet nil)
+    ;; (setq lsp-completion-enable-additional-text-edit nil)
+    ;; (setq lsp-eldoc-enable-hover nil)
+    (setq lsp-signature-auto-activate nil) ;; you could manually request them via `lsp-signature-activate`
+    (setq lsp-signature-render-documentation nil)
+    ;; (setq lsp-diagnostics-provider :none) stop it from yelling at you
+    (setq lsp-modeline-code-actions-enable nil)
+    (setq lsp-completion-show-detail nil)
+    (setq lsp-enable-symbol-highlighting nil)
+    (setq lsp-headerline-breadcrumb-enable nil)
+    (setq lsp-ui-sideline-enable nil)
+    (setq lsp-eldoc-enable-hover nil)
+    (setq lsp-enable-semantic-highlighting nil)
+    (setq read-process-output-max (* 1024 1024)) ;; 1mb
+    (setq lsp-idle-delay 0.500)
+    (setq gc-cons-threshold 100000000)
+    (setq lsp-clients-clangd-executable "/usr/bin/clangd")
+    (setq lsp-clients-clangd-args '("-function-arg-placeholders=0"))
+    :config
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-tramp-connection "jedi-language-server")
+              :major-modes '(python-mode)
+              :remote? t
+              :server-id 'pyls-remote))
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+       (c++-mode . lsp)
+       (c-mode . lsp)
+       (html-mode . lsp)
+       (css-mode . lsp)
+       (python-mode . lsp)
+       (rjsx-mode . lsp)
+       (js-mode . lsp)
+       (typescript-mode . lsp)
+       ;; if you want which-key integration
+       (lsp-mode . lsp-enable-which-key-integration))
+    :commands lsp)
 
 (use-package lsp-ui)
 (setq lsp-enable-on-type-formatting nil)
@@ -879,6 +914,9 @@ lsp mode and UI addons - only C specific stuff right now.
            projectile-project-root-files-top-down-recurring))
   :config (push ".ccls-cache" projectile-globally-ignored-directories))
 #+END_SRC
+
+#+RESULTS:
+
 *** disaster
 Compile and dissassemble code at point.
 #+BEGIN_SRC emacs-lisp
@@ -906,12 +944,17 @@ Compile and dissassemble code at point.
 
 *** Hook
 #+BEGIN_SRC emacs-lisp
-(defun code-features-hook ()
-  (lsp-mode)
-  (company-mode))
-(add-hook 'c-mode-common-hook 'code-features-hook)
+  (defun code-features-hook ()
+    (lsp-mode)
+    (company-mode)
+    (global-unset-key (kbd "TAB"))
+    (global-set-key (kbd "TAB") 'company-indent-or-complete-common))
+  (add-hook 'c-mode-common-hook 'code-features-hook)
 
 #+END_SRC
+
+#+RESULTS:
+| (lambda nil (c-set-offset 'innamespace 0) (setq prettify-symbols-alist (cons '(std:: . ) prettify-symbols-alist)) (setq prettify-symbols-alist (cons '(Eigen:: . ) prettify-symbols-alist))) | code-visuals-hook | code-features-hook |
 
 ** FIXME Aesthetics
 *** Markdown
