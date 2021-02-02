@@ -7,18 +7,6 @@
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package xwwp-full
-  ;;   :load-path "~/.emacs.d/xwwp"
-  ;;   :custom
-  ;;   (xwwp-follow-link-completion-system 'ivy)
-  ;;   :bind (:map xwidget-webkit-mode-map
-  ;;               ("v" . xwwp-follow-link)
-  ;;               ("t" . xwwp-ace-toggle)))
-
-#+END_SRC
-
-
 * Sane Defaults
 #+BEGIN_SRC emacs-lisp
 (require 'uniquify)
@@ -124,34 +112,6 @@ Font:
                        'internal-border-width 24)
 #+END_SRC
 
-#+RESULTS:
-
-Useful function for face setting:
-#+BEGIN_SRC emacs-lisp
-  ;; ;; When we set a face, we take care of removing any previous settings
-  ;; (defun set-face (face style)
-  ;;   "Reset a face and make it inherit style."
-  ;;   (set-face-attribute face nil
-  ;;    :foreground 'unspecified :background 'unspecified
-  ;;    :family     'unspecified :slant      'unspecified
-  ;;    :weight     'unspecified :height     'unspecified
-  ;;    :underline  'unspecified :overline   'unspecified
-  ;;    :box        'unspecified :inherit    style))
-
-#+END_SRC
-
-Wrapped lines glyphs from Elegant Emacs:
-#+BEGIN_SRC emacs-lisp
-  ;; (defface fallback '((t :family "Fira Code Light"
-  ;;                        :inherit 'face-faded)) "Fallback")
-  ;; (set-display-table-slot standard-display-table 'truncation
-  ;;                         (make-glyph-code ?… 'fallback))
-  ;; (set-display-table-slot standard-display-table 'wrap
-  ;;                         (make-glyph-code ?↩ 'fallback))
-  ;; (set-display-table-slot standard-display-table 'selective-display
-  ;;                         (string-to-vector " …"))
-#+END_SRC
-
 #+END_SRC
 ** Tweaks
 
@@ -163,7 +123,6 @@ Wrapped lines glyphs from Elegant Emacs:
                       :family "Google Sans")
 #+END_SRC
 
-#+RESULTS:
 ** Lively
 #+BEGIN_SRC emacs-lisp
 (defun lively-update-overlay (o)
@@ -204,9 +163,6 @@ Unbind what I don't like, then add some custom binds.
 (global-set-key (kbd "C-=") #'text-scale-increase)
 (global-set-key (kbd "C-+") #'text-scale-increase)
 (global-set-key (kbd "C--") #'text-scale-decrease)
-;; Move up/down paragraph
-(global-set-key (kbd "M-n") #'forward-paragraph)
-(global-set-key (kbd "M-p") #'backward-paragraph)
 
 (defun custom/kill-this-buffer ()
   (interactive) (kill-buffer (current-buffer)))
@@ -456,232 +412,6 @@ Make a wrapper for it:
 (global-set-key (kbd "s-b") 'hide-wrapper)
 #+END_SRC
 
-** Getting Things Done (GTD)
-*** Basic Process
-Declare agenda files:
-#+BEGIN_SRC emacs-lisp
-(setq org-agenda-files '("~/Dropbox/org/inbox.org"
-                         "~/Dropbox/org/projects.org"
-                         "~/Dropbox/org/schedule.org"
-                         "~/Dropbox/org/classes.org"
-                         "~/Dropbox/org/extra.org"
-                         "~/Dropbox/org/routine.org"
-                         "~/Dropbox/org/schoolwork.org"
-                         ))
-#+END_SRC
-
-Define capture templates and refile targets:
-#+BEGIN_SRC emacs-lisp
-(setq org-capture-templates '(("t" "Todo" entry
-                               (file+headline "~/Dropbox/org/inbox.org" "Tasks")
-                               "* TODO %i%?")
-                              ("s" "Schedule" entry
-                               (file+headline "~/Dropbox/org/schedule.org" "Schedule")
-                               "* %i%? \n SCHEDULED: %U")
-                              ("c" "Todo w/ context" entry
-                               (file+headline "~/Dropbox/org/inbox.org" "Tasks")
-                               "* TODO %i%? \n Context: %A")))
-(setq org-refile-targets '(("~/Dropbox/org/projects.org" :maxlevel . 2)
-                           ("~/Dropbox/org/extra.org" :maxlevel . 2)
-                           ("~/Dropbox/org/schedule.org" :maxlevel . 1)
-                           ("~/Dropbox/org/schoolwork.org" :maxlevel . 1)))
-#+END_SRC
-*** Experimental Custom Agenda
-
-See [[https://github.com/rougier/emacs-gtd][this]] for details.
-
-#+BEGIN_SRC emacs-lisp
-;; Define custom agenda views (just a test for now)
-
-(setq org-agenda-compact-blocks t)
-(setq org-agenda-block-separator "")
-
-;; Older custom view that didn't need org-super-agenda
-(setq org-agenda-custom-commands
-      '(("g" "Get Things Done (GTD)"
-         ((agenda ""
-                  (;(org-agenda-skip-function
-                   ; '(org-agenda-skip-entry-if 'deadline))
-                   (org-deadline-warning-days 0)))
-          (todo "TODO"
-                ((org-agenda-skip-function
-                  '(org-agenda-skip-entry-if 'notdeadline))
-                 (org-agenda-files '("~/Dropbox/org/schoolwork.org"))
-                 (org-agenda-sorting-strategy '(deadline-up))
-                 (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                 (org-agenda-overriding-header "\nDeadlines\n")))
-          (todo "TODO"
-                ((org-agenda-skip-function
-                  '(org-agenda-skip-entry-if 'deadline))
-                 (org-agenda-files '("~/Dropbox/org/projects.org" "~/Dropbox/org/schoolwork.org" "~/Dropbox/org/plan.org"))
-                 (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                 (org-agenda-overriding-header "\nTasks\n")))
-          ;; (agenda nil
-          ;;         ((org-agenda-entry-types '(:deadline))
-          ;;          (org-agenda-format-date "")
-          ;;          (org-deadline-warning-days 7)
-          ;;          (org-agenda-skip-function
-          ;;           '(org-agenda-skip-entry-if 'notregexp "\\* TODO"))
-          ;;          (org-agenda-overriding-header "\nDeadlines")))
-          (tags-todo "inbox"
-                     ((org-agenda-prefix-format "  %?-12t% s")
-                      (org-agenda-overriding-header "\nInbox\n")))))))
-
-#+END_SRC
-
-#+RESULTS:
-
-*** Agenda Config
-#+BEGIN_SRC emacs-lisp
-(setq org-agenda-hide-tags-regexp ".")
-(setq org-agenda-prefix-format
-      '((agenda . " %i %-12:c%?-12t% s")
-        (todo   . " ")
-        (tags   . " %i %-12:c")
-        (search . " %i %-12:c")))
-(setq org-agenda-start-on-weekday nil)
-(setq org-agenda-start-day nil)
-#+END_SRC
-
-*** Keybinds
-#+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "C-c c") 'org-capture)
-(defun agenda-wrapper ()
-  (interactive)
-  (org-agenda nil "a")
-  (org-agenda-month-view))
-(global-set-key (kbd "C-c a") 'agenda-wrapper)
-(defun gtd-wrapper ()
-  (interactive)
-  (org-agenda nil "g")
-  (org-agenda-day-view))
-(global-set-key (kbd "C-c g") 'gtd-wrapper)
-#+END_SRC
-** FIXME Project Management
-Sort of dead.
-#+BEGIN_SRC emacs-lisp
-  ;; org-project.el --- Project management with Org Mode
-
-  ;; Project generation function from Karl Voit
-  ;; (defun mark-as-project ()
-  ;; "This function makes sure that the current heading has
-  ;; (1) the tag :project:
-  ;; (2) has property COOKIE_DATA set to \"todo recursive\"
-  ;; (3) has any TODO keyword and
-  ;; (4) a leading progress indicator"
-  ;;     (interactive)
-  ;;     (org-toggle-tag "project" 'on)
-  ;;     (org-set-property "COOKIE_DATA" "todo recursive")
-  ;;     (org-back-to-heading t)
-  ;;     (let* ((title (nth 4 (org-heading-components)))
-  ;;            (keyword (nth 2 (org-heading-components))))
-  ;;        (when (and (bound-and-true-p keyword) (string-prefix-p "[" title))
-  ;;            (message "TODO keyword and progress indicator found")
-  ;;            )
-  ;;        (when (and (not (bound-and-true-p keyword)) (not (string-prefix-p "[" title)))
-  ;;            (message "no TODO keyword and no progress indicator found")
-  ;;            (forward-whitespace 1)
-  ;;            (insert "[/] ")
-  ;;            )
-  ;;        (when (and (bound-and-true-p keyword) (not (string-prefix-p "[" title)))
-  ;;            (message "TODO keyword but no progress indicator found")
-  ;;            (forward-whitespace 2)
-  ;;            (insert "[/] ")
-  ;;            )
-  ;;        )
-  ;;     )
-
-  ;; (defun eos/org-id-new (&optional prefix)
-  ;;   "Create a new globally unique ID.
-
-  ;; An ID consists of two parts separated by a colon:
-  ;; - a prefix
-  ;; - a   unique   part   that   will   be   created   according   to
-  ;;   `org-id-method'.
-
-  ;; PREFIX  can specify  the  prefix,  the default  is  given by  the
-  ;; variable  `org-id-prefix'.  However,  if  PREFIX  is  the  symbol
-  ;; `none', don't  use any  prefix even if  `org-id-prefix' specifies
-  ;; one.
-
-  ;; So a typical ID could look like \"Org-4nd91V40HI\"."
-  ;;   (let* ((prefix (if (eq prefix 'none)
-  ;;                      ""
-  ;;                    (concat (or prefix org-id-prefix)
-  ;;                            "-"))) unique)
-  ;;     (if (equal prefix "-")
-  ;;         (setq prefix ""))
-  ;;     (cond
-  ;;      ((memq org-id-method
-  ;;             '(uuidgen uuid))
-  ;;       (setq unique (org-trim (shell-command-to-string org-id-uuid-program)))
-  ;;       (unless (org-uuidgen-p unique)
-  ;;         (setq unique (org-id-uuid))))
-  ;;      ((eq org-id-method 'org)
-  ;;       (let* ((etime (org-reverse-string (org-id-time-to-b36)))
-  ;;              (postfix (if org-id-include-domain
-  ;;                           (progn
-  ;;                             (require 'message)
-  ;;                             (concat "@"
-  ;;                                     (message-make-fqdn))))))
-  ;;         (setq unique (concat etime postfix))))
-  ;;      (t (error "Invalid `org-id-method'")))
-  ;;     (concat prefix (car (split-string unique "-")))))
-
-  ;; (defun eos/org-custom-id-get (&optional pom create prefix)
-  ;;   "Get the CUSTOM_ID property of the entry at point-or-marker POM.
-
-  ;; If POM is nil, refer to the entry at point. If the entry does not
-  ;; have an CUSTOM_ID, the function returns nil. However, when CREATE
-  ;; is non nil, create a CUSTOM_ID if none is present already. PREFIX
-  ;; will  be passed  through to  `eos/org-id-new'. In  any case,  the
-  ;; CUSTOM_ID of the entry is returned."
-  ;;   (interactive)
-  ;;   (org-with-point-at pom
-  ;;     (let* ((orgpath (mapconcat #'identity (org-get-outline-path) "-"))
-  ;;            (heading (replace-regexp-in-string
-  ;;                      "/\\|~\\|\\[\\|\\]" ""
-  ;;                      (replace-regexp-in-string
-  ;;                       "[[:space:]]+" "_" (if (string= orgpath "")
-  ;;                                   (org-get-heading t t t t)
-  ;;                                 (concat orgpath "-" (org-get-heading t t t t))))))
-  ;;            (id (org-entry-get nil "CUSTOM_ID")))
-  ;;       (cond
-  ;;        ((and id
-  ;;              (stringp id)
-  ;;              (string-match "\\S-" id)) id)
-  ;;        (create (setq id (eos/org-id-new (concat prefix heading)))
-  ;;                (org-entry-put pom "CUSTOM_ID" id)
-  ;;                (org-id-add-location id
-  ;;                                     (buffer-file-name (buffer-base-buffer)))
-  ;;                id)))))
-
-  ;; (defun eos/org-add-ids-to-headlines-in-file ()
-  ;;   "Add CUSTOM_ID properties to all headlines in the current file
-  ;; which do not already have one.
-
-  ;; Only adds ids if the `auto-id' option is set to `t' in the file
-  ;; somewhere. ie, #+OPTIONS: auto-id:t"
-  ;;   (interactive)
-  ;;   (save-excursion
-  ;;     (widen)
-  ;;     (goto-char (point-min))
-  ;;     (when (re-search-forward "^#\\+OPTIONS:.*auto-id:t"
-  ;;                              (point-max)
-  ;;                              t)
-  ;;       (org-map-entries (lambda ()
-  ;;                          (eos/org-custom-id-get (point)
-  ;;                                                 'create))))))
-
-  ;; (add-hook 'org-mode-hook
-  ;;           (lambda ()
-  ;;             (add-hook 'before-save-hook
-  ;;                       (lambda ()
-  ;;                         (when (and (eq major-mode 'org-mode)
-  ;;                                    (eq buffer-read-only nil))
-  ;;                           (eos/org-add-ids-to-headlines-in-file))))))
-
-#+END_SRC
 ** Notetaking
 *** Org-Roam
 First, let's use org-roam for associative notes.
@@ -718,16 +448,6 @@ org-roam-server provides a nice graph view.
         org-roam-server-network-label-truncate-length 60
         org-roam-server-network-label-wrap-length 20))
 (require 'org-roam-protocol)
-#+END_SRC
-
-company-org-roam provides a backend for company and makes linking way easier.
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package company-org-roam
-  ;;   :ensure t
-  ;;   ;; You may want to pin in case the version from stable.melpa.org is not working
-  ;;   ; :pin melpa
-  ;;   :config
-  ;;   (push 'company-org-roam company-backends))
 #+END_SRC
 
 Define deft directory for quick searches.
@@ -944,31 +664,6 @@ lsp mode and UI addons - only C specific stuff right now.
 
 #+RESULTS:
 
-*** disaster
-Compile and dissassemble code at point.
-#+BEGIN_SRC emacs-lisp
-(load "external/disaster.el")
-;; TODO: Fix custom disaster.el toggle opcodes functions
-(defun disaster-show-opcodes
-    (interactive)
-  (defcustom disaster-objdump "objdump -d -source -line-numbers"
-    "The command name and flags for running objdump."
-    :group 'disaster
-    :type 'string)
-  )
-(defun disaster-hide-opcodes
-    (interactive)
-  (defcustom disaster-objdump "objdump -d -source -line-numbers --no-show-raw-insn"
-    "The command name and flags for running objdump."
-    :group 'disaster
-    :type 'string)
-  )
-(with-eval-after-load 'c
-  (define-key c-mode-base-map (kbd "C-c d") 'disaster)
-  )
-
-#+END_SRC
-
 *** Hook
 #+BEGIN_SRC emacs-lisp
   (defun code-features-hook ()
@@ -1076,65 +771,6 @@ Compile and dissassemble code at point.
   )
 
 #+END_SRC
-** ivy-posframe
-#+BEGIN_SRC emacs-lisp
-
-(defvar ivy-posframe--first-show t)
-(defun ivy-posframe-cleanup ()
-  "Cleanup ivy's posframe."
-  (setq ivy-posframe--first-show t)
-  (when (posframe-workable-p)
-    (posframe-hide ivy-posframe-buffer)))
-(defun ivy-posframe--display (str &optional poshandler)
-  "Show STR in ivy's posframe with POSHANDLER."
-  (if (not (posframe-workable-p))
-      (ivy-display-function-fallback str)
-    (with-ivy-window
-      (if (not ivy-posframe--first-show)
-          (with-current-buffer ivy-posframe-buffer
-            (erase-buffer)
-            (insert str))
-          (setq ivy-posframe--first-show nil)
-          (apply #'posframe-show
-                 ivy-posframe-buffer
-                 :font ivy-posframe-font
-                 :string str
-                 :position (point)
-                 :poshandler poshandler
-                 :background-color (face-attribute 'ivy-posframe :background nil t)
-                 :foreground-color (face-attribute 'ivy-posframe :foreground nil t)
-                 :internal-border-width ivy-posframe-border-width
-                 :internal-border-color (face-attribute 'ivy-posframe-border :background nil t)
-                 :override-parameters ivy-posframe-parameters
-                 (funcall ivy-posframe-size-function)))
-      (ivy-posframe--add-prompt 'ignore)))
-  (with-current-buffer ivy-posframe-buffer
-    (setq-local truncate-lines ivy-truncate-lines)))
-
-#+END_SRC
-** company-ngram
-#+BEGIN_SRC emacs-lisp
-
-(with-eval-after-load 'company-ngram
-  ; ~/data/ngram/*.txt are used as data
-  (setq company-ngram-data-dir "~/Dropbox/notes")
-  ; company-ngram supports python 3 or newer
-  (setq company-ngram-python "python3")
-  (setq company-ngram-n 10)
-  (company-ngram-init)
-  (cons 'company-ngram-backend company-backends)
-  ; or use `M-x turn-on-company-ngram' and
-  ; `M-x turn-off-company-ngram' on individual buffers
-  ;
-  ; save the cache of candidates
-  (run-with-idle-timer 7200 t
-                       (lambda ()
-                         (company-ngram-command "save_cache")
-                         ))
-  )
-
-(require 'company-ngram nil t)
-#+END_SRC
 ** Hooks
 #+BEGIN_SRC emacs-lisp
 (defun word-processing-hook ()
@@ -1153,167 +789,6 @@ Compile and dissassemble code at point.
 (define-key org-mode-map (kbd "C-c j") 'pandoc-jump-to-reference)
 #+END_SRC
 * Wacky
-** Tags
-#+BEGIN_SRC emacs-lisp
-  (load "external/tag.el")
-  (defface svg-tag-bad-face
-    '((t :foreground "white" :background "red" :box (:line-width 1 :color "red" :style nil)
-         :family "Roboto Mono" :weight light :height 120))
-    "Face for bad tag" :group nil)
-
-  (defface svg-tag-good-face
-    '((t :foreground "white" :background "green" :box (:line-width 1 :color "green" :style nil)
-         :family "Roboto Mono" :weight light :height 120))
-    "Face for good tag" :group nil)
-
-  (defface svg-tag-note-face
-    '((t :foreground "black" :background "white" :box "black"
-         :family "Roboto Mono" :weight light :height 120))
-    "Face for note tag" :group nil)
-
-  (defface svg-tag-note-face
-    '((t :foreground "black" :background "orange" :box "orange"
-         :family "Roboto Mono" :weight light :height 120))
-    "Face for warn tag" :group nil)
-
-  (defface svg-tag-keyboard-face
-    '((t :foreground "#333333" :background "#f9f9f9" :box "#333333"
-         :family "Roboto Mono" :weight light :height 120))
-    "Face for keyboard bindings tag" :group nil)
-
-  (setq svg-tag-todo
-        (svg-tag-make "TODO" nil 1 1 2))
-
-  (setq svg-tag-note
-        (svg-tag-make "NOTE" 'svg-tag-note-face 1 1 2))
-
-  (setq svg-tag-fixme
-        (svg-tag-make "FIXME" 'svg-tag-bad-face 1 1 2))
-
-  (setq svg-tag-warn
-        (svg-tag-make "WARN" 'svg-tag-bad-face 1 1 2))
-
-  (setq svg-tag-bad
-        (svg-tag-make "BAD" 'svg-tag-bad-face 1 1 2))
-
-  (setq svg-tag-good
-        (svg-tag-make "GOOD" 'svg-tag-good-face 1 1 2))
-
-  (defun svg-tag-round (text)
-    (svg-tag-make (substring text 1 -1) 'svg-tag-note-face 1 1 12))
-
-  (defun svg-tag-quasi-round (text)
-    (svg-tag-make (substring text 1 -1) 'svg-tag-note-face 1 1 8))
-
-  (defun svg-tag-keyboard (text)
-    (svg-tag-make (substring text 1 -1) 'svg-tag-keyboard-face 1 1 2))
-
-  (setq svg-tag-tags
-          '((":TODO:"                     . svg-tag-todo)
-            (":NOTE:"                     . svg-tag-note)
-            (":BAD:"                      . svg-tag-bad)
-            (":FIXME:"                    . svg-tag-fixme)
-            (":WARN:"                     . svg-tag-warn)
-            (":GOOD:"                     . svg-tag-good)
-            ("\([0-9a-zA-Z]\)"            . svg-tag-round)
-            ("\([0-9a-zA-Z][0-9a-zA-Z]\)" . svg-tag-quasi-round)
-            ("|[0-9a-zA-Z- ]+?|"          . svg-tag-keyboard)))
-
-
-#+END_SRC
-
-** mu4e
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
-    (require 'mu4e)
-
-    (setq message-send-mail-function 'smtpmail-send-it
-         smtpmail-stream-type 'starttls
-         smtpmail-default-smtp-server "smtp.gmail.com"
-         smtpmail-smtp-server "smtp.gmail.com"
-         smtpmail-smtp-service 587)
-
-    (setq mu4e-sent-messages-behavior 'delete)
-    ;; allow for updating mail using 'U' in the main view:
-    (setq mu4e-get-mail-command "offlineimap")
-
-    ;; shortcuts
-    (setq mu4e-maildir-shortcuts
-        '( ("/INBOX"               . ?i)
-           ("/[Gmail].Sent Mail"   . ?s)))
-
-    ;; something about ourselves
-    (setq
-       user-mail-address "freifeld.david@gmail.com"
-       user-full-name  "David Freifeld"
-       mu4e-compose-signature
-        (concat
-          "Cheers,\n"
-          "David Freifeld\n"))
-
-    ;; show images
-    (setq mu4e-show-images t)
-
-    ;; use imagemagick, if available
-    (when (fboundp 'imagemagick-register-types)
-      (imagemagick-register-types))
-
-    ;; convert html emails properly
-    ;; Possible options:
-    ;;   - html2text -utf8 -width 72
-    ;;   - textutil -stdin -format html -convert txt -stdout
-    ;;   - html2markdown | grep -v '&nbsp_place_holder;' (Requires html2text pypi)
-    ;;   - w3m -dump -cols 80 -T text/html
-    ;;   - view in browser (provided below)
-    (setq mu4e-html2text-command "pandoc -f HTML -t org")
-
-    ;; spell check
-    (add-hook 'mu4e-compose-mode-hook
-            (defun my-do-compose-stuff ()
-               "My settings for message composition."
-               (set-fill-column 72)
-               (flyspell-mode)))
-
-    ;; add option to view html message in a browser
-    ;; `aV` in view to activate
-    (add-to-list 'mu4e-view-actions
-      '("ViewInBrowser" . mu4e-action-view-in-browser) t)
-
-    ;; fetch mail every 10 mins
-    (setq mu4e-update-interval 600)
-
-#+END_SRC
-** posframes
-#+BEGIN_SRC emacs-lisp
-  (ivy-mode 1)
-  (counsel-mode 1)
-  ;; (ivy-posframe-mode 1)
-  (ivy-prescient-mode 1)
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t)
-  ;; enable this if you want `swiper' to use it
-  ;; (setq search-default-mode #'char-fold-to-regexp)
-  (global-set-key "\C-s" 'swiper)
-  (global-set-key (kbd "C-c C-l") 'eval-buffer)
-  (global-set-key (kbd "M-x") 'counsel-M-x)
-  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-  (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
-  (global-set-key (kbd "<f1> l") 'counsel-find-library)
-  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-  (global-set-key (kbd "C-c g") 'counsel-git)
-  (global-set-key (kbd "C-c o") 'ivy-omni-org)
-  (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c k") 'counsel-ag)
-  (global-set-key (kbd "C-x l") 'counsel-locate)
-  (global-set-key (kbd "C-s-o") 'counsel-rhythmbox)
-  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
-  ;;
-
-
-#+END_SRC
 ** exwm
 #+BEGIN_SRC emacs-lisp
 (require 'exwm)

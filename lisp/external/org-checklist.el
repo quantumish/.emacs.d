@@ -63,9 +63,9 @@
   "function used to prepare the export file for printing"
   :group 'org-checklist
   :type '(radio (function-item :tag "ascii text" org-export-as-ascii)
-		(function-item :tag "HTML"  org-export-as-html)
-		(function-item :tag "LaTeX" :value org-export-as-latex)
-		(function-item :tag "XOXO" :value org-export-as-xoxo)))
+        (function-item :tag "HTML"  org-export-as-html)
+        (function-item :tag "LaTeX" :value org-export-as-latex)
+        (function-item :tag "XOXO" :value org-export-as-xoxo)))
 
 (defcustom org-checklist-export-params nil
   "options for the export function file for printing"
@@ -80,8 +80,7 @@
 (defun org-reset-checkbox-state-maybe ()
   "Reset all checkboxes in an entry if the `RESET_CHECK_BOXES' property is set"
   (interactive "*")
-  (if (org-entry-get (point) "RESET_CHECK_BOXES")
-      (org-reset-checkbox-state-subtree)))
+  (org-reset-checkbox-state-subtree))
 
 
 (defun org-make-checklist-export ()
@@ -90,44 +89,44 @@ of checkbox items"
   (interactive "*")
   (if (org-entry-get (point) "LIST_EXPORT_BASENAME")
       (let* ((export-file (concat (org-entry-get (point) "LIST_EXPORT_BASENAME" nil)
-				  "-" (format-time-string
-				       org-checklist-export-time-format)
-				  ".org"))
-	     (print (case (org-entry-get (point) "PRINT_EXPORT" nil)
-		      (("" "nil" nil) nil)
-		      (t t)
-		      (nil (y-or-n-p "Print list? "))))
-	     exported-lines
-	     (title "Checklist export"))
-	(save-restriction
-	  (save-excursion
-	    (org-narrow-to-subtree)
-	    (org-update-checkbox-count-maybe)
-	    (org-show-subtree)
-	    (goto-char (point-min))
-	    (when (looking-at org-complex-heading-regexp)
-	      (setq title (match-string 4)))
-	    (goto-char (point-min))
-	    (let ((end (point-max)))
-	      (while (< (point) end)
-		(when (and (org-at-item-checkbox-p)
-			   (or (string= (match-string 0) "[ ]")
-			       (string= (match-string 0) "[-]")))
-		  (add-to-list 'exported-lines (thing-at-point 'line) t))
-		(beginning-of-line 2)))
-	    (set-buffer (get-buffer-create export-file))
-	    (org-insert-heading)
-	    (insert (or title export-file) "\n")
-	    (dolist (entry exported-lines) (insert entry))
-	    (org-update-checkbox-count-maybe)
-	    (write-file export-file)
-	    (if (print)
-		(progn (funcall org-checklist-export-function
-				org-checklist-export-params)
-		       (let* ((current-a2ps-switches a2ps-switches)
-			      (a2ps-switches (append current-a2ps-switches
-						     org-checklist-a2ps-params)))
-			 (a2ps-buffer)))))))))
+                  "-" (format-time-string
+                       org-checklist-export-time-format)
+                  ".org"))
+         (print (case (org-entry-get (point) "PRINT_EXPORT" nil)
+              (("" "nil" nil) nil)
+              (t t)
+              (nil (y-or-n-p "Print list? "))))
+         exported-lines
+         (title "Checklist export"))
+    (save-restriction
+      (save-excursion
+        (org-narrow-to-subtree)
+        (org-update-checkbox-count-maybe)
+        (org-show-subtree)
+        (goto-char (point-min))
+        (when (looking-at org-complex-heading-regexp)
+          (setq title (match-string 4)))
+        (goto-char (point-min))
+        (let ((end (point-max)))
+          (while (< (point) end)
+        (when (and (org-at-item-checkbox-p)
+               (or (string= (match-string 0) "[ ]")
+                   (string= (match-string 0) "[-]")))
+          (add-to-list 'exported-lines (thing-at-point 'line) t))
+        (beginning-of-line 2)))
+        (set-buffer (get-buffer-create export-file))
+        (org-insert-heading)
+        (insert (or title export-file) "\n")
+        (dolist (entry exported-lines) (insert entry))
+        (org-update-checkbox-count-maybe)
+        (write-file export-file)
+        (if (print)
+        (progn (funcall org-checklist-export-function
+                org-checklist-export-params)
+               (let* ((current-a2ps-switches a2ps-switches)
+                  (a2ps-switches (append current-a2ps-switches
+                             org-checklist-a2ps-params)))
+             (a2ps-buffer)))))))))
 
 (defun org-checklist ()
   (when (member org-state org-done-keywords) ;; org-state dynamically bound in org.el/org-todo

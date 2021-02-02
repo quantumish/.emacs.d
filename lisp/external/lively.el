@@ -1,4 +1,4 @@
-‎‎(defun lively-update-overlay (o)
+(defun lively-update-overlay (o)
   "Evaluate the lively code for O and update its display text."
   (with-current-buffer (overlay-buffer o)
     (let ((expr (buffer-substring (overlay-start o) (overlay-end o))))
