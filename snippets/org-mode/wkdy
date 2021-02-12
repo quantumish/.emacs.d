@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: wkdy
+# key: wkdy
+# --
+<%%(memq (calendar-day-of-week date) '(1 2 3 4 5))>
