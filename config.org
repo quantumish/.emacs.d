@@ -582,23 +582,21 @@ Set up company-mode for completions and use yasnippet snippets as a backend.
   (use-package company
       :ensure t
       :config
-      (add-to-list 'company-backends 'company-capf)
-      (push '(company-capf :with company-yasnippet) company-backends)
+      (add-to-list 'company-backends 'company-tabnine)
+      ;(push '(company-capf :with company-yasnippet) company-backends)
       (setq company-idle-delay 0)
       (setq company-minimum-prefix-length 1)
-      (global-unset-key (kbd "TAB"))
-      (global-set-key (kbd "TAB") 'company-indent-or-complete-common)
       ;; Add yasnippet support for all company backends
       ;; https://github.com/syl20bnr/spacemacs/pull/179
-      (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+      ;(defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
 
-      (defun company-mode/backend-with-yas (backend)
-        (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
-            backend
-          (append (if (consp backend) backend (list backend))
-                  '(:with company-yasnippet))))
+      ;; (defun company-mode/backend-with-yas (backend)
+      ;;   (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+      ;;       backend
+      ;;     (append (if (consp backend) backend (list backend))
+      ;;             '(:with company-yasnippet))))
 
-      (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+      ;; (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
       (global-company-mode))
 
 #+END_SRC
@@ -668,9 +666,7 @@ lsp mode and UI addons - only C specific stuff right now.
 #+BEGIN_SRC emacs-lisp
   (defun code-features-hook ()
     (lsp-mode)
-    (company-mode)
-    (global-unset-key (kbd "TAB"))
-    (global-set-key (kbd "TAB") 'company-indent-or-complete-common))
+    (company-mode))
   (add-hook 'c-mode-common-hook 'code-features-hook)
 
 #+END_SRC
@@ -702,8 +698,8 @@ lsp mode and UI addons - only C specific stuff right now.
 
 *** company
 #+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'company
-  (setq company-frontends '(company-preview-frontend)))
+  ;; (with-eval-after-load 'company
+  ;;   (setq company-frontends '(company-preview-frontend)))
 #+END_SRC
 *** hl-todo
 #+BEGIN_SRC emacs-lisp
