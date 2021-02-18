@@ -60,8 +60,12 @@ First, let's remove all of the grosser parts of default Emacs.
   (fringe-mode '(0 . 0))
 
   (set-face-attribute 'secondary-selection nil
-                      :background nil)
+                     :background nil)
+  (load "external/font-lock+")
+
 #+END_SRC
+
+#+RESULTS:
 
 ** Theming
 *** Doom
@@ -86,16 +90,10 @@ First, let's remove all of the grosser parts of default Emacs.
     (doom-themes-org-config))
 
   (setq neo-window-width 35)
+  (setq treemacs-width 27)
   (setq doom-modeline-height 40)
   (doom-modeline-mode)
-  (setq centaur-tabs-height 16)
-  (setq centaur-tabs-style "bar")
-  (setq centaur-tabs-set-icons t)
-  (setq centaur-tabs-set-bar 'left)
-  (setq x-underline-at-descent-line t)
-  (centaur-tabs-mode)
 
-  (solaire-global-mode)
 #+END_SRC
 
 *** ADDME Elegant Emacs
@@ -125,30 +123,30 @@ Font:
 
 ** Lively
 #+BEGIN_SRC emacs-lisp
-(defun lively-update-overlay (o)
-  "Evaluate the lively code for O and update its display text."
-  (with-current-buffer (overlay-buffer o)
-    (let ((expr (buffer-substring (overlay-start o) (overlay-end o))))
-      (overlay-put o 'display (format "%s" (eval (read expr)))))))
+  (defun lively-update-overlay (o)
+    "Evaluate the lively code for O and update its display text."
+    (with-current-buffer (overlay-buffer o)
+      (let ((expr (buffer-substring (overlay-start o) (overlay-end o))))
+        (overlay-put o 'display (format "%s" (eval (read expr)))))))
 
-(defun lively-init-timer ()
-  "Setup background timer to update lively text."
-  (setq lively-timer (run-with-timer 0 lively-interval 'lively-update)))
+  (defun lively-init-timer ()
+    "Setup background timer to update lively text."
+    (setq lively-timer (run-with-timer 0 lively-interval 'lively-update)))
 
-(defun lively-stop ()
-  "Remove all lively regions in Emacs."
-  (interactive)
-  (when lively-timer (cancel-timer lively-timer))
-  (setq lively-timer nil)
-  (mapc 'delete-overlay lively-overlays)
-  (setq lively-overlays nil))
+  (defun lively-stop ()
+    "Remove all lively regions in Emacs."
+    (interactive)
+    (when lively-timer (cancel-timer lively-timer))
+    (setq lively-timer nil)
+    (mapc 'delete-overlay lively-overlays)
+    (setq lively-overlays nil))
 
-;;; Nice to have:
+  ;;; Nice to have:
 
-(defun lively-shell-command (command)
-  "Execute COMMAND and return the output, sans trailing newline."
-  (let ((result (shell-command-to-string command)))
-    (substring result 0 (1- (length result)))))
+  (defun lively-shell-command (command)
+    "Execute COMMAND and return the output, sans trailing newline."
+    (let ((result (shell-command-to-string command)))
+      (substring result 0 (1- (length result)))))
 #+END_SRC
 
 * General Functionality
@@ -217,9 +215,6 @@ Then some package-specific stuff.
     (ivy-mode 1)
     :bind
     (("C-s"     . swiper-isearch)
-     ;("C-z s"   . counsel-rg)
-     ;("C-z b"   . counsel-buffer-or-recentf)
-     ;("C-z C-b" . counsel-ibuffer)
      ("M-x"     . counsel-M-x)
      ("C-x C-f" . counsel-find-file)
      ("<f1> f"  . counsel-describe-function)
@@ -231,9 +226,6 @@ Then some package-specific stuff.
      ("C-c g"   . counsel-git)
      ("C-c o"   . ivy-omni-org)
      ("C-c j"   . counsel-git-grep)
-     ("C-c k"   . counsel-ag)
-     ("C-x l"   . counsel-locate)
-     ("C-s-o"   . counsel-rhythmbox)
      (:map ivy-minibuffer-map
            ("C-r" . ivy-previous-line-or-history)
            ("M-RET" . ivy-immediate-done))
@@ -259,40 +251,28 @@ Then some package-specific stuff.
  #+END_SRC
 
 * Org
+#+BEGIN_SRC emacs-lisp
+(load "org-conf")
+(with-eval-after-load 'org
+  ;; ... bunch of other org configurations ...
+  ;; Org-transclusion
+  (define-key global-map (kbd "<f12>") #'org-transclusion-mode))
+
+(add-hook 'org-mode-hook (lambda () (load "external/org-transclusion") (load "external/org-appear")))
+(setq org-transclusion-activate-persistent-message nil)
+#+END_SRC
 ** Aesthetics
 
 *** Icons
 #+BEGIN_SRC emacs-lisp
-  ;; Prettify symbols mode is nice despite the fact I may be abusing it
   (add-hook 'org-mode-hook (lambda ()
-     "Beautify Org Checkbox Symbol"
-     (push '("TODO" . "") prettify-symbols-alist)
-     (push '("DONE" . "" ) prettify-symbols-alist)
-     (push '("WAIT" . "" ) prettify-symbols-alist)
-     (push '("NOPE" . "" ) prettify-symbols-alist)
-     (push '("[#A]" . ""  ) prettify-symbols-alist)
-     (push '("[#B]" . ""  ) prettify-symbols-alist)
-     (push '("[#C]" . "" ) prettify-symbols-alist)
-     (push '("[ ]"  . "" ) prettify-symbols-alist)
-     (push '("[X]"  . "" ) prettify-symbols-alist)
-     (push '("[-]"  . "" ) prettify-symbols-alist)
-     (push '("#+BEGIN_SRC" . "" ) prettify-symbols-alist)
-     (push '("#+END_SRC" . "―" ) prettify-symbols-alist)
-     (push '(":PROPERTIES:" . "" ) prettify-symbols-alist)
-     (push '(":END:" . "―" ) prettify-symbols-alist)
-     (push '("#+STARTUP:" . "" ) prettify-symbols-alist)
      (push '("#+TITLE: " . "" ) prettify-symbols-alist)
-     (push '("#+RESULTS:" . "" ) prettify-symbols-alist)
-     (push '("#+NAME:" . "" ) prettify-symbols-alist)
-     (push '("#+ROAM_TAGS:" . "" ) prettify-symbols-alist)
-     (push '("#+HTML_HEAD:" . "" ) prettify-symbols-alist)
-     (push '("#+AUTHOR:" . "" ) prettify-symbols-alist)
-     (push '("#+SUBTITLE:" . "" ) prettify-symbols-alist)
-     (push '("SCHEDULED:" . "" ) prettify-symbols-alist)
-     (push '("DEADLINE:" . "" ) prettify-symbols-alist)
-     (push '("#+FILETAGS:" . "" ) prettify-symbols-alist)
+     (push '("TODO" . "")  prettify-symbols-alist)
      (prettify-symbols-mode)))
 #+END_SRC
+
+#+RESULTS:
+| (lambda nil (push '(#+TITLE:  . ) prettify-symbols-alist) (push '(TODO insert (format [%s] material-attach)) prettify-symbols-alist) (prettify-symbols-mode)) | (lambda nil (setq prettify-symbols-alist (cons '(#+TITLE:  . ) prettify-symbols-alist)) (setq prettify-symbols-alist (cons '(TODO insert-image (svg-icon boxicons circle)) prettify-symbols-alist)) (prettify-symbols-mode)) | (lambda nil (setq prettify-symbols-alist (cons '(#+TITLE:  . ) prettify-symbols-alist)) (prettify-symbols-mode)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
 
 #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'org
@@ -301,46 +281,40 @@ Then some package-specific stuff.
   (setq org-startup-with-inline-images "inlineimages")
   (setq org-hide-emphasis-markers t)
   (setq org-confirm-elisp-link-function nil)
-  (setq org-ellipsis "…")
+  (setq org-ellipsis " ")
   (setq org-link-frame-setup '((file . find-file))))
 #+END_SRC
 
 *** TWEAKME Faces
-Misc variables to be set before config starts:
+    Misc variables to be set before config starts:
 #+BEGIN_SRC emacs-lisp
 (setq org-fontify-quote-and-verse-blocks t)
+(setq org-fontify-emphasized-text t)
 (setq org-fontify-done-headline t)
 #+END_SRC
 
 Change faces of todo states and priorities. While we're at it, fontify the text section of completed checlnoc
 #+BEGIN_SRC emacs-lisp
-  (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
-                            (?B . (:foreground "#f5cb22"))
-                            (?C . (:foreground "#6cad50"))))
+    (setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
+                              (?B . (:foreground "#f5cb22"))
+                              (?C . (:foreground "#6cad50"))))
 
-  (setq org-todo-keyword-faces
-        '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
-          ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
+    (setq org-todo-keyword-faces
+          '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
+            ("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
 
-  (defface org-checkbox-done-text
-    '((t (:foreground "#71696A" :strike-through t)))
-    "Face for the text part of a checked org-mode checkbox.")
+    (defface org-checkbox-done-text
+      '((t (:foreground "#71696A" :strike-through t)))
+      "Face for the text part of a checked org-mode checkbox.")
 
-  (custom-set-faces
-   '(org-headline-done
-              ((((class color) (class color) (min-colors 16))
-                (:foreground "#cfd1d1")))))
-#+END_SRC
-
-#+RESULTS:
-
-
-
-#+BEGIN_SRC emacs-lisp
+    (custom-set-faces
+     '(org-headline-done
+                ((((class color) (class color) (min-colors 16))
+                  (:foreground "#cfd1d1")))))
   (set-face-attribute 'org-hide nil
                         :foreground "brightblack"
                         :background nil)
-      (with-eval-after-load 'org
+  (with-eval-after-load 'org
       (set-face-attribute 'org-ellipsis nil
                           :foreground "#999999"
                           :underline nil
@@ -351,12 +325,9 @@ Change faces of todo states and priorities. While we're at it, fontify the text 
       (set-face-attribute 'org-document-title nil
                           :height 2.0
                           :weight 'bold)
-      (set-face-attribute 'org-checkbox-statistics-todo nil
-                          :foreground "#f5381b"
-                          :weight 'bold)
-      (set-face-attribute 'org-checkbox-statistics-done nil
-                          :foreground "#6cad50"
-                          :weight 'bold))
+      (set-face-attribute 'org-transclusion-block nil
+                          :foreground nil
+                          :background nil))
 #+END_SRC
 
 #+RESULTS:
@@ -515,40 +486,40 @@ Org roam capture template provides a simple template for new notes.
 Load some external stuff first:
 
 #+BEGIN_SRC emacs-lisp
-(load "external/org-depend.el")
-(load "external/org-checklist.el")
+  (load "external/org-depend.el")
+  (load "external/org-checklist.el")
 #+END_SRC
 
 More config:
 
 #+BEGIN_SRC emacs-lisp
-(setq org-modules (append org-modules '(org-habit))) ;; Habit-tracking with Org Mode
-(setq org-modules (append org-modules '(org-crypt))) ;; Encryption
-(setq org-modules (append org-modules '(org-id))) ;; Unique headline identifiers
+    (setq org-modules (append org-modules '(org-habit))) ;; Habit-tracking with Org Mode
+    (setq org-modules (append org-modules '(org-id))) ;; Unique headline identifiers
+    (setq org-modules (append org-modules '(org-drill)))
+    ;; Define keywords
+    (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
 
-;; Define keywords
-(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
+    ;; Enable Org Babel features
+    (org-babel-do-load-languages ;; More languages!
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (python . t)
+       (latex . t)
+       (shell . t)
+       (C . t)))
+    (setq org-confirm-babel-evaluate nil) ;; Don't ask me if I want to execute my code or not
+    (setq org-src-tab-acts-natively t) ;; Indentation fix
 
-;; Enable Org Babel features
-(org-babel-do-load-languages ;; More languages!
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (python . t)
-   (latex . t)
-   (shell . t)
-   (C . t)
-   (makefile . t)
-   (gnuplot . t)
-   (haskell . t)))
-(setq org-confirm-babel-evaluate nil) ;; Don't ask me if I want to execute my code or not
-(setq org-src-tab-acts-natively t) ;; Indentation fix
-
-;; Enable org link features
-(org-link-set-parameters
- "run"
- :follow #'org-babel-ref-resolve) ;; Allow execution of Org Babel code from links
-(add-to-list 'org-file-apps '(directory . emacs)) ;; Allow links to open directories in Dired
+    ;; Enable org link features
+    (org-link-set-parameters
+     "run"
+     :follow #'org-babel-ref-resolve) ;; Allow execution of Org Babel code from links
+    (add-to-list 'org-file-apps '(directory . emacs)) ;; Allow links to open directories in Dired
 #+END_SRC
+
+#+RESULTS:
+: ((directory . emacs) (auto-mode . emacs) (\.mm\' . default) (\.x?html?\' . default) (\.pdf\' . default))
+
 * Code
 ** Basics
 Tab width should be 4.
@@ -585,7 +556,7 @@ Set up company-mode for completions and use yasnippet snippets as a backend.
       (add-to-list 'company-backends 'company-tabnine)
       ;(push '(company-capf :with company-yasnippet) company-backends)
       (setq company-idle-delay 0)
-      (setq company-minimum-prefix-length 1)
+      (setq company-minimum-prefix-length 1))
       ;; Add yasnippet support for all company backends
       ;; https://github.com/syl20bnr/spacemacs/pull/179
       ;(defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
@@ -596,13 +567,9 @@ Set up company-mode for completions and use yasnippet snippets as a backend.
       ;;     (append (if (consp backend) backend (list backend))
       ;;             '(:with company-yasnippet))))
 
-      ;; (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
-      (global-company-mode))
+      ;; (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
 
 #+END_SRC
-
-#+RESULTS:
-: t
 
 *** TWEAKME lsp
 lsp mode and UI addons - only C specific stuff right now.
@@ -665,14 +632,10 @@ lsp mode and UI addons - only C specific stuff right now.
 *** Hook
 #+BEGIN_SRC emacs-lisp
   (defun code-features-hook ()
-    (lsp-mode)
-    (company-mode))
+    (lsp-mode))
   (add-hook 'c-mode-common-hook 'code-features-hook)
 
 #+END_SRC
-
-#+RESULTS:
-| (lambda nil (c-set-offset 'innamespace 0) (setq prettify-symbols-alist (cons '(std:: . ) prettify-symbols-alist)) (setq prettify-symbols-alist (cons '(Eigen:: . ) prettify-symbols-alist))) | code-visuals-hook | code-features-hook |
 
 ** FIXME Aesthetics
 *** Markdown
@@ -803,4 +766,5 @@ lsp mode and UI addons - only C specific stuff right now.
 
 #+BEGIN_SRC  emacs-lisp
 (server-start)
+(add-hook 'after-init-hook (lambda () (message (emacs-init-time))))
 #+END_SRC

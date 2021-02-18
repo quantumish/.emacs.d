@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: selectfrac
-# key: /
+# key: ///
 # --
 
 \frac{`yas-selected-text`}{$1}$0
