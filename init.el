@@ -3,9 +3,22 @@
 ;;;; Packages and Elisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (require 'package)
-(setq package-archives '(("ELPA" . "http://tromey.com/elpa/")
-						 ("gnu" . "http://elpa.gnu.org/packages/")
+(setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
+						 ("gnu" . "https://elpa.gnu.org/packages/")
 						 ("melpa" . "https://melpa.org/packages/")))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+	   (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	  (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+	(with-current-buffer
+		(url-retrieve-synchronously
+		 "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+		 'silent 'inhibit-cookies)
+	  (goto-char (point-max))
+	  (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
 (setq url-http-attempt-keepalives nil)
 (setq package-check-signature nil)
 (setq use-package-always-ensure t)
@@ -28,6 +41,7 @@
 		 "xrandr" nil "xrandr --output DP-5 --o~utput HDMI-0 --auto")))
 (exwm-randr-enable)
 
+(setq use-package-stra
 
 ;;; Themeage
 ;;;; Doom
@@ -213,6 +227,7 @@
 
 (use-package yasnippet
   :init
+  (setq yas-triggers-in-field t)
   (yas-global-mode))
 
 ;;; Org
@@ -373,10 +388,13 @@
 	  '((t (:foreground "#71696A" :strike-through t)))
 	  "Face for the text part of a checked org-mode checkbox.")
 
-	(custom-set-faces
-	 '(org-headline-done
-				((((class color) (class color) (min-colors 16))
-				  (:foreground "#cfd1d1")))))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))
 (with-eval-after-load 'org
   (set-face-attribute 'org-hide nil
 						:foreground "brightblack"
@@ -433,6 +451,36 @@
   (org-cycle-hide-drawers 'all))
 (global-set-key (kbd "s-b") 'hide-wrapper)
 
+;;;;; Writing
+(use-package org-appear
+  :straight (:host github :repo "awth13/org-appear"))
+(use-package org-fragtog)
+(use-package org-autolist)
+(setq org-list-allow-alphabetical t)
+(add-hook 'org-mode-hook 'turn-on-flyspell)
+(use-package mixed-pitch
+  :init
+  (add-hook 'org-mode-hook 'mixed-pitch-mode))
+
+;;;;; Roam
+
+(use-package org-roam-server
+  :after (org-roam server)
+  :config
+  (setq org-roam-server-host "127.0.0.1"
+		org-roam-server-port 8078
+		org-roam-server-export-inline-images t
+		org-roam-server-authenticate nil
+		org-roam-server-network-label-truncate t
+		org-roam-server-network-label-truncate-length 60
+		org-roam-server-network-label-wrap-length 20)
+  (defun org-roam-server-open ()
+	"Ensure the server is active, then open the roam graph."
+	(interactive)
+	(org-roam-server-mode 1)
+	(browse-url-xdg-open (format "http://localhost:%d" org-roam-server-port))))
+
+
 ;;;; Babel
 ;; Enable Org Babel features
 (org-babel-do-load-languages ;; More languages!
@@ -452,6 +500,7 @@
 (add-to-list 'org-file-apps '(directory . emacs)) ;; Allow links to open directories in Dired
 
 ;;; Programming
+
 ;;;; Sanity
 (setq-default tab-width 4)
 ;;;; LSP
@@ -477,6 +526,9 @@
   (use-package company-quickhelp
   :config (company-quickhelp-mode))
   (use-package company-prescient
+  :init
+  (setq-default history-length 1000)
+  (setq-default prescient-history-length 1000)
   :config (company-prescient-mode)))
 
 ;;;; flycheck
@@ -495,7 +547,6 @@
 
 (setq company-tooltip-maximum-width 60)
 
-(yas-global-mode)
 (defun code-hook ()
   (lsp)
   (lsp-ui-mode)
@@ -513,14 +564,13 @@
 
 (add-hook 'c-mode-common-hook 'code-hook)
 
-
-(add-hook 'c-mode-common-hook (lambda ()
-								(c-set-offset 'innamespace 0)
-								(push '("std::" . "") prettify-symbols-alist)
-								(push '("Eigen::" . "" ) prettify-symbols-alist)))
 (defun clean-whitespace-hook ()
   (whitespace-cleanup))
 (add-hook 'before-save-hook #'clean-whitespace-hook)
+
+;;;;; Shell
+(use-package emacs-shfmt
+  :straight (:host github :repo "purcell/emacs-shfmt"))
 
 ;;;; Hackiness
 
@@ -530,7 +580,8 @@
 ;;	(centaur-tabs-local-mode)))
 ;; (add-hook 'after-change-major-mode-hook 'contextual-tabs)
 
-;;;; hl-todo
+;;;; Aesthetics
+;;;;; hl-todo
 (global-hl-todo-mode)
 (setq hl-todo-keyword-faces
 	  '(("TODO"   . "#99bb66")
@@ -544,6 +595,57 @@
 (define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
 ;; We already have todos in Org Mode!
 (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
+
+;;;;; prettify-symbols
+
+;;;;; Icons
+
+(defun my/add-visual-replacement (from to)
+  "Make `prettify-symbols-mode' replace string FROM with string TO.
+
+Updates `prettify-symbols-alist'.  You may need to toggle
+`prettify-symbols-mode' to make the changes take effect.
+
+Each character of TO is vertically aligned using the baseline,
+such that base-left of the character is aligned with base-right
+of the preceding character.  Refer to `reference-point-alist'
+for more information."
+  (push (cons from (let ((composition nil))
+					 (dolist (char (string-to-list to)
+								   (nreverse (cdr composition)))
+					   (push char composition)
+					   (push '(Br . Bl) composition))))
+		prettify-symbols-alist))
+
+(add-hook 'c-mode-common-hook
+		  (lambda ()
+			(c-set-offset 'innamespace 0)
+			(my/add-visual-replacement "uint64_t" "u64")
+			(my/add-visual-replacement "uint32_t" "u32")
+			(my/add-visual-replacement "uint16_t" "u16")
+			(my/add-visual-replacement "int8_t" "u8")
+			(my/add-visual-replacement "int64_t" "i64")
+			(my/add-visual-replacement "int32_t" "i32")
+			(my/add-visual-replacement "int16_t" "i16")
+			(my/add-visual-replacement "int8_t" "i8")
+			(my/add-visual-replacement "size_t" "sz_t")
+			(my/add-visual-replacement "->" "→")
+			(my/add-visual-replacement ">=" "≥")
+			(my/add-visual-replacement "<=" "≤")
+			(my/add-visual-replacement "!=" "≠")))
+(add-hook 'c++-mode-hook
+		  (lambda ()
+			(c-set-offset 'innamespace 0)
+			(my/add-visual-replacement "Eigen::MatrixXf" "mXf")
+			(my/add-visual-replacement "Eigen::MatrixXd" "mXd")
+			(my/add-visual-replacement "Eigen::Vector2f" "v2f")
+			(my/add-visual-replacement "Eigen::Vector2d" "v2d")
+			(my/add-visual-replacement "Eigen::Vector2i" "v2i")
+			(my/add-visual-replacement "Eigen::Vector3f" "v3f")
+			(my/add-visual-replacement "Eigen::Vector3d" "v3d")
+			(my/add-visual-replacement "Eigen::Vector3i" "v3i")
+			(push '("std::" . "" ) prettify-symbols-alist)))
+
 
 ;;;; Dash
 
@@ -592,10 +694,4 @@
    '("2035a16494e06636134de6d572ec47c30e26c3447eafeb6d3a9e8aee73732396" "8f5a7a9a3c510ef9cbb88e600c0b4c53cdcdb502cfe3eb50040b7e13c6f4e78e" default))
  '(org-agenda-files '("~/Dropbox/org/dashboard.org"))
  '(package-selected-packages
-   '(org-bullets org-superstar exwm-float helpful lsp-ivy all-the-icons-ivy-rich ivy-rich which-key writeroom-mode projectile dashboard org-autolist org-fragtog format-all goto-line-preview shackle helm neotree smooth-scrolling smooth-scroll lsp-focus focus dired-rainbow all-the-icons-dired literate-calc-mode treemacs olivetti color-identifiers-mode auctex yasnippet aas vterm ccls lsp-ui ewal-doom-themes ewal use-package solaire-mode ivy-prescient exwm doom-themes doom-modeline counsel centaur-tabs)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+   '(magithub org-bullets org-superstar exwm-float helpful lsp-ivy all-the-icons-ivy-rich ivy-rich which-key writeroom-mode projectile dashboard org-autolist org-fragtog format-all goto-line-preview shackle helm neotree smooth-scrolling smooth-scroll lsp-focus focus dired-rainbow all-the-icons-dired literate-calc-mode treemacs olivetti color-identifiers-mode auctex yasnippet aas vterm ccls lsp-ui ewal-doom-themes ewal use-package solaire-mode ivy-prescient exwm doom-themes doom-modeline counsel centaur-tabs)))
