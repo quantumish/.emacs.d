@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: tt
+# key: tt
+# --
+template <class T>

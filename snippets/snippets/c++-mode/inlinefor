@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: inlinefor
+# key: infor
+# --
+for (${1:initial}; ${2:condition}; ${3:update}) ${0:statement};

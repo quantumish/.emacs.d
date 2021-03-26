@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: rangefor
+# key: rngfor
+# --
+for (${1:item} : ${2:iterable}) {
+    ${0:statement};
+}

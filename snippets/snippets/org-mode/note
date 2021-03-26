@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: note
+# key: note
+# --
+(tag "NOTE" "white" "blue"   12)

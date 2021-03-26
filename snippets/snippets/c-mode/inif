@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: inif
+# key: inif
+# --
+if (${1:condition}) ${2:statement};

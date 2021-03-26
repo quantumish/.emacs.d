@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: fdq
+# key: fdq
+# --
+$\lim_{x\rightarrow0} \frac{f(x_0+\Delta x) - f(x_0)}{x-x_0}$

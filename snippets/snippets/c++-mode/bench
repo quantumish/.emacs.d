@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: bench
+# key: bench
+# --
+auto start = std::chrono::high_resolution_clock::now();
+${1:statement};
+auto end = std::chrono::high_resolution_clock::now();
+double time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+$0

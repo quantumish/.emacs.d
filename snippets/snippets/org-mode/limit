@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: lim
+# key: lim
+# --
+$\lim_{x \rightarrow ${1:x_0}} ${2:f(x)} = ${3:x}$

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: atom
+# key: atom
+# --
+‎^{${1:atomic_number}‎}${2:Sy} $0
