@@ -1,2 +1,10 @@
 #+TITLE: .emacs.d - revamped!
-- [ ] Write a readme
+
+** About
+An opinionated Emacs configuration with emphasis on functionality and visuals.
+
+** EXWM Screenshots!
+[[https://i.imgur.com/oXqwT4P.jpg]]
+
+Multi-monitor:
+[[https://i.imgur.com/bZpIoFM.png]]
