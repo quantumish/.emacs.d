@@ -19,8 +19,10 @@
 	  (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(require 'url-http)
 (setq url-http-attempt-keepalives nil)
 (setq package-check-signature nil)
+(require 'use-package)
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
 
