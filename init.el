@@ -41,9 +41,16 @@
 		 "xrandr" nil "xrandr --output DP-5 --o~utput HDMI-0 --auto")))
 (exwm-randr-enable)
 
-(setq use-package-stra
+;;;; General
+(use-package general)
 
 ;;; Themeage
+;;;; Magic Icon Fix
+(defun magic-icon-fix ()
+  (let ((fontset (face-attribute 'default :fontset)))
+	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
+
+(add-hook 'org-mode-hook 'magic-icon-fix)
 ;;;; Doom
 (use-package doom-themes
 	:init
@@ -58,13 +65,13 @@
 	;; Enable custom neotree theme (all-the-icons must be installed!)
 	(doom-themes-neotree-config)
 	;; or for treemacs users
-	(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
-	(doom-themes-treemacs-config)
+	;(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+	;(doom-themes-treemacs-config)
 
 	;; Corrects (and improves) org-mode's native fontification.
 	(doom-themes-org-config))
 
-(use-package treemacs)
+; (use-package treemacs)
 
 (use-package doom-modeline
   :init
@@ -344,32 +351,58 @@
   (setq org-link-frame-setup '((file . find-file))))
 
 ;;;;; Icons
-(add-hook 'org-mode-hook (lambda ()
-	 (push '("#+TITLE: " . "" ) prettify-symbols-alist)
-	 (push '("#+STARTUP:" . "")  prettify-symbols-alist)
-	 (push '("#+ROAM_TAGS:" . "")  prettify-symbols-alist)
-	 (push '("#+FILETAGS:" . "")  prettify-symbols-alist)
-	 (push '("#+RESULTS:" . "")  prettify-symbols-alist)
-	 (push '("TODO" . "")  prettify-symbols-alist)
-	 (push '("DONE" . "") prettify-symbols-alist)
-	 (push '("WAIT" . "") prettify-symbols-alist)
-	 (push '("NOPE" . "") prettify-symbols-alist)
-	 (push '("DEADLINE:" . "") prettify-symbols-alist)
-	 (push '("SCHEDULED:" . "") prettify-symbols-alist)
-	 (push '("[ ]" . "") prettify-symbols-alist)
-	 (push '("[X]" . "") prettify-symbols-alist)
-	 (push '("[-]" . "") prettify-symbols-alist)
-	 (push '("#+BEGIN_SRC" . "") prettify-symbols-alist)
-	 (push '("#+END_SRC" . "—") prettify-symbols-alist)
-	 (push '(":END:" . "—") prettify-symbols-alist)
-	 (push '(":PROPERTIES:" . "") prettify-symbols-alist)
-	 (push '(":Effort:" . "") prettify-symbols-alist)
-	 (push '("#+HTML_HEAD:" . "") prettify-symbols-alist)
-	 (push '("#+SUBTITLE:" . "") prettify-symbols-alist)
-	 (push '("#+AUTHOR:" . "") prettify-symbols-alist)
-	 (prettify-symbols-mode)))
+;; (add-hook 'org-mode-hook (lambda ()
+;;	 (push '("#+TITLE: " . "" ) prettify-symbols-alist)
+;;	 (push '("#+STARTUP:" . "")  prettify-symbols-alist)
+;;	 (push '("#+ROAM_TAGS:" . "")  prettify-symbols-alist)
+;;	 (push '("#+FILETAGS:" . "")  prettify-symbols-alist)
+;;	 (push '("#+RESULTS:" . "")  prettify-symbols-alist)
+;;	 (push '("DONE" . "") prettify-symbols-alist)
+;;	 (push '("WAIT" . "") prettify-symbols-alist)
+;;	 (push '("NOPE" . "") prettify-symbols-alist)
+;;	 (push '("DEADLINE:" . "") prettify-symbols-alist)
+;;	 (push '("SCHEDULED:" . "") prettify-symbols-alist)
+;;	 (push '("[ ]" . "") prettify-symbols-alist)
+;;	 (push '("[X]" . "") prettify-symbols-alist)
+;;	 (push '("[-]" . "") prettify-symbols-alist)
+;;	 (push '("#+BEGIN_SRC" . "") prettify-symbols-alist)
+;;	 (push '("#+END_SRC" . "—") prettify-symbols-alist)
+;;	 (push '(":END:" . "—") prettify-symbols-alist)
+;;	 (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+;;	 (push '(":Effort:" . "") prettify-symbols-alist)
+;;	 (push '("#+HTML_HEAD:" . "") prettify-symbols-alist)
+;;	 (push '("#+SUBTITLE:" . "") prettify-symbols-alist)
+;;	 (push '("#+AUTHOR:" . "") prettify-symbols-alist)
+;;	 (prettify-symbols-mode)))
 
+(defun org-icons ()
+   "Beautify Org Checkbox Symbol"
+   (setq prettify-symbols-alist '(("TODO" . "")
+								  ("DONE" . "")
+								  ("WAIT" . "")
+								  ("NOPE" . "")
+								  ("[#A]" . "")
+								  ("[#B]" . "")
+								  ("[#C]" . "")
+								  ("[ ]" . "")
+								  ("[X]" . "")
+								  ("[-]" . "")
+								  ("#+BEGIN_SRC" . "")
+								  ("#+END_SRC" . "―")
+								  (":PROPERTIES:" . "")
+								  (":END:" . "―")
+								  ("#+STARTUP:" . "")
+								  ("#+TITLE: " . "")
+								  ("#+RESULTS:" . "")
+								  ("#+NAME:" . "")
+								  ("#+ROAM_TAGS:" . "")
+								  ("#+HTML_HEAD:" . "")
+								  ("#+AUTHOR:" . "")
+								  ("SCHEDULED:" . "")
+								  ("DEADLINE:" . "")))
+   (prettify-symbols-mode))
 
+(add-hook 'org-mode-hook 'org-icons)
 
 ;;;;; Faces
 (setq org-fontify-quote-and-verse-blocks t)
@@ -381,7 +414,7 @@
 							  (?C . (:foreground "#6cad50"))))
 
 	(setq org-todo-keyword-faces
-		  '(("TODO" . "#999999") ("WAIT" . "#cfd1d1")
+		  '(("TODO" . (:foreground "#999999" :bold nil)) ("WAIT" . "#cfd1d1")
 			("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
 
 	(defface org-checkbox-done-text
@@ -409,7 +442,9 @@
 						  :weight 'light)
 	  (set-face-attribute 'org-document-title nil
 						  :height 2.0
-						  :weight 'bold))
+						  :weight 'bold)
+	  (set-face-attribute 'org-todo nil
+						  :weight 'light))
 ;;;;; No :PROPERTIES:
 (defun org-cycle-hide-drawers (state)
   "Re-hide all drawers after a visibility state change."
@@ -558,8 +593,7 @@
   (olivetti-set-width 180)
   (lsp-focus-mode)
   (focus-mode)
-  (treemacs)
-  (previous-buffer)
+  ; (treemacs)
   (setq lsp-headerline-breadcrumb-mode 0))
 
 (add-hook 'c-mode-common-hook 'code-hook)
@@ -619,7 +653,6 @@ for more information."
 
 (add-hook 'c-mode-common-hook
 		  (lambda ()
-			(c-set-offset 'innamespace 0)
 			(my/add-visual-replacement "uint64_t" "u64")
 			(my/add-visual-replacement "uint32_t" "u32")
 			(my/add-visual-replacement "uint16_t" "u16")
