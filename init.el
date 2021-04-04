@@ -48,11 +48,11 @@
 
 ;;; Themeage
 ;;;; Magic Icon Fix
-(defun magic-icon-fix ()
-  (let ((fontset (face-attribute 'default :fontset)))
-	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
+;; (defun magic-icon-fix ()
+;;   (let ((fontset (face-attribute 'default :fontset)))
+;;	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
 
-(add-hook 'org-mode-hook 'magic-icon-fix)
+;; (add-hook 'org-mode-hook 'magic-icon-fix)
 ;;;; Doom
 (use-package doom-themes
 	:init
@@ -74,6 +74,13 @@
 	(doom-themes-org-config))
 
 ; (use-package treemacs)
+
+
+(defun quantumize ()
+  (interactive)
+	(setq-local company-frontends '(company-preview-frontend))
+	(setq-local company-minimum-prefix-length 0))
+
 
 (use-package doom-modeline
   :init
@@ -399,6 +406,7 @@
 								  ("#+NAME:" . "")
 								  ("#+ROAM_TAGS:" . "")
 								  ("#+HTML_HEAD:" . "")
+								  ("#+SUBTITLE:" . "")
 								  ("#+AUTHOR:" . "")
 								  ("SCHEDULED:" . "")
 								  ("DEADLINE:" . "")))
@@ -429,6 +437,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(lsp-face-highlight-textual ((t (:background "#537b42" :foreground "#424242" :weight bold))))
  '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))
 (with-eval-after-load 'org
   (set-face-attribute 'org-hide nil
@@ -726,7 +735,7 @@ for more information."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("2035a16494e06636134de6d572ec47c30e26c3447eafeb6d3a9e8aee73732396" "8f5a7a9a3c510ef9cbb88e600c0b4c53cdcdb502cfe3eb50040b7e13c6f4e78e" default))
+   '("b9dcb7609b4b1bd5b2944beac4ff919d921de54031f72e4a6163ccd2f38f3120" "c8f5c12763f1517fc76d1ea73ca76840c8ae4026809ccf6fa0f5b3fa0153b1ef" "c5a5dfa89f6d916de6edc495cab0350216b1ec23c24ad592ff9fec42d4e38496" "484da5a255cccdb56e4231ece3b0cb03871a0351b7d02592ff1aed9e6beb0904" "a5a47e47de0a70b4fa50800a7408c390346b0d951084da7b7af9c56e67f1cf9a" "2ed51fb2e0fd5c13e68308964b49127fe303cb637242ac11c7d675114cf0eab3" "76f1775f1f918cff13ad67373619cb2f412a5842fd2363b7e09b79c26b9d8ff9" "861f67f647b909b58965438401ef813a4babcb490dcfed92129ba96e5dd8f984" "46df9c342cbd700cde1d75d391aa854a4b22c1231bef7f8449d492f411a7fbb0" "77aea8e1ea6477f9fa61ecd86265090261b41acf87e4c830f10fc56ec55a0801" "3f25d453c0faca64c60893d2e44a37030be6ba3e75e643e653a72f80a0c8e50f" "52c9b13dbf1565fa90ce0e6b8fc171256d0dea596d181731dcfe80529cf04b1c" "1a7f2157fcc38c8f569557b5432196496bbaf8a99c7765ad7c27d6a9c79a47a5" "378195fc2031109d6fe37df0b823c9902e149bb713fcd7152c7a5f68a14dba98" "d74aa0bb6e5bb24a27049288133e810de436c932a5e497b43c1b51c0f289164e" "9bce0211b4d4e48d794215bd3cf32a6fd38d59dc8b377dc73c510c38d43c4e25" "f2927d7d87e8207fa9a0a003c0f222d45c948845de162c885bf6ad2a255babfd" "2035a16494e06636134de6d572ec47c30e26c3447eafeb6d3a9e8aee73732396" "8f5a7a9a3c510ef9cbb88e600c0b4c53cdcdb502cfe3eb50040b7e13c6f4e78e" default))
  '(org-agenda-files '("~/Dropbox/org/dashboard.org"))
  '(package-selected-packages
    '(magithub org-bullets org-superstar exwm-float helpful lsp-ivy all-the-icons-ivy-rich ivy-rich which-key writeroom-mode projectile dashboard org-autolist org-fragtog format-all goto-line-preview shackle helm neotree smooth-scrolling smooth-scroll lsp-focus focus dired-rainbow all-the-icons-dired literate-calc-mode treemacs olivetti color-identifiers-mode auctex yasnippet aas vterm ccls lsp-ui ewal-doom-themes ewal use-package solaire-mode ivy-prescient exwm doom-themes doom-modeline counsel centaur-tabs)))
