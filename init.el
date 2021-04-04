@@ -1,4 +1,36 @@
 ;;; Early Init
+;;;; Speed
+(setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
+	  gc-cons-percentage 0.6)
+
+(add-hook 'emacs-startup-hook
+  (lambda ()
+	(setq gc-cons-threshold 16777216 ; 16mb
+		  gc-cons-percentage 0.1)))
+
+(defun doom-defer-garbage-collection-h ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
+(defun doom-restore-garbage-collection-h ()
+  ;; Defer it so that commands launched immediately after will enjoy the
+  ;; benefits.
+  (run-at-time
+   1 nil (lambda () (setq gc-cons-threshold 16777216))))
+
+(add-hook 'minibuffer-setup-hook #'doom-defer-garbage-collection-h)
+(add-hook 'minibuffer-exit-hook #'doom-restore-garbage-collection-h)
+
+(use-package gcmh
+  :init
+  (setq gcmh-idle-delay 5
+		gcmh-high-cons-threshold (* 16 1024 1024) ))
+
+(setq package-enable-at-startup nil ; don't auto-initialize!
+	  ;; don't add that `custom-set-variables' block to my init.el!
+	  package--init-file-ensured t)
+
+(setq frame-inhibit-implied-resize t)
+(setq initial-major-mode 'fundamental-mode)
 
 ;;;; Packages and Elisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
@@ -43,6 +75,8 @@
 
 ;;;; General
 (use-package general)
+
+
 
 ;;; Themeage
 ;;;; Magic Icon Fix
@@ -194,16 +228,20 @@
 	(defun counsel-goto-local-home ()
 		"Go to the $HOME of the local machine."
 		(interactive)
-		(ivy--cd "~/"))
-	(use-package ivy-rich
-	  :config
-	  (ivy-rich-mode)
-	  (use-package all-the-icons-ivy-rich
-		:config (all-the-icons-ivy-rich-mode))
-	  (use-package ivy-prescient
-		:config (ivy-prescient-mode))))
+		(ivy--cd "~/")))
 
+(use-package ivy-rich
+  :after ivy
+  :init
+  (ivy-rich-mode))
 
+(use-package all-the-icons-ivy-rich
+  :after ivy-rich
+  :init (all-the-icons-ivy-rich-mode))
+
+(use-package ivy-prescient
+  :after ivy
+  :init (ivy-prescient-mode))
 
 ;;;; Introspection
 (use-package helpful
@@ -396,13 +434,29 @@
 								  ("#+RESULTS:" . "")
 								  ("#+NAME:" . "")
 								  ("#+ROAM_TAGS:" . "")
+								  ("#+FILETAGS:" . "")
 								  ("#+HTML_HEAD:" . "")
 								  ("#+AUTHOR:" . "")
+								  (":Effort:" . "")
 								  ("SCHEDULED:" . "")
 								  ("DEADLINE:" . "")))
    (prettify-symbols-mode))
 
+(defun header-line-spacious ()
+  "Header line"
+  (setq header-line-format " ")
+  (set-face-attribute 'header-line nil :height 400))
+
+(defun writing-hook ()
+  ""
+  (setq-local company-backends '(company-wordfreq company-ispell))
+  (setq-local company-transformers nil)
+  (setq-local company-frontends '(company-preview-frontend))
+  (setq-local company-minimum-prefix-length 0)
+  (writegood-mode))
+
 (add-hook 'org-mode-hook 'org-icons)
+(add-hook 'org-mode-hook 'header-line-spacious)
 
 ;;;;; Faces
 (setq org-fontify-quote-and-verse-blocks t)
@@ -420,6 +474,7 @@
 	(defface org-checkbox-done-text
 	  '((t (:foreground "#71696A" :strike-through t)))
 	  "Face for the text part of a checked org-mode checkbox.")
+
 
 
 (custom-set-faces
@@ -542,8 +597,6 @@
 (use-package lsp-mode
   :init
   (setq lsp-headerline-breadcrumb-enable nil)
-  :config
-  (use-package lsp-ui)
   :hook ((c++-mode . lsp)
 		 (c-mode . lsp)
 		 (python-mode . lsp)
@@ -551,20 +604,25 @@
 		 (typescript-mode . lsp))
   :commands lsp)
 
+(use-package lsp-ui :after lsp)
+
 ;;;; Company
 (use-package company
   :init
   (setq company-idle-delay 0)
   (setq company-tooltip-maximum-width 40)
-  (global-company-mode)
-  :config
-  (use-package company-quickhelp
-  :config (company-quickhelp-mode))
-  (use-package company-prescient
+  (global-company-mode))
+
+(use-package company-quickhelp
+  :after company
+  :init (company-quickhelp-mode))
+
+(use-package company-prescient
+  :after company
   :init
   (setq-default history-length 1000)
   (setq-default prescient-history-length 1000)
-  :config (company-prescient-mode)))
+  :init (company-prescient-mode))
 
 ;;;; flycheck
 (use-package flycheck
@@ -715,16 +773,3 @@ for more information."
 ;;; Gaps
 ;; TODO: Fix gaps
 (load "exwm-outer-gaps")
-
-;;; Custom (ew)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("2035a16494e06636134de6d572ec47c30e26c3447eafeb6d3a9e8aee73732396" "8f5a7a9a3c510ef9cbb88e600c0b4c53cdcdb502cfe3eb50040b7e13c6f4e78e" default))
- '(org-agenda-files '("~/Dropbox/org/dashboard.org"))
- '(package-selected-packages
-   '(magithub org-bullets org-superstar exwm-float helpful lsp-ivy all-the-icons-ivy-rich ivy-rich which-key writeroom-mode projectile dashboard org-autolist org-fragtog format-all goto-line-preview shackle helm neotree smooth-scrolling smooth-scroll lsp-focus focus dired-rainbow all-the-icons-dired literate-calc-mode treemacs olivetti color-identifiers-mode auctex yasnippet aas vterm ccls lsp-ui ewal-doom-themes ewal use-package solaire-mode ivy-prescient exwm doom-themes doom-modeline counsel centaur-tabs)))
