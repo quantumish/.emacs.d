@@ -51,8 +51,10 @@
 	  (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(require 'url-http)
 (setq url-http-attempt-keepalives nil)
 (setq package-check-signature nil)
+(require 'use-package)
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
 
@@ -80,11 +82,11 @@
 
 ;;; Themeage
 ;;;; Magic Icon Fix
-(defun magic-icon-fix ()
-  (let ((fontset (face-attribute 'default :fontset)))
-	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
+;; (defun magic-icon-fix ()
+;;   (let ((fontset (face-attribute 'default :fontset)))
+;;	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
 
-(add-hook 'org-mode-hook 'magic-icon-fix)
+;; (add-hook 'org-mode-hook 'magic-icon-fix)
 ;;;; Doom
 (use-package doom-themes
 	:init
@@ -106,6 +108,13 @@
 	(doom-themes-org-config))
 
 ; (use-package treemacs)
+
+
+(defun quantumize ()
+  (interactive)
+	(setq-local company-frontends '(company-preview-frontend))
+	(setq-local company-minimum-prefix-length 0))
+
 
 (use-package doom-modeline
   :init
@@ -436,6 +445,7 @@
 								  ("#+ROAM_TAGS:" . "")
 								  ("#+FILETAGS:" . "")
 								  ("#+HTML_HEAD:" . "")
+								  ("#+SUBTITLE:" . "")
 								  ("#+AUTHOR:" . "")
 								  (":Effort:" . "")
 								  ("SCHEDULED:" . "")
@@ -482,6 +492,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(lsp-face-highlight-textual ((t (:background "#537b42" :foreground "#424242" :weight bold))))
  '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))
 (with-eval-after-load 'org
   (set-face-attribute 'org-hide nil
