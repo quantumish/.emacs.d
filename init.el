@@ -9,11 +9,11 @@
 		  gc-cons-percentage 0.1)))
 
 (defun doom-defer-garbage-collection-h ()
+  "Disable garbage collection at init."
   (setq gc-cons-threshold most-positive-fixnum))
 
 (defun doom-restore-garbage-collection-h ()
-  ;; Defer it so that commands launched immediately after will enjoy the
-  ;; benefits.
+  "Restore garbage collection after init."
   (run-at-time
    1 nil (lambda () (setq gc-cons-threshold 16777216))))
 
@@ -25,7 +25,7 @@
   (setq gcmh-idle-delay 5
 		gcmh-high-cons-threshold (* 16 1024 1024) ))
 
-(setq package-enable-at-startup nil ; don't auto-initialize!
+(setq package-enable-at-startup nil		; don't auto-initialize!
 	  ;; don't add that `custom-set-variables' block to my init.el!
 	  package--init-file-ensured t)
 
@@ -265,7 +265,37 @@
   (counsel-describe-function-function #'helpful-callable)
   (counsel-describe-variable-function #'helpful-variable))
 
+;;; Useful Functions
+(defun replace-in-string (what with in)
+  "Replace substring (as WHAT) with another substring (as WITH) within a given string (as IN)."
+  (replace-regexp-in-string (regexp-quote what) with in nil 'literal))
+
 ;;; General Improvements
+(use-package outshine
+  :hook (emacs-lisp-mode . outshine-mode))
+
+(use-package lispy
+  :disable
+  :hook (emacs-lisp-mode . lispy-mode))
+
+(use-package marginalia
+  :config (marginalia-mode))
+
+(use-package embark
+  :bind
+  (("C-S-a" . embark-act)       ;; pick some comfortable binding
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+			   '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+				 nil
+				 (window-parameters (mode-line-format . none)))))
 
 (use-package crux
   :bind
@@ -284,16 +314,46 @@
   (setq yas-triggers-in-field t)
   (yas-global-mode))
 
+(use-package goto-line-preview
+  :init (general-define-key "M-g M-g" 'goto-line-preview
+							"C-x n g" 'goto-line-relative-preview))
+
+(use-package beacon
+  :init (general-define-key "C-?" 'beacon-blink))
+
+(use-package which-key
+  :init (which-key-mode))
+
+
+
 ;;; Org
 ;;;; Basic Setup
-(setq org-directory "~/Dropbox/org")
-(setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
-
-;;;; Archiving
+(use-package org
+  :config
+  (setq org-directory "~/Dropbox/org")
+  (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
+  (setq org-startup-with-inline-images "inlineimages")
+  (setq org-hide-emphasis-markers t)
+  (setq org-link-elisp-confirm-function nil)
+  (setq org-ellipsis " ")
+  (setq org-link-frame-setup '((file . find-file)))
+  (setq org-catch-invisible-edits 'error)
+  (setq org-cycle-separator-lines 0)
+  (setq org-enforce-todo-dependencies t)
+  (setq org-enforce-todo-checkbox-dependencies t)
+  (setq org-list-allow-alphabetical t)
+  (setq org-agenda-dim-blocked-tasks t)
+  (setq org-fontify-quote-and-verse-blocks t)
+  (setq org-fontify-emphasized-text t)
+  (setq org-fontify-done-headline t)
+  (setq org-modules (append org-modules '(org-habit org-id)))
+  :bind
+  ("C-c c" . org-capture)
+  (:map org-mode-map
+		("C-c C-k" . org-kill-note-or-show-branches)))
+;;;;; Archiving
 (setq org-archive-location (concat org-directory "/archived.org::"))
 
-(defun replace-in-string (what with in)
-  (replace-regexp-in-string (regexp-quote what) with in nil 'literal))
 (setq org-archive-truelocation (replace-in-string "~" (getenv "HOME") (concat org-directory "/archived.org")))
 
 (setq org-archive-file-header-format "")
@@ -317,9 +377,6 @@
 	(previous-buffer)))
 
 ;;;; Project Structure
-(setq org-enforce-todo-dependencies t)
-(setq org-enforce-todo-checkbox-dependencies t)
-(setq org-agenda-dim-blocked-tasks t)
 
 (defun parallel-project ()
 "This function makes sure that the current heading has
@@ -352,8 +409,7 @@
   (parallel-project)
   (org-set-property "ORDERED" "t"))
 
-;;;; Recurring TODOs
-; (setq org-modules (append org-modules '(org-habit)))
+
 ;;;; Calendar
 
 (defun open-org-yearview () (interactive)
@@ -375,8 +431,6 @@
 						   ("~/Dropbox/org/schedule.org" :maxlevel . 2)))
 
 
-(global-set-key (kbd "C-c c") 'org-capture)
-
 ;;;; Project Review
 (setq org-agenda-custom-commands
 	  '(("p" tags "project" nil)
@@ -388,39 +442,9 @@
 	  '("+project/-MAYBE-DONE" ("TODO") nil "\\<IGNORE\\>"))
 
 ;;;; Aesthetics
-(with-eval-after-load 'org
-  (setq org-display-inline-images t)
-  (setq org-redisplay-inline-images t)
-  (setq org-startup-with-inline-images "inlineimages")
-  (setq org-hide-emphasis-markers t)
-  (setq org-confirm-elisp-link-function nil)
-  (setq org-ellipsis " ")
-  (setq org-link-frame-setup '((file . find-file))))
+
 
 ;;;;; Icons
-;; (add-hook 'org-mode-hook (lambda ()
-;;	 (push '("#+TITLE: " . "" ) prettify-symbols-alist)
-;;	 (push '("#+STARTUP:" . "")  prettify-symbols-alist)
-;;	 (push '("#+ROAM_TAGS:" . "")  prettify-symbols-alist)
-;;	 (push '("#+FILETAGS:" . "")  prettify-symbols-alist)
-;;	 (push '("#+RESULTS:" . "")  prettify-symbols-alist)
-;;	 (push '("DONE" . "") prettify-symbols-alist)
-;;	 (push '("WAIT" . "") prettify-symbols-alist)
-;;	 (push '("NOPE" . "") prettify-symbols-alist)
-;;	 (push '("DEADLINE:" . "") prettify-symbols-alist)
-;;	 (push '("SCHEDULED:" . "") prettify-symbols-alist)
-;;	 (push '("[ ]" . "") prettify-symbols-alist)
-;;	 (push '("[X]" . "") prettify-symbols-alist)
-;;	 (push '("[-]" . "") prettify-symbols-alist)
-;;	 (push '("#+BEGIN_SRC" . "") prettify-symbols-alist)
-;;	 (push '("#+END_SRC" . "—") prettify-symbols-alist)
-;;	 (push '(":END:" . "—") prettify-symbols-alist)
-;;	 (push '(":PROPERTIES:" . "") prettify-symbols-alist)
-;;	 (push '(":Effort:" . "") prettify-symbols-alist)
-;;	 (push '("#+HTML_HEAD:" . "") prettify-symbols-alist)
-;;	 (push '("#+SUBTITLE:" . "") prettify-symbols-alist)
-;;	 (push '("#+AUTHOR:" . "") prettify-symbols-alist)
-;;	 (prettify-symbols-mode)))
 
 (defun org-icons ()
    "Beautify Org Checkbox Symbol"
@@ -452,6 +476,29 @@
 								  ("DEADLINE:" . "")))
    (prettify-symbols-mode))
 
+(use-package org-superstar
+  :init (add-hook 'org-mode-hook 'org-superstar-mode))
+(use-package org-appear
+  :straight (:host github :repo "awth13/org-appear")
+  :init (add-hook 'org-mode-hook 'org-fragtog-mode))
+(use-package org-fragtog
+  :init (add-hook 'org-mode-hook 'org-fragtog-mode))
+(use-package org-autolist
+  :init (add-hook 'org-mode-hook 'org-autolist-mode))
+(use-package org-marginalia
+  :straight (:host github :repo "nobiot/org-marginalia")
+  :init (add-hook 'org-mode-hook 'org-marginalia-mode)
+  (defun org-marginalia-save-and-open (point)
+	(interactive "d")
+	(org-marginalia-save)
+	(org-marginalia-open point))
+  :bind (:map
+		 ("C-c n o" . org-marginalia-save-and-open)
+		 ("C-c m" . org-marginalia-mark)
+		 ("C-c n ]" . org-marginalia-next)
+		 ("C-c n [" . org-marginalia-prev)))
+
+
 (defun header-line-spacious ()
   "Header line"
   (setq header-line-format " ")
@@ -462,16 +509,12 @@
   (setq-local company-backends '(company-wordfreq company-ispell))
   (setq-local company-transformers nil)
   (setq-local company-frontends '(company-preview-frontend))
-  (setq-local company-minimum-prefix-length 0)
-  (writegood-mode))
+  (setq-local company-minimum-prefix-length 0))
 
 (add-hook 'org-mode-hook 'org-icons)
 (add-hook 'org-mode-hook 'header-line-spacious)
 
 ;;;;; Faces
-(setq org-fontify-quote-and-verse-blocks t)
-(setq org-fontify-emphasized-text t)
-(setq org-fontify-done-headline t)
 
 	(setq org-priority-faces '((?A . (:foreground "#f5381b" :weight 'bold))
 							  (?B . (:foreground "#f5cb22"))
@@ -485,15 +528,6 @@
 	  '((t (:foreground "#71696A" :strike-through t)))
 	  "Face for the text part of a checked org-mode checkbox.")
 
-
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(lsp-face-highlight-textual ((t (:background "#537b42" :foreground "#424242" :weight bold))))
- '(org-headline-done ((((class color) (class color) (min-colors 16)) (:foreground "#cfd1d1")))))
 (with-eval-after-load 'org
   (set-face-attribute 'org-hide nil
 						:foreground "brightblack"
@@ -553,15 +587,10 @@
 (global-set-key (kbd "s-b") 'hide-wrapper)
 
 ;;;;; Writing
-(use-package org-appear
-  :straight (:host github :repo "awth13/org-appear"))
-(use-package org-fragtog)
-(use-package org-autolist)
-(setq org-list-allow-alphabetical t)
-(add-hook 'org-mode-hook 'turn-on-flyspell)
+(use-package flyspell
+  :hook (org-mode . flyspell-mode))
 (use-package mixed-pitch
-  :init
-  (add-hook 'org-mode-hook 'mixed-pitch-mode))
+  :hook (org-mode . mixed-pitch-mode))
 
 ;;;;; Roam
 
@@ -604,6 +633,9 @@
 
 ;;;; Sanity
 (setq-default tab-width 4)
+(setq c-basic-offset 4)
+(setq indent-tabs-mode nil)
+
 ;;;; LSP
 (use-package lsp-mode
   :init
@@ -615,7 +647,9 @@
 		 (typescript-mode . lsp))
   :commands lsp)
 
-(use-package lsp-ui :after lsp)
+(use-package lsp-ui
+  :after lsp
+  :hook ((lsp-mode . lsp-ui-mode)))
 
 ;;;; Company
 (use-package company
@@ -665,6 +699,7 @@
   ; (treemacs)
   (setq lsp-headerline-breadcrumb-mode 0))
 
+
 (add-hook 'c-mode-common-hook 'code-hook)
 
 (defun clean-whitespace-hook ()
@@ -674,6 +709,8 @@
 ;;;;; Shell
 (use-package emacs-shfmt
   :straight (:host github :repo "purcell/emacs-shfmt"))
+
+
 
 ;;;; Hackiness
 
@@ -784,3 +821,13 @@ for more information."
 ;;; Gaps
 ;; TODO: Fix gaps
 (load "exwm-outer-gaps")
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("366261e62d8a3582bedb0f2d80c3197cc8ed8e350075e1e4f61716d43b98ef13" "0a41da554c41c9169bdaba5745468608706c9046231bbbc0d155af1a12f32271" "2035a16494e06636134de6d572ec47c30e26c3447eafeb6d3a9e8aee73732396" "b9dcb7609b4b1bd5b2944beac4ff919d921de54031f72e4a6163ccd2f38f3120" default))
+ '(doom-modeline-mode t)
+ '(exwm-outer-gaps-mode nil)
+ '(line-number-mode t))

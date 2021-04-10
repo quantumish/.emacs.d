@@ -58,7 +58,7 @@ determine the exact padding."
    (green      '("#6cad50" "#6cad60" nil ))
    (dark-green '("#537b42" "#537b42" nil ))
    (teal       '("#29838d" "#44b9b1" nil ))
-   (yellow     '("#9a7500" "#ECBE7B" nil ))
+   (yellow     '("#6cad50" "#6cad50" nil ))
    (blue       '("#3b6ea8" "#51afef" nil ))
    (dark-blue  '("#5272AF" "#2257A0" nil ))
    (magenta    '("#97365b" "#c678dd" nil ))
