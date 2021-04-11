@@ -132,7 +132,12 @@
   (setq centaur-tabs-set-icons t)
   (setq centaur-tabs-set-bar 'left)
   (setq x-underline-at-descent-line t)
-  (centaur-tabs-mode))
+  (defun contextual-tabs ()
+	(if (eq (derived-mode-p 'prog-mode) nil)
+		(centaur-tabs-local-mode)))
+  (centaur-tabs-mode)
+  :hook
+  (after-change-major-mode . contextual-tabs))
 
 ;;;; Dashboard
 (use-package dashboard
@@ -159,9 +164,13 @@
 						(agenda . 5)))
   (setq dashboard-startup-banner 'official)
   (setq dashboard-page-separator "\n\n")
-  (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook)
+  :hook
+  (dashboard-mode . hide-mode-line-mode)
+  (dashboard-mode . header-line-spacious)
+  (dashboard-mode . turn-off-solaire-mode))
 
-;;;; Exit
+ ;;;; Exit
 (setq exit-messages '(
 	"Please don't leave, there's more demons to toast!"
 	"Let's beat it -- This is turning into a bloodbath!"
@@ -198,6 +207,14 @@
 
 (global-set-key "\C-x\C-c" 'save-buffers-kill-emacs-with-confirm)
 
+
+;;;; Misc
+(use-package page-break-lines
+  :init (global-page-break-lines-mode))
+
+(defun determine-olivetti ()
+  (interactive)
+  (olivetti-set-width (- (window-total-width) 8)))
 
 ;;; General Interface
 ;;;; Completing-Read
@@ -263,20 +280,50 @@
   (global-set-key (kbd "C-h C") #'helpful-command)
   :custom
   (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable))
+  (counsel-describe-variable-function #'helpful-variable)
+  :hook
+  (helpful-mode . hide-mode-line-mode)
+  (helpful-mode-hook . determine-olivetti))
 
+;;;; Other
+(use-package hydra
+  :bind ("C-c f" . hydra-flycheck/body))
+
+(defhydra hydra-flycheck (:color blue)
+  "
+  ^
+  ^Flycheck^          ^Errors^            ^Checker^
+  ^────────^──────────^──────^────────────^───────^─────
+  _q_ quit            _<_ previous        _?_ describe
+  _M_ manual          _>_ next            _d_ disable
+  _v_ verify setup    _f_ check           _m_ mode
+  ^^                  _l_ list            _s_ select
+  ^^                  ^^                  ^^
+  "
+  ("q" nil)
+  ("<" flycheck-previous-error :color pink)
+  (">" flycheck-next-error :color pink)
+  ("?" flycheck-describe-checker)
+  ("M" flycheck-manual)
+  ("d" flycheck-disable-checker)
+  ("f" flycheck-buffer)
+  ("l" flycheck-list-errors)
+  ("m" flycheck-mode)
+  ("s" flycheck-select-checker)
+  ("v" flycheck-verify-setup))
 ;;; Useful Functions
 (defun replace-in-string (what with in)
   "Replace substring (as WHAT) with another substring (as WITH) within a given string (as IN)."
   (replace-regexp-in-string (regexp-quote what) with in nil 'literal))
 
 ;;; General Improvements
+;;;; Vanilla
+(fset 'yes-or-no-p 'y-or-n-p)
+(setq use-dialog-box nil)
+
+;;;; Addons
 (use-package outshine
   :hook (emacs-lisp-mode . outshine-mode))
-
-(use-package lispy
-  :disable
-  :hook (emacs-lisp-mode . lispy-mode))
 
 (use-package marginalia
   :config (marginalia-mode))
@@ -330,7 +377,6 @@
 ;;;; Basic Setup
 (use-package org
   :config
-  (setq org-directory "~/Dropbox/org")
   (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
   (setq org-startup-with-inline-images "inlineimages")
   (setq org-hide-emphasis-markers t)
@@ -352,6 +398,7 @@
   (:map org-mode-map
 		("C-c C-k" . org-kill-note-or-show-branches)))
 ;;;;; Archiving
+(setq org-directory "~/Dropbox/org")
 (setq org-archive-location (concat org-directory "/archived.org::"))
 
 (setq org-archive-truelocation (replace-in-string "~" (getenv "HOME") (concat org-directory "/archived.org")))
@@ -492,7 +539,7 @@
 	(interactive "d")
 	(org-marginalia-save)
 	(org-marginalia-open point))
-  :bind (:map
+  :bind (:map org-marginalia-mode-map
 		 ("C-c n o" . org-marginalia-save-and-open)
 		 ("C-c m" . org-marginalia-mark)
 		 ("C-c n ]" . org-marginalia-next)
@@ -500,9 +547,14 @@
 
 
 (defun header-line-spacious ()
-  "Header line"
+  (interactive)
   (setq header-line-format " ")
-  (set-face-attribute 'header-line nil :height 400))
+  (set-face-attribute 'header-line nil :height 150))
+
+(defun header-line-spacious-custom (height)
+  (setq header-line-format " ")
+  (set-face-attribute 'header-line nil :height height))
+
 
 (defun writing-hook ()
   ""
@@ -630,7 +682,6 @@
 (add-to-list 'org-file-apps '(directory . emacs)) ;; Allow links to open directories in Dired
 
 ;;; Programming
-
 ;;;; Sanity
 (setq-default tab-width 4)
 (setq c-basic-offset 4)
@@ -722,26 +773,30 @@
 
 ;;;; Aesthetics
 ;;;;; hl-todo
-(global-hl-todo-mode)
-(setq hl-todo-keyword-faces
-	  '(("TODO"   . "#99bb66")
-		("FIXME"  . "#ff6655")
-		("DEBUG"  . "#a9a1e1")
-		("HACK"   . "#6c78dd")
-		("NOTE"   . "#44b9b1")))
-(define-key hl-todo-mode-map (kbd "C-c p") 'hl-todo-previous)
-(define-key hl-todo-mode-map (kbd "C-c n") 'hl-todo-next)
-(define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
-(define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
-;; We already have todos in Org Mode!
-(add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
+(use-package hl-todo
+  :init
+  (global-hl-todo-mode)
+  (setq hl-todo-keyword-faces
+		'(("TODO"   . "#99bb66")
+		  ("FIXME"  . "#ff6655")
+		  ("DEBUG"  . "#a9a1e1")
+		  ("HACK"   . "#6c78dd")
+		  ("NOTE"   . "#44b9b1")))
+  ;; We already have todos in Org Mode!
+  (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
+
+  :bind (:map hl-todo-mode-map
+  ("C-c p" . hl-todo-previous)
+  ("C-c n" . hl-todo-next)
+  ("C-c o" . hl-todo-occur)
+  ("C-c i" . hl-todo-insert)))
 
 ;;;;; prettify-symbols
 
 ;;;;; Icons
 
 (defun my/add-visual-replacement (from to)
-  "Make `prettify-symbols-mode' replace string FROM with string TO.
+  "Make `prettify-symbols-mode' replace string (as FROM) with string (as TO).
 
 Updates `prettify-symbols-alist'.  You may need to toggle
 `prettify-symbols-mode' to make the changes take effect.
@@ -786,12 +841,59 @@ for more information."
 			(push '("std::" . "" ) prettify-symbols-alist)))
 
 
+;;;; Compilation
+(use-package compile
+  :config
+  (setq compilation-scroll-output t)
+  (defun compile-project ()
+	(interactive)
+	; (shell-command "rm ./CMakeCache.txt && rm ./Makefile && rm -rf ./CMakeFiles")
+	(let ((default-directory (projectile-project-root)))
+	(call-interactively 'compile)))
+  :bind (:map c++-mode-map
+			  ("C-;" . compile-project)
+			  ("C-c C-;" . recompile))
+  :hook
+  (compilation-mode . hide-mode-line-mode)
+  (compilation-mode . header-line-spacious)
+  (compilation-start . olivetti-mode)
+  (compilation-start . determine-olivetti))
+
+
+(general-def c++-mode-map
+  "C-x n s" 'narrow-to-defun-include-comments)
+
 ;;;; Dash
 
 (defun minimal-browse-url (url)
+  (split-window-right)
+  (other-window 1)
   (call-process-shell-command (concat "firefox -P default-release --new-window " url) nil 0))
 (setq dash-docs-browser-func 'minimal-browse-url)
 (setq dash-docs-enable-debugging nil)
+(general-def prog-mode-map
+  "C-c d" 'counsel-dash
+  "C-c C-d" 'counsel-dash-at-point)
+(defun emacs-lisp-doc ()
+  "Restrict dash docsets to Emacs Lisp."
+  (interactive)
+  (setq-local dash-docs-docsets '("Emacs Lisp")))
+(defun c-doc ()
+  "Restrict dash docsets to C."
+  (interactive)
+  (setq-local dash-docs-docsets '("C")))
+(defun c++-doc ()
+  "Restrict dash docsets to C/C++."
+  (interactive)
+  (setq-local dash-docs-docsets '("C" "C++")))
+(defun python-doc ()
+  "Restrict dash docsets to Python."
+  (interactive)
+  (setq-local dash-docs-docsets '("Python 3")))
+(add-hook 'emacs-lisp-mode-hook 'emacs-lisp-doc)
+(add-hook 'c-mode-hook 'c-doc)
+(add-hook 'c++-mode-hook 'c++-doc)
+(add-hook 'python-mode-hook 'python-doc)
 
 ;;; Writing
 (setq ispell-program-name "aspell")
