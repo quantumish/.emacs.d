@@ -698,6 +698,8 @@
 (use-package lsp-mode
   :init
   (setq lsp-headerline-breadcrumb-enable nil)
+  (setq lsp-semantic-tokens-enable t)
+  (setq lsp-completion-show-detail nil)
   :hook ((c++-mode . lsp)
 		 (c-mode . lsp)
 		 (python-mode . lsp)
@@ -714,7 +716,9 @@
   :init
   (setq company-idle-delay 0)
   (setq company-tooltip-maximum-width 40)
-  (global-company-mode))
+  (global-company-mode)
+  :bind (:map company-active-map
+			  ("RET" . 'company-complete-selection)))
 
 (use-package company-quickhelp
   :after company
