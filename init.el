@@ -218,6 +218,9 @@
 
 ;;; General Interface
 ;;;; Completing-Read
+  (use-package prescient
+	:init (setq prescient-persist-mode t))
+
   (use-package ivy
 	:diminish
 	:init
@@ -242,7 +245,7 @@
 		   ("C-r" . ivy-previous-line-or-history)
 		   ("M-RET" . ivy-immediate-done)))
 	 ;; (:map counsel-find-file-map
-	 ;;       ("C-~" . counsel-goto-local-home)))
+	 ;;		   ("C-~" . counsel-goto-local-home)))
 	:custom
 	(ivy-use-virtual-buffers t)
 	(ivy-height 10)
@@ -266,7 +269,7 @@
   :init (all-the-icons-ivy-rich-mode))
 
 (use-package ivy-prescient
-  :after ivy
+  :after ivy prescient
   :init (ivy-prescient-mode))
 
 ;;;; Introspection
@@ -286,6 +289,10 @@
   (helpful-mode-hook . determine-olivetti))
 
 ;;;; Other
+(use-package flycheck
+  :config
+  (global-flycheck-mode))
+
 (use-package hydra
   :bind ("C-c f" . hydra-flycheck/body))
 
@@ -713,17 +720,17 @@
   :after company
   :init (company-quickhelp-mode))
 
+(use-package company-quickhelp-terminal
+  :after company-quickhelp)
+
 (use-package company-prescient
-  :after company
+  :after company prescient
   :init
   (setq-default history-length 1000)
   (setq-default prescient-history-length 1000)
   :init (company-prescient-mode))
 
-;;;; flycheck
-(use-package flycheck
-  :config
-  (global-flycheck-mode))
+
 ;;;; Language-specific
 ;;;;; C/C++ config
 (setq c-default-style "k&r")
@@ -756,20 +763,6 @@
 (defun clean-whitespace-hook ()
   (whitespace-cleanup))
 (add-hook 'before-save-hook #'clean-whitespace-hook)
-
-;;;;; Shell
-(use-package emacs-shfmt
-  :straight (:host github :repo "purcell/emacs-shfmt"))
-
-
-
-;;;; Hackiness
-
-;; (defun contextual-tabs ()
-;;   (interactive)
-;;   (if (not (treemacs-project-p default-directory))
-;;	(centaur-tabs-local-mode)))
-;; (add-hook 'after-change-major-mode-hook 'contextual-tabs)
 
 ;;;; Aesthetics
 ;;;;; hl-todo
@@ -866,34 +859,40 @@ for more information."
 ;;;; Dash
 
 (defun minimal-browse-url (url)
+  "Browse an arbitrary url (as URL) in a new frameless Firefox window."
   (split-window-right)
   (other-window 1)
   (call-process-shell-command (concat "firefox -P default-release --new-window " url) nil 0))
-(setq dash-docs-browser-func 'minimal-browse-url)
-(setq dash-docs-enable-debugging nil)
-(general-def prog-mode-map
-  "C-c d" 'counsel-dash
-  "C-c C-d" 'counsel-dash-at-point)
-(defun emacs-lisp-doc ()
-  "Restrict dash docsets to Emacs Lisp."
-  (interactive)
-  (setq-local dash-docs-docsets '("Emacs Lisp")))
-(defun c-doc ()
-  "Restrict dash docsets to C."
-  (interactive)
-  (setq-local dash-docs-docsets '("C")))
-(defun c++-doc ()
-  "Restrict dash docsets to C/C++."
-  (interactive)
-  (setq-local dash-docs-docsets '("C" "C++")))
-(defun python-doc ()
-  "Restrict dash docsets to Python."
-  (interactive)
-  (setq-local dash-docs-docsets '("Python 3")))
-(add-hook 'emacs-lisp-mode-hook 'emacs-lisp-doc)
-(add-hook 'c-mode-hook 'c-doc)
-(add-hook 'c++-mode-hook 'c++-doc)
-(add-hook 'python-mode-hook 'python-doc)
+
+(use-package dash-docs)
+(use-package counsel-dash
+  :config
+  (setq dash-docs-browser-func 'minimal-browse-url)
+  (setq dash-docs-enable-debugging nil)
+  (defun emacs-lisp-doc ()
+	"Restrict dash docsets to Emacs Lisp."
+	(interactive)
+	(setq-local dash-docs-docsets '("Emacs Lisp")))
+  (defun c-doc ()
+	"Restrict dash docsets to C."
+	(interactive)
+	(setq-local dash-docs-docsets '("C")))
+  (defun c++-doc ()
+	"Restrict dash docsets to C/C++."
+	(interactive)
+	(setq-local dash-docs-docsets '("C" "C++")))
+  (defun python-doc ()
+	"Restrict dash docsets to Python."
+	(interactive)
+	(setq-local dash-docs-docsets '("Python 3")))
+  :bind (:map prog-mode-map
+			  "C-c d" 'counsel-dash
+			  "C-c C-d" 'counsel-dash-at-point)
+  :hook
+  (emacs-lisp-mode . emacs-lisp-doc)
+  (c-mode . c-doc)
+  (c++-mode . c++-doc)
+  (python-mode-hook . python-doc))
 
 ;;; Writing
 (setq ispell-program-name "aspell")
@@ -923,13 +922,3 @@ for more information."
 ;;; Gaps
 ;; TODO: Fix gaps
 (load "exwm-outer-gaps")
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("366261e62d8a3582bedb0f2d80c3197cc8ed8e350075e1e4f61716d43b98ef13" "0a41da554c41c9169bdaba5745468608706c9046231bbbc0d155af1a12f32271" "2035a16494e06636134de6d572ec47c30e26c3447eafeb6d3a9e8aee73732396" "b9dcb7609b4b1bd5b2944beac4ff919d921de54031f72e4a6163ccd2f38f3120" default))
- '(doom-modeline-mode t)
- '(exwm-outer-gaps-mode nil)
- '(line-number-mode t))
