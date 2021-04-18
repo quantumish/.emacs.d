@@ -1,4 +1,5 @@
 ;;; Early Init
+(require 'use-package)
 ;;;; Speed
 (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
 	  gc-cons-percentage 0.6)
@@ -52,10 +53,9 @@
 ;;   (load bootstrap-file nil 'nomessage))
 (setq disabled-command-function nil)
 
-;(require 'url-http)
+(require 'url-http)
 (setq url-http-attempt-keepalives nil)
 (setq package-check-signature nil)
-;(require 'use-package)
 ;(setq use-package-always-ensure t)
 (setq use-package-always-defer t)
 
@@ -72,12 +72,12 @@
 (require 'exwm-config)
 (exwm-config-example)
 (require 'exwm-randr)
-(setq exwm-randr-workspace-output-plist '(0 "HDMI-1" 1 "DP-3" 2 "HDMI-1" 3 "DP-3"))
+(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-5" 2 "HDMI-0" 3 "DP-5"))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
 		(start-process-shell-command
-		 "xrandr" nil "xrandr --output DP-3 --rotate left --left-of HDMI-1")
-		(call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0)))
+		 "xrandr" nil "xrandr --output DP-5 --output HDMI-0 --auto")))
+		;(call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0)))
 (exwm-randr-enable)
 
 (defun exwm-workspace-next ()
@@ -342,6 +342,15 @@
   (bind-keys*
    ("M-<down>" . move-text-line-down)
    ("M-<up>" . move-text-line-up)))
+
+;;;; Buffers
+(general-define-key
+ "C-x C-b" 'ibuffer)
+;;;; Dired
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+(use-package diredfl
+  :init (diredfl-global-mode))
 
 ;;;; Other
 (use-package flycheck
@@ -774,7 +783,7 @@
   (setq company-tooltip-maximum-width 40)
   (global-company-mode)
   :bind (:map company-active-map
-			  ("RET" . 'company-complete-selection)))
+			  ("<tab>" . 'company-complete-selection)))
 
 (use-package company-quickhelp
   :after company
@@ -790,6 +799,61 @@
   (setq-default prescient-history-length 1000)
   :init (company-prescient-mode))
 
+(use-package company-box
+  :diminish
+  :if (display-graphic-p)
+  :defines company-box-icons-all-the-icons
+  :hook (company-mode . company-box-mode)
+  :custom
+  (company-box-backends-colors nil)
+  :config
+  (with-no-warnings
+	;; Prettify icons
+	(defun my-company-box-icons--elisp (candidate)
+	  (when (derived-mode-p 'emacs-lisp-mode)
+		(let ((sym (intern candidate)))
+		  (cond ((fboundp sym) 'Function)
+				((featurep sym) 'Module)
+				((facep sym) 'Color)
+				((boundp sym) 'Variable)
+				((symbolp sym) 'Text)
+				(t . nil)))))
+	(advice-add #'company-box-icons--elisp :override #'my-company-box-icons--elisp))
+
+  (when (and (display-graphic-p)
+			 (require 'all-the-icons nil t))
+	(declare-function all-the-icons-faicon 'all-the-icons)
+	(declare-function all-the-icons-material 'all-the-icons)
+	(declare-function all-the-icons-octicon 'all-the-icons)
+	(setq company-box-icons-all-the-icons
+		  `((Unknown . ,(all-the-icons-material "find_in_page" :height 0.8 :v-adjust -0.15))
+			(Text . ,(all-the-icons-faicon "text-width" :height 0.8 :v-adjust -0.02))
+			(Method . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
+			(Function . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
+			(Constructor . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
+			(Field . ,(all-the-icons-octicon "tag" :height 0.85 :v-adjust 0 :face 'all-the-icons-lblue))
+			(Variable . ,(all-the-icons-octicon "tag" :height 0.85 :v-adjust 0 :face 'all-the-icons-lblue))
+			(Class . ,(all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-orange))
+			(Interface . ,(all-the-icons-material "share" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
+			(Module . ,(all-the-icons-material "view_module" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
+			(Property . ,(all-the-icons-faicon "wrench" :height 0.8 :v-adjust -0.02))
+			(Unit . ,(all-the-icons-material "settings_system_daydream" :height 0.8 :v-adjust -0.15))
+			(Value . ,(all-the-icons-material "format_align_right" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
+			(Enum . ,(all-the-icons-material "storage" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-orange))
+			(Keyword . ,(all-the-icons-material "filter_center_focus" :height 0.8 :v-adjust -0.15))
+			(Snippet . ,(all-the-icons-material "format_align_center" :height 0.8 :v-adjust -0.15))
+			(Color . ,(all-the-icons-material "palette" :height 0.8 :v-adjust -0.15))
+			(File . ,(all-the-icons-faicon "file-o" :height 0.8 :v-adjust -0.02))
+			(Reference . ,(all-the-icons-material "collections_bookmark" :height 0.8 :v-adjust -0.15))
+			(Folder . ,(all-the-icons-faicon "folder-open" :height 0.8 :v-adjust -0.02))
+			(EnumMember . ,(all-the-icons-material "format_align_right" :height 0.8 :v-adjust -0.15))
+			(Constant . ,(all-the-icons-faicon "square-o" :height 0.8 :v-adjust -0.1))
+			(Struct . ,(all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-orange))
+			(Event . ,(all-the-icons-octicon "zap" :height 0.8 :v-adjust 0 :face 'all-the-icons-orange))
+			(Operator . ,(all-the-icons-material "control_point" :height 0.8 :v-adjust -0.15))
+			(TypeParameter . ,(all-the-icons-faicon "arrows" :height 0.8 :v-adjust -0.02))
+			(Template . ,(all-the-icons-material "format_align_left" :height 0.8 :v-adjust -0.15)))
+		  company-box-icons-alist 'company-box-icons-all-the-icons)))
 
 ;;;; Language-specific
 ;;;;; C/C++ config
@@ -984,14 +1048,13 @@ for more information."
 							(exwm-outer-gaps-mode)
 							(call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0)))
 
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(esup compile zygospore writeroom-mode writegood-mode which-key web-completion-data wc-mode wc-goal-mode vterm use-package typescript-mode treepy svg-tag-mode sudo-edit solaire-mode smooth-scrolling smooth-scroll smartparens shackle selected rainbow-mode quickrun projectile powerthesaurus popper pfuture parrot outshine org-superstar org-roam-server org-gcal org-fragtog org-bullets org-autolist olivetti move-text mixed-pitch marginalia magit-todos lsp-ui lsp-origami lsp-ivy lsp-focus lively laas ivy-prescient ivy-posframe imenu-anywhere iedit hydra hide-mode-line helpful helm goto-line-preview google-this git-gutter-fringe general gcmh format-all flyspell-correct-ivy flycheck exwm-mff exwm-float expand-region ewal-doom-themes evil-collection embark dtrt-indent doom-modeline dired-rainbow diff-hl dashboard crux counsel-dash company-wordfreq company-quickhelp-terminal company-prescient company-flx company-box cmake-mode cfrs centered-window centaur-tabs ccls beacon avy apiwrap amx all-the-icons-ivy-rich all-the-icons-ivy all-the-icons-dired ace-jump-mode))
+   '(diredfl all-the-icons-ibuffer eldoc-stan esup compile zygospore writeroom-mode writegood-mode which-key web-completion-data wc-mode wc-goal-mode vterm use-package typescript-mode treepy svg-tag-mode sudo-edit solaire-mode smooth-scrolling smooth-scroll smartparens shackle selected rainbow-mode quickrun projectile powerthesaurus popper pfuture parrot outshine org-superstar org-roam-server org-gcal org-fragtog org-bullets org-autolist olivetti move-text mixed-pitch marginalia magit-todos lsp-ui lsp-ivy lsp-focus lively laas ivy-prescient ivy-posframe imenu-anywhere iedit hydra hide-mode-line helpful helm goto-line-preview google-this git-gutter-fringe general gcmh format-all flyspell-correct-ivy flycheck exwm-mff exwm-float expand-region ewal-doom-themes evil-collection embark dtrt-indent doom-modeline dired-rainbow diff-hl dashboard crux counsel-dash company-wordfreq company-quickhelp-terminal company-prescient company-flx company-box cmake-mode centered-window centaur-tabs ccls beacon avy apiwrap amx all-the-icons-ivy-rich all-the-icons-ivy all-the-icons-dired ace-jump-mode))
  '(warning-suppress-types '((comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
