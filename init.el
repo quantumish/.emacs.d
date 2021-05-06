@@ -1,5 +1,10 @@
 ;;; Early Init
 (require 'use-package)
+
+;;;; WTF
+(global-unset-key (kbd "C-z"))
+(global-unset-key (kbd "C-x C-z"))
+
 ;;;; Speed
 (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
 	  gc-cons-percentage 0.6)
@@ -20,6 +25,10 @@
 
 (add-hook 'minibuffer-setup-hook #'doom-defer-garbage-collection-h)
 (add-hook 'minibuffer-exit-hook #'doom-restore-garbage-collection-h)
+
+(defun magic-icon-fix ()
+  (let ((fontset (face-attribute 'default :fontset)))
+	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
 
 (use-package gcmh
   :init
@@ -72,11 +81,11 @@
 (require 'exwm-config)
 (exwm-config-example)
 (require 'exwm-randr)
-(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-5" 2 "HDMI-0" 3 "DP-5"))
+(setq exwm-randr-workspace-output-plist '(0 "HDMI-1" 1 "DP-3" 2 "HDMI-1" 3 "DP-3"))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
 		(start-process-shell-command
-		 "xrandr" nil "xrandr --output DP-5 --output HDMI-0 --auto")))
+		 "xrandr" nil "xrandr --output DP-3 --output HDMI-1 --auto")))
 		;(call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0)))
 (exwm-randr-enable)
 
@@ -92,10 +101,49 @@
 
 
 (general-define-key
- "M-h" 'exwm-workspace-next
+ "M-h" 'exwm-workspace-netx
  "M-l" 'exwm-workspace-prev)
 
+;; (load "exwmsw")
+;; (setq exwmsw-active-workspace-plist '("HDMI-0" 0 "DP-5" 0))
+;; (setq exwmsw-the-left-screen "DP-5")
+;; (setq exwmsw-the-center-screen "HDMI-0")
+;; (exwm-input-set-key (kbd "s-a") #'exwmsw-cycle-screens)
+;; (exwm-input-set-key (kbd "s-w") #'exwmsw-switch-to-left-screen)
+;; (exwm-input-set-key (kbd "s-e") #'exwmsw-switch-to-center-screen)
+;; (exwm-input-set-key (kbd "s-r") #'exwmsw-switch-to-right-screen)
+;; (exwm-input-set-key (kbd "s-C-w") #'exwmsw-swap-displayed-workspace-with-left-screen)
+;; (exwm-input-set-key (kbd "s-C-e") #'exwmsw-swap-displayed-workspace-with-center-screen)
+;; (exwm-input-set-key (kbd "s-C-r") #'exwmsw-swap-displayed-workspace-with-right-screen)
+;; (exwm-input-set-key (kbd "<f2>") #'exwmsw-cycle-workspace-on-left-screen)
+;; (exwm-input-set-key (kbd "<f3>") #'exwmsw-cycle-workspace-on-center-screen)
+;; (exwm-input-set-key (kbd "<f4>") #'exwmsw-cycle-workspace-on-right-screen)
+;; (exwm-input-set-key (kbd "<f1>") #'exwmsw-create-workspace-on-current-screen)
+;; (exwm-input-set-key (kbd "s-x") #'exwmsw-delete-workspace-on-current-screen)
 
+
+
+(defun b3n-exwm-set-buffer-name ()
+  (if (and exwm-title (string-match "\\`http[^ ]+" exwm-title))
+	(let ((url (match-string 0 exwm-title)))
+	  (setq-local buffer-file-name url)
+	  (setq-local exwm-title (replace-regexp-in-string
+							  (concat (regexp-quote url) " - ")
+							  ""
+							  exwm-title))))
+  (setq-local exwm-title
+			  (concat
+			   exwm-class-name
+			   "<"
+			   (if (<= (length exwm-title) 50)
+				   exwm-title
+				 (concat (substring exwm-title 0 50) "…"))
+			   ">"))
+
+  (exwm-workspace-rename-buffer exwm-title))
+
+(add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
+(add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name)
 
 ;; (add-hook 'org-mode-hook 'magic-icon-fix)
 ;;;; Doom
@@ -135,6 +183,8 @@
 (use-package solaire-mode
   :init
   (solaire-global-mode))
+
+(use-package exwm-edit)
 
 (use-package centaur-tabs
   :init
@@ -316,9 +366,10 @@
   (interactive)
   (other-window -1))
 
-(general-define-key
- "s-k" 'other-window
- "s-j" 'opposite-other-window)
+(general-def 'override-global-map
+ "M-k" 'other-window
+ "M-j" 'opposite-other-window)
+
 
 ;;;; Selection
 (use-package expand-region)
@@ -467,7 +518,9 @@
   :bind
   ("C-c c" . org-capture)
   (:map org-mode-map
-		("C-c C-k" . org-kill-note-or-show-branches)))
+		("C-c C-k" . org-kill-note-or-show-branches))
+  :hook
+  (org-mode . turn-off-solaire-mode))
 ;;;;; Archiving
 (setq org-directory "~/Dropbox/org")
 (setq org-archive-location (concat org-directory "/archived.org::"))
@@ -1054,7 +1107,7 @@ for more information."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(diredfl all-the-icons-ibuffer eldoc-stan esup compile zygospore writeroom-mode writegood-mode which-key web-completion-data wc-mode wc-goal-mode vterm use-package typescript-mode treepy svg-tag-mode sudo-edit solaire-mode smooth-scrolling smooth-scroll smartparens shackle selected rainbow-mode quickrun projectile powerthesaurus popper pfuture parrot outshine org-superstar org-roam-server org-gcal org-fragtog org-bullets org-autolist olivetti move-text mixed-pitch marginalia magit-todos lsp-ui lsp-ivy lsp-focus lively laas ivy-prescient ivy-posframe imenu-anywhere iedit hydra hide-mode-line helpful helm goto-line-preview google-this git-gutter-fringe general gcmh format-all flyspell-correct-ivy flycheck exwm-mff exwm-float expand-region ewal-doom-themes evil-collection embark dtrt-indent doom-modeline dired-rainbow diff-hl dashboard crux counsel-dash company-wordfreq company-quickhelp-terminal company-prescient company-flx company-box cmake-mode centered-window centaur-tabs ccls beacon avy apiwrap amx all-the-icons-ivy-rich all-the-icons-ivy all-the-icons-dired ace-jump-mode))
+   '(define-word exwm-x exwm-edit dimmer diredfl all-the-icons-ibuffer eldoc-stan esup compile zygospore writeroom-mode writegood-mode which-key web-completion-data wc-mode wc-goal-mode vterm use-package typescript-mode treepy svg-tag-mode sudo-edit solaire-mode smooth-scrolling smooth-scroll smartparens shackle selected rainbow-mode quickrun projectile powerthesaurus popper pfuture parrot outshine org-superstar org-roam-server org-gcal org-fragtog org-bullets org-autolist olivetti move-text mixed-pitch marginalia magit-todos lsp-ui lsp-ivy lsp-focus lively laas ivy-prescient ivy-posframe imenu-anywhere iedit hydra hide-mode-line helpful helm goto-line-preview google-this git-gutter-fringe general gcmh format-all flyspell-correct-ivy flycheck exwm-mff exwm-float expand-region ewal-doom-themes evil-collection embark dtrt-indent doom-modeline dired-rainbow diff-hl dashboard crux counsel-dash company-wordfreq company-quickhelp-terminal company-prescient company-flx company-box cmake-mode centered-window centaur-tabs ccls beacon avy apiwrap amx all-the-icons-ivy-rich all-the-icons-ivy all-the-icons-dired ace-jump-mode))
  '(warning-suppress-types '((comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
