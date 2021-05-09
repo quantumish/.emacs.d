@@ -101,27 +101,32 @@
 
 
 (general-define-key
- "M-h" 'exwm-workspace-netx
+ "M-h" 'exwm-workspace-next
  "M-l" 'exwm-workspace-prev)
 
-;; (load "exwmsw")
-;; (setq exwmsw-active-workspace-plist '("HDMI-0" 0 "DP-5" 0))
-;; (setq exwmsw-the-left-screen "DP-5")
-;; (setq exwmsw-the-center-screen "HDMI-0")
-;; (exwm-input-set-key (kbd "s-a") #'exwmsw-cycle-screens)
-;; (exwm-input-set-key (kbd "s-w") #'exwmsw-switch-to-left-screen)
+(load "exwmsw")
+(setq exwmsw-active-workspace-plist '("HDMI-1" 0 "DP-3" 0))
+(setq exwmsw-the-left-screen "DP-3")
+(setq exwmsw-the-center-screen "HDMI-1")
+(general-def override-global-map
+  "C-M-j" #'exwmsw-cycle-screens
+  "C-M-k" #'exwmsw-cycle-screens)
+(general-def exwm-mode-map
+  "C-M-j" #'exwmsw-cycle-screens
+  "C-M-k" #'exwmsw-cycle-screens)
+   (exwm-input-set-key (kbd "s-w") #'exwmsw-switch-to-left-screen)
+  ;; (exwm-input-set-key (kbd "s-w") #'exwmsw-switch-to-left-screen)
+  
 ;; (exwm-input-set-key (kbd "s-e") #'exwmsw-switch-to-center-screen)
 ;; (exwm-input-set-key (kbd "s-r") #'exwmsw-switch-to-right-screen)
 ;; (exwm-input-set-key (kbd "s-C-w") #'exwmsw-swap-displayed-workspace-with-left-screen)
-;; (exwm-input-set-key (kbd "s-C-e") #'exwmsw-swap-displayed-workspace-with-center-screen)
+;; (exwm-input-set-key (kbd "s-C-e") #'exwms(w-swap-displayed-workspace-with-center-screen)
 ;; (exwm-input-set-key (kbd "s-C-r") #'exwmsw-swap-displayed-workspace-with-right-screen)
 ;; (exwm-input-set-key (kbd "<f2>") #'exwmsw-cycle-workspace-on-left-screen)
 ;; (exwm-input-set-key (kbd "<f3>") #'exwmsw-cycle-workspace-on-center-screen)
 ;; (exwm-input-set-key (kbd "<f4>") #'exwmsw-cycle-workspace-on-right-screen)
 ;; (exwm-input-set-key (kbd "<f1>") #'exwmsw-create-workspace-on-current-screen)
 ;; (exwm-input-set-key (kbd "s-x") #'exwmsw-delete-workspace-on-current-screen)
-
-
 
 (defun b3n-exwm-set-buffer-name ()
   (if (and exwm-title (string-match "\\`http[^ ]+" exwm-title))
@@ -359,7 +364,7 @@
 
 ;;;; Movement
 (use-package zygospore
-  :bind ("s-m" . 'zygospore-toggle-delete-other-windows))
+  :bind ("M-m" . 'zygospore-toggle-delete-other-windows)))
 
 (defun opposite-other-window ()
   "Cycle buffers in the opposite direction."
@@ -367,6 +372,10 @@
   (other-window -1))
 
 (general-def 'override-global-map
+ "M-k" 'other-window
+ "M-j" 'opposite-other-window)
+
+(general-def 'exwm-mode-map
  "M-k" 'other-window
  "M-j" 'opposite-other-window)
 
@@ -388,9 +397,8 @@
   :bind (:map selected-keymap
 			  ("g" . 'google-this-region)))
 
-(use-package move-text
-  :init
-  (bind-keys*
+(use-package move-text 
+  :bind (:map prog-mode-map 
    ("M-<down>" . move-text-line-down)
    ("M-<up>" . move-text-line-up)))
 
@@ -437,6 +445,11 @@
 (defun replace-in-string (what with in)
   "Replace substring (as WHAT) with another substring (as WITH) within a given string (as IN)."
   (replace-regexp-in-string (regexp-quote what) with in nil 'literal))
+
+(general-define-key
+ :keymaps 'override
+ "<f1>" (lambda () (interactive) (call-process-shell-command (concat "kitty &") nil 0)))
+
 
 ;;; General Improvements
 ;;;; Vanilla
@@ -514,13 +527,23 @@
   (setq org-fontify-quote-and-verse-blocks t)
   (setq org-fontify-emphasized-text t)
   (setq org-fontify-done-headline t)
+  (setq org-hide-leading-stars t)
   (setq org-modules (append org-modules '(org-habit org-id)))
+  (setq org-agenda-block-separator " ")
+  (setq org-agenda-start-day "0d")
+  (setq org-agenda-span 14)
+  (setq org-agenda-start-on-weekday nil)
+  (setq org-agenda-files '("~/sync/org/inbox.org"
+						   "~/sync/org/schoolwork.org"
+						   "~/sync/org/extra.org"))
   :bind
   ("C-c c" . org-capture)
   (:map org-mode-map
 		("C-c C-k" . org-kill-note-or-show-branches))
   :hook
-  (org-mode . turn-off-solaire-mode))
+  (org-mode . solaire-mode)
+  (org-mode . org-indent-mode))
+
 ;;;;; Archiving
 (setq org-directory "~/Dropbox/org")
 (setq org-archive-location (concat org-directory "/archived.org::"))
@@ -648,6 +671,8 @@
    (prettify-symbols-mode))
 
 (use-package org-superstar
+  :config
+  (setq org-superstar-headline-bullets-list '("◉" "○" "◈" "◎"))
   :init (add-hook 'org-mode-hook 'org-superstar-mode))
 ;; (use-package org-appear
 ;;   :straight (:host github :repo "awth13/org-appear")
@@ -834,7 +859,8 @@
   :init
   (setq company-idle-delay 0)
   (setq company-tooltip-maximum-width 40)
-  (global-company-mode)
+  :hook
+  (prog-mode . company-mode)
   :bind (:map company-active-map
 			  ("<tab>" . 'company-complete-selection)))
 
@@ -936,10 +962,6 @@
 
 
 (add-hook 'c-mode-common-hook 'code-hook)
-
-(defun clean-whitespace-hook ()
-  (whitespace-cleanup))
-(add-hook 'before-save-hook #'clean-whitespace-hook)
 
 ;;;; Aesthetics
 ;;;;; hl-todo
