@@ -1,10 +1,6 @@
 ;;; Early Init
 (require 'use-package)
-
-;;;; WTF
-(global-unset-key (kbd "C-z"))
-(global-unset-key (kbd "C-x C-z"))
-
+ 
 ;;;; Speed
 (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
 	  gc-cons-percentage 0.6)
@@ -25,11 +21,6 @@
 
 (add-hook 'minibuffer-setup-hook #'doom-defer-garbage-collection-h)
 (add-hook 'minibuffer-exit-hook #'doom-restore-garbage-collection-h)
-
-(defun magic-icon-fix ()
-  (let ((fontset (face-attribute 'default :fontset)))
-	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
-
 (use-package gcmh
   :init
   (setq gcmh-idle-delay 5
@@ -39,28 +30,12 @@
 	  ;; don't add that `custom-set-variables' block to my init.el!
 	  package--init-file-ensured t)
 
-(setq frame-inhibit-implied-resize t)
-(setq initial-major-mode 'fundamental-mode)
-
 ;;;; Packages and Elisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (require 'package)
 (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
 						 ("gnu" . "https://elpa.gnu.org/packages/")
 						 ("melpa" . "https://melpa.org/packages/")))
-;; (defvar bootstrap-version)
-;; (let ((bootstrap-file
-;;	   (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-;;	  (bootstrap-version 5))
-;;   (unless (file-exists-p bootstrap-file)
-;;	(with-current-buffer
-;;		(url-retrieve-synchronously
-;;		 "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-;;		 'silent 'inhibit-cookies)
-;;	  (goto-char (point-max))
-;;	  (eval-print-last-sexp)))
-;;   (load bootstrap-file nil 'nomessage))
-(setq disabled-command-function nil)
 
 (require 'url-http)
 (setq url-http-attempt-keepalives nil)
@@ -76,17 +51,16 @@
 ;;;; General
 (use-package general)
 
-;;;; EXWM
+;;; EXWM
 (require 'exwm)
 (require 'exwm-config)
 (exwm-config-example)
 (require 'exwm-randr)
-(setq exwm-randr-workspace-output-plist '(0 "HDMI-1" 1 "DP-3" 2 "HDMI-1" 3 "DP-3"))
+(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-5" 2 "HDMI-0" 3 "DP-5"))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
 		(start-process-shell-command
-		 "xrandr" nil "xrandr --output DP-3 --output HDMI-1 --auto")))
-		;(call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0)))
+		 "xrandr" nil "xrandr --output DP-5 --output HDMI-0 --auto")))
 (exwm-randr-enable)
 
 (defun exwm-workspace-next ()
@@ -105,9 +79,9 @@
  "M-l" 'exwm-workspace-prev)
 
 (load "exwmsw")
-(setq exwmsw-active-workspace-plist '("HDMI-1" 0 "DP-3" 0))
-(setq exwmsw-the-left-screen "DP-3")
-(setq exwmsw-the-center-screen "HDMI-1")
+(setq exwmsw-active-workspace-plist '("HDMI-0" 0 "DP-5" 0))
+(setq exwmsw-the-left-screen "DP-5")
+(setq exwmsw-the-center-screen "HDMI-0")
 (general-def override-global-map
   "C-M-j" #'exwmsw-cycle-screens
   "C-M-k" #'exwmsw-cycle-screens)
@@ -151,7 +125,7 @@
 (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name)
 
 ;; (add-hook 'org-mode-hook 'magic-icon-fix)
-;;;; Doom
+;;; Themeage
 (use-package doom-themes
 	:init
 	;; Global settings (defaults)
@@ -282,6 +256,25 @@
   (interactive)
   (olivetti-set-width (- (window-total-width) 8)))
 
+
+;;; General Vanilla-ish Config
+(global-unset-key (kbd "C-z"))
+(global-unset-key (kbd "C-x C-z"))
+
+(fset 'yes-or-no-p 'y-or-n-p)
+(setq use-dialog-box nil)
+
+(setq backup-directory-alist '((".*" . "~/.emacs.d/backups")))
+
+(defun magic-icon-fix ()
+  (let ((fontset (face-attribute 'default :fontset)))
+	(set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
+
+(setq disabled-command-function nil)
+
+(setq frame-inhibit-implied-resize t)
+(setq initial-major-mode 'fundamental-mode)
+
 ;;; General Interface
 ;;;; Completing-Read
   (use-package prescient
@@ -364,7 +357,7 @@
 
 ;;;; Movement
 (use-package zygospore
-  :bind ("M-m" . 'zygospore-toggle-delete-other-windows)))
+  :bind ("M-m" . 'zygospore-toggle-delete-other-windows))
 
 (defun opposite-other-window ()
   "Cycle buffers in the opposite direction."
@@ -450,34 +443,18 @@
  :keymaps 'override
  "<f1>" (lambda () (interactive) (call-process-shell-command (concat "kitty &") nil 0)))
 
+(general-def
+  "H-<left>" 'shrink-window-horizontally
+  "H-<right>" 'enlarge-window-horizontally
+  "H-<up>" 'enlarge-window
+  "H-<down>" 'shrink-window)
 
 ;;; General Improvements
-;;;; Vanilla
-(fset 'yes-or-no-p 'y-or-n-p)
-(setq use-dialog-box nil)
-
-;;;; Addons
 (use-package outshine
   :hook (emacs-lisp-mode . outshine-mode))
 
 (use-package marginalia
   :config (marginalia-mode))
-
-(use-package embark
-  :bind
-  (("C-S-a" . embark-act)       ;; pick some comfortable binding
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-  :init
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  :config
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-			   '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-				 nil
-				 (window-parameters (mode-line-format . none)))))
 
 (use-package crux
   :bind
@@ -535,7 +512,8 @@
   (setq org-agenda-start-on-weekday nil)
   (setq org-agenda-files '("~/sync/org/inbox.org"
 						   "~/sync/org/schoolwork.org"
-						   "~/sync/org/extra.org"))
+						   "~/sync/org/extra.org"
+						   "~/sync/org/projects.org"))
   :bind
   ("C-c c" . org-capture)
   (:map org-mode-map
@@ -626,6 +604,12 @@
 
 
 ;;;; Project Review
+(setq org-agenda-prefix-format
+	  '((agenda . " %?-12t% s")
+	   (todo . " %-12:c")
+	   (tags . " ")
+	   (search . " %-12:c")))
+
 (setq org-agenda-custom-commands
 	  '(("p" tags "project" nil)
 		("a" "My agenda"
@@ -1052,7 +1036,7 @@ for more information."
   (compilation-start . determine-olivetti))
 
 (general-def c++-mode-map
-  "C-x n s" 'narrow-to-defun-include-comments)
+  "C-x n s" 'narrow-to-defun)
 
 ;;;; Dash
 
