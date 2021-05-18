@@ -1,4 +1,4 @@
-;; TODO Set up treemacs.
+;; TODO: Set up treemacs.
 
 (use-package doom-themes
 	:init
@@ -18,6 +18,7 @@
   (setq doom-modeline-height 40)
   (doom-modeline-mode))
 
+;; TODO: contextual solaire
 (use-package solaire-mode
   :hook
   (prog-mode . solaire-mode))

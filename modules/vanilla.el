@@ -14,3 +14,9 @@
 
 (setq frame-inhibit-implied-resize t)
 (setq initial-major-mode 'fundamental-mode)
+
+;; TODO Dired config and using dired
+;; TODO Registers?
+;; TODO Bookmarks?
+
+

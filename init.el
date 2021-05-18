@@ -1,11 +1,11 @@
 ;; Various chores that need to be done before loading any config.
 (add-to-list 'load-path "~/.emacs.d/lisp/")
+(setq custom-file (concat user-emacs-directory "/custom.el~")) 
 (require 'use-package)
 (require 'package)
 (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
 						 ("gnu" . "https://elpa.gnu.org/packages/")
 						 ("melpa" . "https://melpa.org/packages/")))
-
 (require 'url-http)
 (setq url-http-attempt-keepalives nil)
 (setq package-check-signature nil)
@@ -25,8 +25,13 @@
 (load-module "exwm")
 
 (load-module "doom-ui")
+;; TODO: (load-module "quantum-ui")
 (load-module "dashboard")
 (load-module "exit-msg")
+;; TODO: (load-module "popup")
+;; TODO: (load-module "centered")
+
+;; TODO: (load-module "evil")
 
 (load-module "vanilla")
 (load-module "vanilla++")
@@ -35,43 +40,36 @@
 (load-module "help")
 
 (load-module "movement-intraframe")
-;; TODO (load-module "movement-intrabuffer")
-
+;; TODO: (load-module "movement-intrabuffer")
 (load-module "selection")
 
 (load-module "org")
 (load-module "org-projects")
 (load-module "org-aesthetic")
+;; TODO: (load-module "org-gtd")
 
 (load-module "lsp")
 (load-module "company")
 (load-module "compilation")
 (load-module "documentation")
 (load-module "git")
+;; TODO: (load-module "snippets")
+;; TODO: (load-module "debug")
+
+;; TODO: (load-module "c++")
+;; TODO: (load-module "python")
 
 (load-module "code-aesthetic")
 (load-module "code-substitutions")
 
+;; TODO: (load-module "writing")
+
+;; NOTE: This is a pipe dream. 
+;; TODO: (load-module "mu4e")
+
 (load-module "scratch")
 
-;; FIXME This needs to be loaded after EXWM and is prone to be breaking
+;; FIXME: This needs to be loaded after EXWM and is prone to be breaking
 (add-hook 'exwm-init-hook (lambda () (load "exwm-outer-gaps")
 							(exwm-outer-gaps-mode)
 							(call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0)))
-
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(exwm-mff-mode t nil (exwm-mff))
- '(package-selected-packages
-   '(gitignore-mode amx zygospore writeroom-mode writegood-mode which-key web-completion-data wc-mode wc-goal-mode vterm use-package typescript-mode treepy treemacs svg-tag-mode sudo-edit solaire-mode smooth-scrolling smooth-scroll smex smartparens shackle selected rainbow-mode quickrun projectile powerthesaurus popper pocket-reader parrot outshine origami org-superstar org-roam-server org-gcal org-fragtog org-bullets org-autolist olivetti no-littering multiple-cursors move-text mixed-pitch marginalia magit-todos lsp-ui lsp-ivy lsp-focus lively laas ivy-prescient ivy-posframe imenu-anywhere iedit hide-mode-line helpful helm goto-line-preview google-this git-gutter-fringe general gcmh format-all flyspell-correct-ivy flycheck exwm-mff exwm-float exwm-firefox-core exwm-edit expand-region ewal-doom-themes evil-collection esup embark dtrt-indent doom-modeline diredfl dired-rainbow dimmer diff-hl define-word dashboard crux counsel-dash company-wordfreq company-quickhelp-terminal company-prescient company-flx company-box cmake-mode centered-window centaur-tabs ccls beacon apiwrap all-the-icons-ivy-rich all-the-icons-ivy all-the-icons-ibuffer all-the-icons-dired ace-jump-mode)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

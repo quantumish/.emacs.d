@@ -1,4 +1,4 @@
-;; TODO Properly separate org config.
+;; TODO: Properly separate org config.
 
 (use-package org
   :config

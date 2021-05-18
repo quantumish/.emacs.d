@@ -2,3 +2,8 @@ elpa
 \#*\#
 .\#*
 auto-save-list
+backups
+var
+*~
+*.bak.*
+*.bak
