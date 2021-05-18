@@ -302,8 +302,21 @@ Then updates exwm-randr-workspace-monitor-plist."
    (nth (exwmsw-get-index-shown-on-screen (exwmsw-cycle-screens--get-next-screen arg))
 		(exwmsw-get-workspaces-for-randr-output (exwmsw-cycle-screens--get-next-screen arg)))))
 
+(defun exwmsw-cycle-screens-backward (arg)
+  (interactive "p")
+  (exwm-workspace-switch
+   (nth (exwmsw-get-index-shown-on-screen (exwmsw-cycle-screens--get-prev-screen arg))
+		(exwmsw-get-workspaces-for-randr-output (exwmsw-cycle-screens--get-prev-screen arg)))))
+
+
 (defun exwmsw-cycle-screens--get-next-screen (num)
   (nth (mod (- (-elem-index (exwmsw-get-current-screen) (exwmsw-screen-list))
+			   num)
+			(length (exwmsw-screen-list)))
+	   (exwmsw-screen-list)))
+
+(defun exwmsw-cycle-screens--get-prev-screen (num)
+  (nth (mod (+ (-elem-index (exwmsw-get-current-screen) (exwmsw-screen-list))
 			   num)
 			(length (exwmsw-screen-list)))
 	   (exwmsw-screen-list)))
