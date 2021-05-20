@@ -18,7 +18,7 @@
   (setq doom-modeline-height 40)
   (doom-modeline-mode))
 
-;; TODO: contextual solaire
+;; TODO: Contextual solaire
 (use-package solaire-mode
   :hook
   (prog-mode . solaire-mode))

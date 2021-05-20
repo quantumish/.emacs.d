@@ -12,6 +12,9 @@
 		 (typescript-mode . lsp))
   :commands lsp)
 
+;; TODO Dive deeper into LSP
+
 (use-package lsp-ui
   :after lsp
   :hook ((lsp-mode . lsp-ui-mode)))
+

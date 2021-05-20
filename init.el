@@ -23,6 +23,7 @@
 (load-module "speed")
 
 (load-module "exwm")
+;; TODO: (load-module "environ")
 
 (load-module "doom-ui")
 ;; TODO: (load-module "quantum-ui")
@@ -53,16 +54,17 @@
 (load-module "compilation")
 (load-module "documentation")
 (load-module "git")
-;; TODO: (load-module "snippets")
+(load-module "snippets")
 ;; TODO: (load-module "debug")
+;; TODO: (load-module "lint")
 
-;; TODO: (load-module "c++")
+(load-module "c++")
 ;; TODO: (load-module "python")
 
 (load-module "code-aesthetic")
 (load-module "code-substitutions")
 
-;; TODO: (load-module "writing")
+(load-module "writing")
 
 ;; NOTE: This is a pipe dream. 
 ;; TODO: (load-module "mu4e")

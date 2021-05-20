@@ -15,6 +15,8 @@
 (setq frame-inhibit-implied-resize t)
 (setq initial-major-mode 'fundamental-mode)
 
+(setq-default tab-width 4)
+
 ;; TODO Dired config and using dired
 ;; TODO Registers?
 ;; TODO Bookmarks?

@@ -19,10 +19,12 @@
   (if (> exwm-workspace-current-index 0)
 	  (exwm-workspace-switch (- exwm-workspace-current-index 1))))
 
-
 (general-define-key
  "M-h" 'exwm-workspace-next
  "M-l" 'exwm-workspace-prev)
+
+(use-package exwm-mff
+  :init (exwm-mff-mode))
 
 (load "exwmsw")
 (setq exwmsw-active-workspace-plist '("HDMI-0" 0 "DP-3" 0 "DP-1" 0))
