@@ -2,7 +2,7 @@
 (require 'exwm-config)
 (exwm-config-example)
 (require 'exwm-randr)
-(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-3" 2 "DP-1" 3 ))
+(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-1" 2 "DP-3" 3 ))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
 		(start-process-shell-command

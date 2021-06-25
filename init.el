@@ -11,10 +11,41 @@
 (setq package-check-signature nil)
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 (setq package-native-compile t)
 (setq comp-deferred-compilation t)
+(setq native-comp-deferred-compilation-deny-list nil)
 (use-package no-littering :init (require 'no-littering))
 (use-package general)
+
+(add-to-list 'exec-path "/home/quantumish/.local/bin")
+
+;; FIXME Get rid of header-line-spacious issues
+(defun header-line-spacious ()
+  (interactive)
+  (setq header-line-format " ")
+  (set-face-attribute 'header-line nil :height 200 :background "#0e121a"))
+
+(defun header-line-spacious-dark ()
+  (interactive)
+  (setq header-line-format " ")
+  (set-face-attribute 'header-line nil :height 200 :background "#0b0f16"))
+
+(defun determine-olivetti ()
+  (interactive)
+  (olivetti-set-width (- (window-total-width) 8)))
+
 
 (defun load-module (module)
   "Load a user configuration module MODULE."
@@ -40,6 +71,7 @@
 (load-module "ivy")
 (load-module "help")
 
+(load-module "perspectives") 
 (load-module "movement-intraframe")
 ;; TODO: (load-module "movement-intrabuffer")
 (load-module "selection")
@@ -66,8 +98,9 @@
 
 (load-module "writing")
 
-;; NOTE: This is a pipe dream. 
 ;; TODO: (load-module "mu4e")
+;; TODO: (load-module "rss")
+(load-module "erc")
 
 (load-module "scratch")
 

@@ -1,13 +1,13 @@
 ;; TODO: Better icon solution
 (defun org-icons ()
-   "Beautify Org Checkbox Symbol"
+   "Beautify org mode keywords."
    (setq prettify-symbols-alist '(("TODO" . "")
-								  ("DONE" . "")
 								  ("WAIT" . "")
 								  ("NOPE" . "")
+								  ("DONE" . "")
 								  ("[#A]" . "")
 								  ("[#B]" . "")
-								  ("[#C]" . "")
+ 								  ("[#C]" . "")
 								  ("[ ]" . "")
 								  ("[X]" . "")
 								  ("[-]" . "")
@@ -58,13 +58,17 @@
 							  (?B . (:foreground "#f5cb22"))
 							  (?C . (:foreground "#6cad50"))))
 
-	(setq org-todo-keyword-faces
-		  '(("TODO" . (:foreground "#999999" :bold nil)) ("WAIT" . "#cfd1d1")
-			("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
+	;; (setq org-todo-keyword-faces
+	;; 	  '(("TODO" . (:foreground "#999999" :bold nil)) ("WAIT" . "#cfd1d1")
+	;; 		("DONE" . "#6cad50") ("NOPE" . "#cfd1d1")))
 
 	(defface org-checkbox-done-text
 	  '((t (:foreground "#71696A" :strike-through t)))
 	  "Face for the text part of a checked org-mode checkbox.")
+
+;; (general-def 'doc-view-mode-map
+;;   "j" 'doc-view-next-page
+;;   "k" 
 
 (with-eval-after-load 'org
   (set-face-attribute 'org-hide nil
