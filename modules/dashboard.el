@@ -1,7 +1,5 @@
 (use-package dashboard
   :init
-  (require 'dashboard-ls)
-  (require 'dashboard-hackernews)
   (setq dashboard-center-content t)
   ; (setq dashboard-disable-shortcuts nil)
   (setq dashboard-set-heading-icons t)

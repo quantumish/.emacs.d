@@ -2,7 +2,7 @@
 (require 'exwm-config)
 (exwm-config-example)
 (require 'exwm-randr)
-(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-1" 2 "DP-3" 3 ))
+(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-1" 2 "DP-3"))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
 		(start-process-shell-command
@@ -28,7 +28,7 @@
 
 (load "exwmsw")
 (setq exwmsw-active-workspace-plist '("HDMI-0" 0 "DP-3" 0 "DP-1" 0))
-(setq exwmsw-the-left-screen "DP-3")
+(setq exwmsw-the-right-screen "DP-3")
 (setq exwmsw-the-center-screen "HDMI-0")
 (setq exwmsw-the-left-screen "DP-1")
 (general-def override-global-map
@@ -58,5 +58,8 @@
 			   ">"))
 
   (exwm-workspace-rename-buffer exwm-title))
+
 (add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
 (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name)
+
+(exwm-workspace-delete 3)

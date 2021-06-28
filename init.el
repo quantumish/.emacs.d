@@ -26,6 +26,7 @@
 (setq package-native-compile t)
 (setq comp-deferred-compilation t)
 (setq native-comp-deferred-compilation-deny-list nil)
+(setq warning-suppress-log-types '((comp)))
 (use-package no-littering :init (require 'no-littering))
 (use-package general)
 
@@ -108,3 +109,4 @@
 (add-hook 'exwm-init-hook (lambda () (load "exwm-outer-gaps")
 							(exwm-outer-gaps-mode)
 							(call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0)))
+

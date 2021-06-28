@@ -21,6 +21,10 @@
 	"Restrict dash docsets to C/C++."
 	(interactive)
 	(setq-local dash-docs-docsets '("C" "C++")))
+  (defun rust-doc ()
+	"Restrict dash docsets to Rust."
+	(interactive)
+	(setq-local dash-docs-docsets '("Rust")))
   (defun python-doc ()
 	"Restrict dash docsets to Python."
 	(interactive)
@@ -32,4 +36,6 @@
   (emacs-lisp-mode . emacs-lisp-doc)
   (c-mode . c-doc)
   (c++-mode . c++-doc)
-  (python-mode-hook . python-doc))
+  (python-mode . python-doc)
+  (rustic-mode . rust-doc)
+  (rust-mode . rust-doc))
