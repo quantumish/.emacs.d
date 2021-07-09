@@ -45,7 +45,7 @@
     :straight t
     :hook (python-mode . blacken-mode)
     :config
-    (setq blacken-line-length '88))
+    (setq blacken-line-length '100))
 
 (use-package python-docstring
     :straight t

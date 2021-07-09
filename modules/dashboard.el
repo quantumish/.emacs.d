@@ -1,3 +1,4 @@
+
 (use-package dashboard
   :init
   (setq dashboard-center-content t)

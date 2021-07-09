@@ -1,5 +1,4 @@
 ;; Various chores that need to be done before loading any config.
-(benchmark-init/activate)
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (setq custom-file (concat user-emacs-directory "/custom.el~"))
 (setq package-enable-at-startup nil		; don't auto-initialize!
@@ -40,8 +39,12 @@
 
 (defun header-line-spacious-dark ()
   (interactive)
+
+(defun set-header-line (height &optional dark)
   (setq header-line-format " ")
-  (set-face-attribute 'header-line nil :height 200 :background "#0b0f16"))
+  (if dark
+	  (set-face-attribute 'header-line nil :height height :background "#0b0f16")
+	(set-face-attribute 'header-line nil :height height :background "#0e121a")))
 
 (defun determine-olivetti ()
   (interactive)
@@ -80,11 +83,11 @@
 (load-module "ivy")
 (load-module "help")
 
-(load-module "perspectives") 
+(load-module "perspectives")
 (load-module "movement-intraframe")
 ;; TODO: (load-module "movement-intrabuffer")
 (load-module "selection")
-
+(setq
 (load-module "org")
 (load-module "org-projects")
 (load-module "org-aesthetic")
@@ -97,10 +100,12 @@
 (load-module "git")
 (load-module "snippets")
 ;; TODO: (load-module "debug")
-;; TODO: (load-module "lint")
+(load-module "projectile")
+(load-module "lint")
+(load-module "vc")
 
 (load-module "c++")
-;; TODO: (load-module "python")
+(load-module "python")
 
 (load-module "code-aesthetic")
 (load-module "code-substitutions")
@@ -113,14 +118,12 @@
 
 (load-module "scratch")
 
-(if (eq system-type 'darwin)
+(if (eq system-type 'gnu/linux)
 	;; FIXME: This needs to be loaded after EXWM and is prone to be breaking
 	(add-hook 'exwm-init-hook (lambda () (load "exwm-outer-gaps")
 								(exwm-outer-gaps-mode)
 								(call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
 
-(benchmark-init/deactivate)
-(benchmark-init/show-durations-tabulated)
 ;; (message "Emacs loaded (with %d packages) in %s with %d garbage collections."
 ;; 		 (length package-activated-list)
 ;; 		 (format "%.2f seconds"

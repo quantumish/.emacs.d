@@ -14,7 +14,7 @@
   (exwmsw-switch-to-right-screen)
   (zygospore-toggle-delete-other-windows)
   (call-process-shell-command "kitty unimatrix -s 95 -f" nil 0)
-  (sleep-for 0.5) ;; HACK Literally what the fuck 
+  (sleep-for 0.5) ;; HACK Literally what the fuck
   (exwmsw-switch-to-left-screen)
   (zygospore-toggle-delete-other-windows)
   (call-process-shell-command "kitty unimatrix -s 95 -f" nil 0)
@@ -32,10 +32,8 @@
   (interactive)
   (exwmsw-switch-to-right-screen)
   (zygospore-toggle-delete-other-windows)
-  (kill-buffer)  
+  (kill-buffer)
   (exwmsw-switch-to-left-screen)
   (zygospore-toggle-delete-other-windows)
-  (kill-buffer)  
+  (kill-buffer)
   (exwmsw-switch-to-center-screen))
-
-(add-hook 'magit-post-commit-hook 'unhackerman)
