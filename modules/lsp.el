@@ -24,3 +24,4 @@
   :hook () ((lsp-mode . lsp-ui-mode)))
 
 (add-hook 'lsp-mode-hook (lambda () (set-window-fringes nil 15 0)))
+
