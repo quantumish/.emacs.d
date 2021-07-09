@@ -19,8 +19,6 @@
   :init
   (setq lsp-ui-doc-delay 5)
   :config
-  (set-face-attribute 'lsp-ui-doc-background nil
-					  :background "#0b0f16")
-  :hook () ((lsp-mode . lsp-ui-mode)))
-
-(add-hook 'lsp-mode-hook (lambda () (set-window-fringes nil 15 0)))
+  (set-face-attribute 'lsp-ui-doc-background nil :background "#0b0f16")
+  :hook
+  (prog-mode . lsp-ui-mode))

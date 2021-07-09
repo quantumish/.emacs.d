@@ -1,6 +1,6 @@
 ;; Various chores that need to be done before loading any config.
 (add-to-list 'load-path "~/.emacs.d/lisp/")
-(setq custom-file (concat user-emacs-directory "/custom.el~")) 
+(setq custom-file (concat user-emacs-directory "/custom.el~"))
 (require 'use-package)
 (require 'package)
 (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
@@ -13,15 +13,15 @@
 (setq use-package-always-defer t)
 (defvar bootstrap-version)
 (let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
+	   (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	  (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
+	(with-current-buffer
+		(url-retrieve-synchronously
+		 "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+		 'silent 'inhibit-cookies)
+	  (goto-char (point-max))
+	  (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 (setq package-native-compile t)
 (setq comp-deferred-compilation t)
@@ -32,21 +32,15 @@
 
 (add-to-list 'exec-path "/home/quantumish/.local/bin")
 
-;; FIXME Get rid of header-line-spacious issues
-(defun header-line-spacious ()
-  (interactive)
+(defun set-header-line (height &optional dark)
   (setq header-line-format " ")
-  (set-face-attribute 'header-line nil :height 200 :background "#0e121a"))
-
-(defun header-line-spacious-dark ()
-  (interactive)
-  (setq header-line-format " ")
-  (set-face-attribute 'header-line nil :height 200 :background "#0b0f16"))
+  (if dark
+	  (set-face-attribute 'header-line nil :height height :background "#0b0f16")
+	(set-face-attribute 'header-line nil :height height :background "#0e121a")))
 
 (defun determine-olivetti ()
   (interactive)
   (olivetti-set-width (- (window-total-width) 8)))
-
 
 (defun load-module (module)
   "Load a user configuration module MODULE."
@@ -72,11 +66,11 @@
 (load-module "ivy")
 (load-module "help")
 
-(load-module "perspectives") 
+(load-module "perspectives")
 (load-module "movement-intraframe")
 ;; TODO: (load-module "movement-intrabuffer")
 (load-module "selection")
-
+(setq
 (load-module "org")
 (load-module "org-projects")
 (load-module "org-aesthetic")
@@ -89,10 +83,12 @@
 (load-module "git")
 (load-module "snippets")
 ;; TODO: (load-module "debug")
-;; TODO: (load-module "lint")
+(load-module "projectile")
+(load-module "lint")
+(load-module "vc")
 
 (load-module "c++")
-;; TODO: (load-module "python")
+(load-module "python")
 
 (load-module "code-aesthetic")
 (load-module "code-substitutions")
@@ -109,4 +105,3 @@
 (add-hook 'exwm-init-hook (lambda () (load "exwm-outer-gaps")
 							(exwm-outer-gaps-mode)
 							(call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0)))
-
