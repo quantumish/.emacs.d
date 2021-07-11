@@ -14,15 +14,10 @@
   ;(doom-themes-treemacs-config)
   (doom-themes-org-config))
 
-<<<<<<< HEAD
 (use-package ewal)
 (use-package ewal-doom-themes
   :init
   (load-theme 'ewal-doom-one t))
-=======
-	;(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
-	(doom-themes-org-config))
->>>>>>> 560d60bf5ef8554b5e8420451341646c7a548c80
 
 (use-package doom-modeline
   :init

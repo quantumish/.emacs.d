@@ -1,4 +1,7 @@
 (use-package lsp-mode
+  :ensure-system-package ccls
+  :ensure-system-package (pyls . "python -m pip install pyls")
+  :ensure-system-package rust-analyzer
   :init
   (setq lsp-headerline-breadcrumb-enable nil)
   (setq lsp-semantic-tokens-enable t)

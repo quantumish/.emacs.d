@@ -1,6 +1,6 @@
 (use-package flyspell
   :ensure nil
-  :if (executable-find "aspell")
+  :ensure-system-package aspell
   :hook (((text-mode outline-mode latex-mode org-mode markdown-mode) . flyspell-mode))
   :custom ;; Maybe use :config?
   (flyspell-issue-message-flag nil)

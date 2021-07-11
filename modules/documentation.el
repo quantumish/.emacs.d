@@ -6,6 +6,7 @@
 
 (use-package dash-docs)
 (use-package counsel-dash
+  :after dash-docs
   :config
   (setq dash-docs-browser-func 'minimal-browse-url)
   (setq dash-docs-enable-debugging nil)

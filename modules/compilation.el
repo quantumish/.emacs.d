@@ -1,17 +1,5 @@
-<<<<<<< HEAD
-
-(use-package kv)
-;; Stolen from https://emacs.stackexchange.com/questions/3197/best-way-to-retrieve-values-in-nested-assoc-lists
-(defun assoc-recursive (alist &rest keys)
-  "Recursively find KEYs in ALIST."
-  (while keys
-	(setq alist (cdr (assoc (pop keys) alist))))
-  alist)
-
-=======
 (use-package kv)
 (require 'kv)
->>>>>>> 560d60bf5ef8554b5e8420451341646c7a548c80
 (defvar custom-compile-cmds
   '((rustic-mode . ((debug . "cargo build")
 					(release . "cargo build --release")
@@ -53,9 +41,9 @@
 	(interactive)
 	(let ((default-directory (projectile-project-root)))
 	(call-interactively 'compile)))
-  :bind (:map c++-mode-map
-			  ("C-;" . compile-project)
-			  ("C-c C-;" . recompile))
+  ;; :bind (:map c++-mode-map
+  ;; 			  ("C-;" . compile-project)
+  ;; 			  ("C-c C-;" . recompile))
   :hook
   (compilation-mode . hide-mode-line-mode)
   ; (compilation-mode . (lambda () (set-header-line 200)))

@@ -1,18 +1,19 @@
-  (use-package prescient
-	:init (setq prescient-persist-mode t))
+(use-package prescient
+  :init (setq prescient-persist-mode t))
 
-  (use-package ivy
-	:diminish
-	:init
-	(use-package amx :defer t)
-	(use-package counsel :diminish :config (counsel-mode 1))
-	(use-package swiper :defer t)
-	(ivy-mode 1)
-	:bind
-	(("C-s"     . swiper-isearch)
-	 ("M-x"     . counsel-M-x)
-	 ("C-x C-f" . counsel-find-file)))
+(use-package ivy
+  :init
+  (use-package counsel :config (counsel-mode 1))
+  (use-package swiper :defer t)
+  (ivy-mode 1)
+  :bind
+  (("C-s"     . swiper-isearch)
+   ("M-x"     . counsel-M-x)
+   ("C-x C-f" . counsel-find-file)))
 
+(use-package ivy-rich
+  :after ivy
+  :init (ivy-rich-mode))
 
 (use-package all-the-icons-ivy-rich
   :after ivy-rich counsel
