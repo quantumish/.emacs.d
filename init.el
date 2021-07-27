@@ -10,6 +10,13 @@
 (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
 			 ("gnu" . "https://elpa.gnu.org/packages/")
 			 ("melpa" . "https://melpa.org/packages/")))
+
+(defun load-module (module)
+  "Load a user configuration module MODULE."
+  (load-file (concat "~/.emacs.d/modules/" module ".el")))
+
+(load-module "speed")
+
 (require 'url-http)
 (setq url-http-attempt-keepalives nil)
 (setq package-check-signature nil)
@@ -21,56 +28,17 @@
 (setq warning-suppress-log-types '((comp)))
 (use-package no-littering :init (require 'no-littering))
 (use-package general)
-(use-package system-packages
-  :init
-  (add-to-list 'system-packages-supported-package-managers
-			   '(yay .
-					 ((default-sudo . nil)
-					  (install . "yay -S")
-					  (uninstall . "yay -Rs")
-					  (log . "cat /var/log/pacman.log")
-					  (change-log . "yay -Qc")
-					  (get-info . "yay -Qi")
-					  (get-info-remote . "yay -Si")
-					  (list-files-provided-by . "yay -Ql")
-					  (owning-file . "yay -Qo")
-					  (verify-all-dependencies . "yay -Dk")
-					  (remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
-					  (list-installed-packages . "yay -Qe")
-					  (list-installed-packages-all . "yay -Q")
-					  (noconfirm . "--noconfirm"))))
-  (setq system-packages-noconfirm t)
-  (setq system-packages-package-manager 'yay)
-  (setq system-packages-use-sudo nil))
-(use-package use-package-ensure-system-package)
 
+(load-module "system-pre")
 (if (eq system-type 'gnu/linux)
-	(progn
-	  (use-package exwm
-		:ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar))
-	  (call-process-shell-command "xmodmap ~/.config/X/.xmodmap" nil 0)
-	  (call-process-shell-command "xbindkeys" nil 0)
-	  (call-process-shell-command "sh ~/.config/X/xcape.sh" nil 0)
-	  (call-process-shell-command "dunst &" nil 0)
-	  (call-process-shell-command "sh ~/.config/dunst/reload_dunst.sh" nil 0)
-	  (call-process-shell-command "unclutter &" nil 0)
-	  (call-process-shell-command "flameshot &" nil 0)
-	  ;; TODO Randomly decides to reinstall things sometimes
-	  ;; (use-package exwm
-	  ;; 	:ensure-system-package (rustup cmake python38 python38-pip)
-	  ;; 	:ensure-system-package (syncthing activitywatch)
-	  ;; 	:ensure-system-package (firefox kitty discord spotify steam dropbox zathura pavucontrol) ; intel-vtune-profiler
-	  ;; 	:ensure-system-package (lsd rm-improved fd bat hyperfine gotop unzip tig) ; ripgrep
-	  ;; 	:ensure-system-package (slock xclip rofi mpd mpv texlive-most) ; pandoc-bin
-	  ;; 	:ensure-system-package (neofetch unimatrix pipes.sh))
-	  ))
- 
+	(load-module "exwm"))
+
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
 (setq mouse-wheel-progressive-speed nil)
 
-(if (eq system-type 'gnu/linux)
+(if (string= (system-name) "qubit")
 	(add-to-list 'exec-path "/home/quantumish/.local/bin"))
 
 ;; FIXME Get rid of header-line-spacious issues
@@ -78,9 +46,6 @@
   (interactive)
   (setq header-line-format " ")
   (set-face-attribute 'header-line nil :height 200 :background "#0e121a"))
-
-;; (defun header-line-spacious-dark ()
-;;   (interactive)
 
 (defun set-header-line (height &optional dark)
   (setq header-line-format " ")
@@ -98,17 +63,7 @@
 	  (setq mac-option-modifier 'super)
 	  (use-package ns-auto-titlebar
 		:init (ns-auto-titlebar-mode))))
-
-(defun load-module (module)
-  "Load a user configuration module MODULE."
-  (load-file (concat "~/.emacs.d/modules/" module ".el")))
-
-(load-module "speed")
-
-(if (eq system-type 'gnu/linux)
-	(load-module "exwm"))
-;; TODO: (load-module "environ")
-
+ 
 (use-package projectile)
 
 (load-module "doom-ui")

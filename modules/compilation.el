@@ -23,14 +23,14 @@
 (defun compile-dwim ()
   (interactive)
   (let ((list (cdr (assoc major-mode custom-compile-cmds)))) ;; Debugging is for suckers
-	  (ivy-read "Compilation preset: " (kvalist->keys list)
-				:preselect (car (kvalist->keys list))
-				:action (lambda (name)
-						  (compile
-						   (replace-regexp-in-string
-							(regexp-quote "$this")
-							(file-name-sans-extension (buffer-file-name))
-							(cdr (assoc (intern-soft name) list))))))))
+	(ivy-read "Compilation preset: " (kvalist->keys list)
+			  :preselect (car (kvalist->keys list))
+			  :action (lambda (name)
+						(compile
+						 (replace-regexp-in-string
+						  (regexp-quote "$this")
+						  (file-name-sans-extension (buffer-file-name))
+						  (cdr (assoc (intern-soft name) list))))))))
 
 (use-package compile
   :ensure nil

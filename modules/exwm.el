@@ -2,13 +2,46 @@
 (require 'exwm-config)
 (exwm-config-example)
 (require 'exwm-randr)
-(setq exwm-randr-workspace-output-plist '(0 "HDMI-0" 1 "DP-1" 2 "DP-3"))
+
+(defvar left-screen "DP-1")
+(defvar middle-screen "HDMI-1")
+(defvar right-screen "DP-2")
+(setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
 		(start-process-shell-command
-		 "xrandr" nil "xrandr --output DP-1 --output HDMI-0 --output DP-3 --auto")))
+		 "xrandr" nil (concat "xrandr --output " left-screen " --output " middle-screen " --output " right-screen " --auto"))))
 (exwm-randr-enable)
 
+
+(if (eq system-type 'gnu/linux)
+	(progn
+	  (use-package exwm
+		:ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh))
+	  (call-process-shell-command "xmodmap ~/.config/X/.xmodmap" nil 0)
+	  (call-process-shell-command "xbindkeys" nil 0)
+	  (call-process-shell-command "sh ~/.config/X/xcape.sh" nil 0)
+	  (call-process-shell-command "dunst &" nil 0)
+	  (call-process-shell-command "sh ~/.config/dunst/reload_dunst.sh" nil 0)
+	  (call-process-shell-command "unclutter &" nil 0)
+	  (call-process-shell-command "flameshot &" nil 0)
+	  ;; TODO Randomly decides to reinstall things sometimes
+	  ;; (use-package exwm
+	  ;; 	:ensure-system-package (rustup cmake python38 python38-pip)
+	  ;; 	:ensure-system-package (syncthing activitywatch)
+	  ;; 	:ensure-system-package (firefox kitty discord spotify steam dropbox zathura pavucontrol) ; intel-vtune-profiler
+	  ;; 	:ensure-system-package (lsd rm-improved fd bat hyperfine gotop unzip tig) ; ripgrep
+	  ;; 	:ensure-system-package (slock xclip rofi mpd mpv texlive-most) ; pandoc-bin
+	  ;; 	:ensure-system-package (neofetch unimatrix pipes.sh))
+	  ))
+
+
+(add-hook 'exwm-init-hook
+		  (lambda ()
+			(start-process-shell-command
+			 "xrandr" nil (concat "xrandr --output " left-screen " --rotate left"))))
+
+	  
 (defun exwm-workspace-next ()
   (interactive)
   (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
@@ -27,10 +60,10 @@
   :init (exwm-mff-mode))
 
 (load "exwmsw")
-(setq exwmsw-active-workspace-plist '("HDMI-0" 0 "DP-3" 0 "DP-1" 0))
-(setq exwmsw-the-right-screen "DP-3")
-(setq exwmsw-the-center-screen "HDMI-0")
-(setq exwmsw-the-left-screen "DP-1")
+(setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
+(setq exwmsw-the-right-screen right-screen)
+(setq exwmsw-the-center-screen middle-screen)
+(setq exwmsw-the-left-screen left-screen)
 (general-def override-global-map
   "C-M-j" #'exwmsw-cycle-screens
   "C-M-k" #'exwmsw-cycle-screens-backward)
@@ -62,4 +95,4 @@
 (add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
 (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name)
 
-(exwm-workspace-delete 3)
+
