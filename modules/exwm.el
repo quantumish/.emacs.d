@@ -1,3 +1,4 @@
+(use-package exwm)
 (require 'exwm)
 (require 'exwm-config)
 (exwm-config-example)
@@ -71,6 +72,7 @@
 (general-def exwm-mode-map
   "C-M-j" #'exwmsw-cycle-screens
   "C-M-k" #'exwmsw-cycle-screens-backward)
+
 (exwm-input-set-key (kbd "s-w") #'exwm-workspace-switch)
 
 (defun b3n-exwm-set-buffer-name ()

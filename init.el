@@ -30,8 +30,7 @@
 (use-package general)
 
 (load-module "system-pre")
-(if (eq system-type 'gnu/linux)
-	(load-module "exwm"))
+(load-module "exwm")
 
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
