@@ -10,9 +10,9 @@
 	  'darwin)
   (if (eq system-type 'gnu/linux)
 	  (progn
-		(if (eq (car (process-exit-code-and-output "cat" "/etc/os-release")) 0)
+		(if (file-exists-p "/etc/os-release")
 			(substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
-		  (substring (shell-command-to-string "uname -o") 0 -1)))))
+		  (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))
 
 (use-package system-packages
   :init
