@@ -9,9 +9,11 @@
 		  ("NOTE"   . "#44b9b1")))
   ;; We already have todos in Org Mode!
   (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
-
+  (set-face-attribute 'hl-todo nil :italic t)
   :bind (:map hl-todo-mode-map
   ("C-c p" . hl-todo-previous)
   ("C-c n" . hl-todo-next)
   ("C-c o" . hl-todo-occur)
   ("C-c i" . hl-todo-insert)))
+
+

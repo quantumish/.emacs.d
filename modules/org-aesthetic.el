@@ -29,7 +29,7 @@
 								  ("DEADLINE:" . "")))
    (prettify-symbols-mode))
 
-(use-package mixed-pitch :hook (org-mode . mixed-pitch-mode))
+; (use-package mixed-pitch :hook (org-mode . mixed-pitch-mode))
 (use-package org-superstar
   :config
   (setq org-superstar-headline-bullets-list '("◉" "○" "◈" "◎"))

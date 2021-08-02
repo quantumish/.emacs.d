@@ -1,4 +1,4 @@
-(setq org-html-head "<link rel=\"stylesheet\" href=\"https://sandyuraz.com/styles/org.min.css\">")
+(setq org-html-head "<link rel=\"stylesheet\" href=\"https://quantumish.github.io/org.css\">")
 (setq org-publish-project-alist
       '(("github.io"
          :base-directory "~/Dropbox/publicnotes/"
@@ -14,3 +14,7 @@
 		 :preserve-breaks t
          )))
 (setq org-html-postamble nil)
+
+(use-package org-roam
+  :init
+  (setq org-roam-directory "~/Dropbox/notes"))

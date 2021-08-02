@@ -10,12 +10,13 @@
 					"All systems nominal."
 					"Democracy... is non negotiable."
 					"It's my way or... hell, it's my way!"
-					"Death is a preferable alternative to communism."
 					"Make life rue the day it though it could give Richard Stallman lemons!"
 					"Vi-Vi-Vi, the editor of the beast."
 					"Happy hacking!"
-					"While any text editor can save your files, only Emacs can save you soul."
+					"While any text editor can save your files, only Emacs can save your soul."
 					"There's an Emacs package for that."
+					"Rip and tear, until it is done!"
+					"It's time to kick ass and chew bubblegum... and I'm all outta gum."
 					"M-x butterfly"
 					""))
   (setq dashboard-items '((recents  . 3)

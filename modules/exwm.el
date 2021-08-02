@@ -5,8 +5,8 @@
 (require 'exwm-randr)
 
 (defvar left-screen "DP-1")
-(defvar middle-screen "HDMI-1")
-(defvar right-screen "DP-2")
+(defvar middle-screen "HDMI-0")
+(defvar right-screen "DP-3")
 (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
 (add-hook 'exwm-randr-screen-change-hook
 	  (lambda ()
@@ -97,4 +97,7 @@
 (add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
 (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name)
 
-
+(start-process-shell-command "polybar-update" nil
+    (concat "sed s/<MONITOR>/"
+			middle-screen
+			"/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))

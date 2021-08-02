@@ -52,6 +52,9 @@
 	  (set-face-attribute 'header-line nil :height height :background "#0b0f16")
 	(set-face-attribute 'header-line nil :height height :background "#0e121a")))
 
+(set-face-attribute 'default nil :family "IBM Plex Mono")
+(set-face-attribute 'font-lock-comment-face nil :italic t)
+
 (defun determine-olivetti ()
   (interactive)
   (olivetti-set-width (- (window-total-width) 8)))
@@ -120,6 +123,25 @@
 	(add-hook 'exwm-init-hook (lambda () (load "exwm-outer-gaps")
 					(exwm-outer-gaps-mode)
 					(call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
+
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(use-package org-roam-ui
+  :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+    :hook (org-roam . org-roam-ui-mode))
 
 (message "Emacs loaded (with %d packages) in %s with %d garbage collections."
 		 (length package-activated-list)

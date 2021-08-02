@@ -31,3 +31,5 @@
 	:library-folders-fn nil)))
 
 ;; TODO bind/investigate ccls functions
+
+(use-package cpp-auto-include)  

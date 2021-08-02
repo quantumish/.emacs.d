@@ -17,7 +17,8 @@
 
 (use-package all-the-icons-ivy-rich
   :after ivy-rich counsel
-  :init (all-the-icons-ivy-rich-mode))
+  :init
+  (all-the-icons-ivy-rich-mode))
 
 (use-package ivy-prescient
   :after ivy prescient
