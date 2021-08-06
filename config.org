@@ -719,6 +719,23 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
 #+end_src
 
 * TODO Theming
+** Translucent 
+Transparency can look nice - sometimes. Polybar clashes with transparency, so disable it while we're using it.
+#+begin_src emacs-lisp
+  ;; FIXME hacky and broken
+  (define-minor-mode translucent-mode
+    "Make the current frame slightly transparent and don't use polybar."
+    :init-value t
+    (if translucent-mode
+        (progn
+          (set-frame-parameter (selected-frame) 'alpha '(100))
+          (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))
+      (progn 
+        (call-process-shell-command "pkill polybar" nil 0)
+        (set-frame-parameter (selected-frame) 'alpha '(90)))))
+#+end_src
+
+
 * TODO Dashboard
 * TODO Exit Message
 * TODO Vanilla++
