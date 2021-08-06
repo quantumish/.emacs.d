@@ -1,5 +1,752 @@
-#+TITLE: .emacs.d 
-* C++
-#+BEGIN_SRC emacs-lisp
-(setq c-default-style 
-#+END_SRC
+
+#+TITLE: Emacs
+* Packages
+First, let's set the package archives and do some basic tweaks.
+#+begin_src emacs-lisp
+  (require 'package)
+  (setq package-enable-at-startup nil) ;; Speed tip taken from Doom Emacs
+  (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
+                           ("gnu" . "https://elpa.gnu.org/packages/")
+                           ("melpa" . "https://melpa.org/packages/")))
+  ;; General convieniences, somewhat questionable
+  (setq url-http-attempt-keepalives nil)
+  (setq package-check-signature nil)  
+#+end_src
+
+This configuration uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword Argos are for specifying package-related keybinds and hooks respectively.
+
+Install it via =M-x package-install RET use-package=. Then, we can set it up.
+
+#+begin_src emacs-lisp
+  ;; TODO Look into bootstrapping? 
+  (eval-when-compile
+    (require 'use-package))
+  ;; Automatically install all packages if not present.
+  (setq use-package-always-ensure t)
+  ;; Always lazy-load if doable. TODO Properly look into good defer setup
+  (setq use-package-always-defer t)  
+#+end_src
+
+Are we using native-comp? If so, let's actually native compile things. Also, the popup compilation warnings are really bothersome, so turn those off, too.
+#+begin_src emacs-lisp
+  (if (string-match-p (regexp-quote "NATIVE_COMP") system-configuration-features)
+      (progn
+        (setq package-native-compile t)
+        (setq comp-deferred-compilation t)
+        (setq native-comp-deferred-compilation-deny-list nil)
+        (setq warning-suppress-log-types '((comp)))))
+#+end_src
+
+* Speed
+Let's then use a variety of the tips for speeding up initialization time given by the creator of Doom Emacs.
+#+begin_src emacs-lisp
+    ;; Go back to normal GC behavior after init
+    (add-hook 'emacs-startup-hook
+              (lambda ()
+                (setq gc-cons-threshold 16777216 ; 16mb
+                      gc-cons-percentage 0.1)))
+    
+    ;; Don't do GC when the minibuffer is being used (lag during minibuffer usage is frustrating)
+    (defun doom-defer-garbage-collection-h ()
+      "Disable garbage collection."
+      (setq gc-cons-threshold most-positive-fixnum))
+    
+    (defun doom-restore-garbage-collection-h ()
+      "Restore garbage collection."
+      (run-at-time
+       1 nil (lambda () (setq gc-cons-threshold 16777216))))
+    
+    (add-hook 'minibuffer-setup-hook #'doom-defer-garbage-collection-h)
+    (add-hook 'minibuffer-exit-hook #'doom-restore-garbage-collection-h)
+    ;; GCMH (literally Garbage Collector Magic Hack) optimizes GC calls? 
+    (use-package gcmh
+      :init
+      (setq gcmh-idle-delay 5)
+      (setq gcmh-high-cons-threshold (* 16 1024 1024))
+      (gcmh-mode))
+#+end_src
+
+* System
+Let's now move on to system-level configuration. First, some utility functions for running commands and deducing distro/OS.
+
+#+begin_src emacs-lisp
+(defun process-exit-code-and-output (program &rest args)
+  "Run PROGRAM with ARGS and return the exit code and output in a list."
+  (with-temp-buffer
+	(list (apply 'call-process program nil (current-buffer) nil args)
+		  (buffer-string))))
+
+(defun get-distro-or-os ()
+  "Return the Linux distribution or OS Emacs is running on."
+  (if (eq system-type 'darwin)
+	  "Darwin")
+  (if (eq system-type 'gnu/linux)
+	  (progn
+		(if (file-exists-p "/etc/os-release")
+			(substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
+		  (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))
+#+end_src
+
+Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packages]], an awesome package that lets you programmatically install packages from Emacs across operating systems.
+
+#+begin_src emacs-lisp  
+  (use-package system-packages
+    :init
+    (let (os-name (get-distro-or-os))
+      ;; system-packages doesn't support yay by default, so add it.
+      (if (string= os-name "Arch Linux")
+          (progn
+            (add-to-list 'system-packages-supported-package-managers
+                         '(yay .
+                               ((default-sudo . nil)
+                                (install . "yay -S")
+                                (uninstall . "yay -Rs")
+                                (update . "yay -Syu")
+                                (log . "cat /var/log/pacman.log")
+                                (change-log . "yay -Qc")
+                                (clean-cache . "yay -Sc")
+                                (get-info . "yay -Qi")
+                                (get-info-remote . "yay -Si")
+                                (list-files-provided-by . "yay -Ql")
+                                (owning-file . "yay -Qo")
+                                (verify-all-dependencies . "yay -Dk")
+                                (remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
+                                (list-installed-packages . "yay -Qe")
+                                (list-installed-packages-all . "yay -Q")
+                                (noconfirm . "--noconfirm"))))
+            (setq system-packages-package-manager 'yay)))
+      (if (string= os-name "Debian GNU/Linux")
+          (progn
+            (setq system-packages-use-sudo t)
+            (setq system-packages-package-manager 'apt)))
+      (if (string= os-name "Darwin")
+          (setq system-packages-package-manager 'brew)))
+      (setq system-packages-noconfirm t))
+#+end_src
+
+This package also has some nice extensions like ~use-package-ensure-system-package~ which lets you express system-level dependencies for Emacs packages, and ~helm-system-packages~ which is the ultimate package manager interface (although it unfortunately means we'll need to install all of Helm for just this).
+
+#+begin_src emacs-lisp
+  (use-package use-package-ensure-system-package)
+  (use-package helm-system-packages
+    :command helm-system-packages)
+#+end_src
+
+* Desktop
+It's time to load EXWM, the Emacs X Window Manager. 
+
+#+begin_src emacs-lisp
+  (use-package exwm
+    :init    
+    (setq exwm-workspace-number 3)
+    (setq exwm-input-global-keys
+          `(([?\s-r] . exwm-reset)
+            ([?\s-w] . exwm-workspace-switch)
+            ([?\s-&] . (lambda (command)
+                         (interactive (list (read-shell-command "$ ")))
+                         (start-process-shell-command command nil command)))))
+    ;; Set default simulation keys
+    (setq exwm-input-simulation-keys
+          '(([?\C-b] . [left])
+            ([?\C-f] . [right])
+            ([?\C-p] . [up])
+            ([?\C-n] . [down])
+            ([?\C-a] . [home])
+            ([?\C-e] . [end])
+            ([?\M-v] . [prior])
+            ([?\C-v] . [next])
+            ([?\C-d] . [delete])
+            ([?\C-k] . [S-end delete])))
+    ;; Allow windows to be moved across screens and interacted with normally.
+    (setq exwm-layout-show-all-buffers t)
+    (setq exwm-workspace-show-all-buffers t)  
+    (exwm-enable))
+#+end_src
+
+Setting up multi-monitor support is a bit of a hack in my configuration since my input devices tend to mysteriously swap around. You'll notice I'm using ~use-package~ for the same package twice in a row here, but fear not, it merely executes them sequentially and it means I can intersperse long-winded package configuration with text without fear of accidentally breaking something one day.
+
+#+begin_src emacs-lisp
+  (use-package exwm
+    :init
+    (defvar left-screen "DP-1")
+    (defvar middle-screen "HDMI-0")
+    (defvar right-screen "DP-3")
+    (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
+    (add-hook 'exwm-randr-screen-change-hook
+              (lambda ()
+                (start-process-shell-command
+                 "xrandr" nil (concat "xrandr --output " left-screen " --output " middle-screen " --output " right-screen " --auto"))))
+    (exwm-randr-enable)  
+    (add-hook 'exwm-init-hook
+              (lambda ()
+                (start-process-shell-command
+                 "xrandr" nil (concat "xrandr --output " left-screen " --rotate left")))))
+#+end_src
+
+Next, if we're on Linux, let's do everything we need to do at startup.
+
+~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
+#+begin_src sh :tangle ~/.emacs.d/Xmodmap
+  # Clear things
+  clear      lock 
+  clear   control
+  clear      mod1
+  clear      mod2
+  clear      mod3
+  clear      mod4
+  clear      mod5
+  keycode      37 = Hyper_L # Control -> Hyper
+  keycode      66 = Control_L # Caps -> Control
+  # Escape trickery to allow xcape? TODO Figure out what I meant to do by this
+  keycode       9 = Escape
+  keycode  0xffca = Escape  
+  add     control = Control_L Control_R
+  add        mod1 = Alt_L Alt_R Meta_L
+  add        mod2 = Num_Lock
+  add        mod3 = Hyper_L
+  add        mod4 = Super_L Super_R
+  add        mod5 = Mode_switch ISO_Level3_Shift
+#+end_src
+
+~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
+#+begin_src sh :tangle ~/.emacs.d/.xbindkeysrc
+  # TODO Phase me out!
+  # Increase volume
+  "amixer set Master 5%+"
+  XF86AudioRaiseVolume
+  
+  # Decrease volume
+  "amixer set Master 5%-"
+  XF86AudioLowerVolume
+  
+  # Increase volume (alt)
+  "amixer set Master 5%+"
+  Control+Mod2+Mod4+Shift + k
+  
+  # Decrease volume (alt)
+  "amixer set Master 5%-"
+  Control+Mod2+Mod4+Shift + j
+  
+  "amixer set Master toggle"
+  XF86AudioMute
+  
+  "bash ~/.config/rofi/applets/menu/screenshot.sh"
+  Print
+  
+  "bash ~/.config/rofi/applets/menu/powermenu.sh"
+  Pause
+  
+  "bash ~/.config/rofi/applets/menu/apps.sh"
+  Scroll_Lock
+  
+  "bash ~/.config/rofi/launchers/text/launcher.sh"
+  alt + p
+  
+  "bash ~/.config/rofi/launchers/ribbon/launcher.sh"
+  alt + shift + p
+  
+  "sh ~/.config/focus.sh"
+  alt + shift + f
+  
+  "python ~/.config/modeset.py 'normal'"
+  m:0x20 + c:37 + F1
+  
+  "rofi -show calc -modi calc -no-show-match -no-sort"
+  XF86Calculator
+#+end_src
+
+~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as remap tapping caps-lock to escape.
+#+begin_src sh :tangle ~/.emacs.d/xcape.sh
+xcape -e "Control_L=Escape"
+xcape -e "Shift_R=parenright"
+xcape -e "Shift_L=parenleft"
+#+end_src
+
+~dunst~ is a great notification server. 
+#+begin_src conf :tangle ~/.emacs.d/dunstrc
+  [global]
+  monitor = 0
+  follow = keyboard
+  geometry = "320x20-36+36"
+  indicate_hidden = yes
+  shrink = yes
+  transparency = 0
+  notification_height = 0
+  separator_height = 0
+  padding = 8
+  horizontal_padding = 8
+  frame_width = 2
+  frame_color = "#000000"
+  separator_color = frame
+  sort = yes
+  idle_threshold = 120
+  font = IBM Plex Mono 10
+  line_height = 0
+  markup = full
+  format = "<b>%s</b>\n<i>%b</i>"
+  alignment = left
+  show_age_threshold = 60
+  word_wrap = yes
+  ellipsize = middle
+  ignore_newline = no
+  stack_duplicates = true
+  hide_duplicate_count = false
+  show_indicators = false
+  icon_position = left
+  max_icon_size = 32
+  icon_path = /usr/share/icons/candy-icons/apps/scalable:/usr/share/icons/candy-icons/devices/scalable/
+  sticky_history = yes
+  history_length = 20
+  dmenu = /usr/bin/dmenu -p dunst:
+  browser = /usr/bin/firefox -new-tab
+  always_run_script = true
+  title = Dunst
+  class = Dunst
+  startup_notification = false
+  verbosity = mesg
+  corner_radius = 0
+  force_xinerama = false
+  mouse_left_click = close_current
+  mouse_middle_click = do_action
+  mouse_right_click = close_all
+  
+  [experimental]
+  per_monitor_dpi = false
+  
+  [shortcuts]
+  close = ctrl+space
+  close_all = ctrl+shift+space
+  history = ctrl+grave
+  context = ctrl+shift+grave
+  
+  [urgency_low]
+  foreground = "#ffd5cd"
+  background = "#121212"
+  frame_color = "#a2c5de"
+  timeout = 10
+  icon = ~/.config/dunst/images/notification.png
+  
+  [urgency_normal]
+  background = "#121212"
+  foreground = "#ffd5cd"
+  frame_color = "#a2c5de"
+  timeout = 10
+  icon = ~/.config/dunst/images/notification.png
+  
+  [urgency_critical]
+  background = "#121212"
+  foreground = "#ffd5cd"
+  frame_color = "#a2c5de"
+  timeout = 0
+  icon = ~/.config/dunst/images/alert.png
+#+end_src
+
+Let's define a quick script to reload it based on pywal, too.
+#+begin_src sh :tangle ~/.emacs.d/reload_dunst.sh
+  . "${HOME}/.cache/wal/colors.sh"
+    
+  pkill dunst
+  dunst \
+        -frame_width 2 \
+            -lb "${color0}" \
+            -nb "${color0}" \
+            -cb "${color0}" \
+            -lf "${color7}" \
+            -bf "${color7}" \
+            -cf "${color7}" \
+            -nf "${color7}" \
+        -frame_color "${color2}" &
+#+end_src
+
+Finally, we actually run the startup.
+#+begin_src emacs-lisp  
+  (if (eq system-type 'gnu/linux)      
+      (use-package exwm
+        :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh)
+        :init
+        ;; Rebind keys
+        (call-process-shell-command "xmodmap ~/.emacs.d/Xmodmap" nil 0)
+        (call-process-shell-command "xbindkeys" nil 0)        
+        (call-process-shell-command "sh ~/.emacs.d/xcape.sh" nil 0)
+        ;; Notifications w/ dunst
+        (call-process-shell-command "dunst &" nil 0)
+        (call-process-shell-command "sh ~/.config/dunst/reload_dunst.sh" nil 0)
+        ;; Make mouse vanish when not used
+        (call-process-shell-command "unclutter &" nil 0)
+        ;; The best screenshot utility!
+        (call-process-shell-command "flameshot &" nil 0)
+        ))
+#+end_src
+
+ Let's make moving across monitors and workspaces a little easier.
+ #+begin_src emacs-lisp
+   (defun exwm-workspace-next ()
+     (interactive)
+     (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
+         (exwm-workspace-switch (+ exwm-workspace-current-index 1))))
+   
+   (defun exwm-workspace-prev ()
+     (interactive)
+     (if (> exwm-workspace-current-index 0)
+         (exwm-workspace-switch (- exwm-workspace-current-index 1))))
+   
+   (general-define-key
+    "M-h" 'exwm-workspace-next
+    "M-l" 'exwm-workspace-prev)
+   
+   ;; Make mouse follow focus
+   (use-package exwm-mff
+     :init (exwm-mff-mode))
+   
+   (load "exwmsw")
+   (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
+   (setq exwmsw-the-right-screen right-screen)
+   (setq exwmsw-the-center-screen middle-screen)
+   (setq exwmsw-the-left-screen left-screen)
+   (general-def override-global-map
+     "C-M-j" #'exwmsw-cycle-screens
+     "C-M-k" #'exwmsw-cycle-screens-backward)
+   
+   ;; HACK
+   (general-def exwm-mode-map
+     "C-M-j" #'exwmsw-cycle-screens
+     "C-M-k" #'exwmsw-cycle-screens-backward)   
+ #+end_src
+
+ Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
+#+begin_src emacs-lisp
+  (use-package exwm
+    :init
+  
+    (defun b3n-exwm-set-buffer-name ()
+      (if (and exwm-title (string-match "\\`http[^ ]+" exwm-title))
+          (let ((url (match-string 0 exwm-title)))
+            (setq-local buffer-file-name url)
+            (setq-local exwm-title (replace-regexp-in-string
+                                    (concat (regexp-quote url) " - ")
+                                    ""
+                                    exwm-title))))
+      (setq-local exwm-title
+                  (concat
+                   exwm-class-name
+                   "<"
+                   (if (<= (length exwm-title) 50)
+                       exwm-title
+                     (concat (substring exwm-title 0 50) "…"))
+                   ">"))
+  
+      (exwm-workspace-rename-buffer exwm-title))
+  
+    (add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
+    (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name))
+#+end_src
+
+Finally, update polybar config file to match monitor.
+#+begin_src emacs-lisp
+  ;; TODO Use Org Babel and tangle polybar config?
+  (start-process-shell-command "polybar-update" nil
+      (concat "sed s/<MONITOR>/"
+              middle-screen
+              "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
+#+end_src
+
+* Undoing Defaults
+Emacs has some default behaviors that are generally annoying. Let's disable them!
+
+#+begin_src emacs-lisp
+  ;; Turn off all unnecessary GUI elements.
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  
+  ;; If you compiled with native compilation, turn off warning popups.
+  (setq warning-suppress-log-types '((comp)))
+  
+  ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
+  ;; This has *only* caused me trouble in GUI Emacs.
+  (if (display-graphic-p)
+      (progn
+        (global-unset-key (kbd "C-z"))
+        (global-unset-key (kbd "C-x C-z"))))
+  
+  ;; Stop Emacs from bothering you about disabled commands.
+  (setq disabled-command-function nil)
+  
+  ;; Prevent any attempts to resize the frame.
+  (setq frame-inhibit-implied-resize t)
+  
+  ;; Stop Emacs from trying to use dialog boxes.
+  (setq use-dialog-box nil)
+  
+  ;; Prefer y/n over yes/no.
+  (fset 'yes-or-no-p 'y-or-n-p)
+  
+  ;; Mouse behavior tweaks? TODO look into me
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
+  (setq mouse-wheel-progressive-speed nil)
+  
+  ;; Visual line mode is just better.
+  (global-visual-line-mode)
+#+end_src
+
+* TODO Theming
+* TODO Dashboard
+* TODO Exit Message
+* TODO Vanilla++
+* Minibuffer Completion
+Next, let's improve interactions with Emacs: things like finding files, running commands, switching buffers, etc... by using ~ivy~, a light(ish) minibuffer completion system. Ivy is one of the more popular packages for this, meaning that there's quite a bit of integration with other packages. Notably, ~counsel~ extends its functionality and ~swiper~ provides a nicer interface to interactive search.
+
+On top of this, ~prescient~ allows for completions to be even more useful by basing them off of history and sorting them better. Finally, we can add some icons and extra text to make it all prettier.
+
+#+begin_src emacs-lisp
+  (use-package prescient
+    :init (setq prescient-persist-mode t))
+
+  (use-package ivy
+    :init
+    (use-package counsel :config (counsel-mode 1))
+    (use-package swiper :defer t)
+    (ivy-mode 1)
+    :bind
+    (("C-s"     . swiper-isearch)
+     ("M-x"     . counsel-M-x)
+     ("C-x C-f" . counsel-find-file)))
+
+  (use-package ivy-rich
+    :after ivy
+    :init (ivy-rich-mode))
+
+  (use-package all-the-icons-ivy-rich
+    :after ivy-rich counsel
+    :init (all-the-icons-ivy-rich-mode))
+
+  (use-package ivy-prescient
+    :after ivy prescient
+    :init (ivy-prescient-mode))
+
+  (use-package marginalia
+    :config (marginalia-mode))
+#+end_src
+
+* Help
+In order to make some parts of exploring Emacs slightly nicer, let's install ~helpful~ which overhauls the Help interface, and ~which-key~ which helps you discover keybinds.
+
+#+begin_src emacs-lisp
+  (use-package helpful
+    :init
+    ;; Advise describe-style functions so that Helpful appears no matter what
+    (advice-add 'describe-function :override #'helpful-function)
+    (advice-add 'describe-variable :override #'helpful-variable)
+    (advice-add 'describe-command :override #'helpful-callable)
+    (advice-add 'describe-key :override #'helpful-key)
+    (advice-add 'describe-symbol :override #'helpful-symbol)
+    :config
+    ;; Baseline keybindings, not very opinionated
+    (global-set-key (kbd "C-h f") #'helpful-callable)
+    (global-set-key (kbd "C-h v") #'helpful-variable)
+    (global-set-key (kbd "C-h k") #'helpful-key)
+    (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+    (global-set-key (kbd "C-h F") #'helpful-function)
+    (global-set-key (kbd "C-h C") #'helpful-command)
+    ;; Counsel integration
+    (setq counsel-describe-function-function #'helpful-callable)
+    (setq counsel-describe-variable-function #'helpful-variable))    
+  
+  (use-package which-key
+    :init (which-key-mode))
+#+end_src
+* TODO Perspectives
+* TODO Movement
+* TODO Org
+* LSP
+~lsp-mode~ enables us to get Intellisense-esque features in Emacs: setting it up requires both config on Emacs' side and installing actual language servers on your side. We'll auto-install them with the magic of ~use-package-ensure-system-package~, although brace yourself for the potential for lots of debugging if the server doesn't work as expected on your system.
+
+~lsp-mode~ can do more than just provide good completions: you can jump to definitions and references with ~lsp-find-definition~ and ~lsp-find-references~ respectively, as well as most other things you'd expect from an IDE.
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure-system-package ccls
+    :ensure-system-package (pyls . "python -m pip install pyls")
+    :ensure-system-package rust-analyzer
+    :init
+    ;; Disable annoying headerline
+    (setq lsp-headerline-breadcrumb-enable nil)
+    ;; Don't show unneeded function info in completions
+    (setq lsp-completion-show-detail nil)
+    ;; Disable annoying autoformatting!
+    (setq-default lsp-enable-indentation nil)
+    (setq-default lsp-enable-on-type-formatting nil)
+    :commands lsp
+    ;; Add languages of your choice!
+    :hook ((c-mode . lsp)
+           (c++-mode . lsp)
+           (python-mode . lsp)
+           (typescript-mode . lsp)
+           (rust-mode . lsp)))
+  
+  (use-package lsp-ui
+    :after lsp
+    :init
+    (setq lsp-ui-doc-delay 5)   
+    (add-hook 'flycheck-mode-hook 'lsp-ui-mode) ;; HACK
+    :config 
+    ;; HACK Hardcoded values are bad.
+    (set-face-attribute 'lsp-ui-doc-background nil :background "#0b0f16"))
+#+end_src
+
+* Company
+~company-mode~ provides code completions in Emacs, and will work together with ~lsp-mode~ to provide a nice experience. On top of that, let's use add-ons that allow documentation for completions to pop up and also let ~prescient~ make things better like it did with Ivy.
+
+#+begin_src emacs-lisp
+  (use-package company
+    :init
+    (setq company-idle-delay 0)
+    (setq company-tooltip-maximum-width 40)
+    :hook
+    (prog-mode . company-mode))
+  
+  (use-package company-quickhelp
+    :after company
+    :init (company-quickhelp-mode))
+  
+  (use-package company-quickhelp-terminal
+    :after company-quickhelp)
+  
+  (use-package company-prescient
+    :after company prescient
+    :init
+    (setq-default history-length 1000)
+    (setq-default prescient-history-length 1000)
+    :init (company-prescient-mode))
+#+end_src
+
+* TODO Compilation
+* TODO Documentation
+* TODO Projectile?
+* Linting
+Next, we can add linting to the editor with flycheck! 
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :hook
+    (prog-mode . flycheck-mode)
+    (flycheck-mode . (lambda () (set-window-fringes nil 15 0))))
+#+end_src
+
+With a tweak courtesy of [[https://github.com/jemoka/][@jemoka]], we can smooth over bits of the interface. Goodbye squiggly lines and strange fringe indicators. Goodbye linter errors while typing. 
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :config
+    (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  
+    ;; HACK Hardcoded values are bad!
+    (set-face-attribute 'flycheck-error nil :underline '(:color "#265087"))
+    (set-face-attribute 'flycheck-warning nil :underline '(:color "#43709e"))
+    (set-face-attribute 'flycheck-info nil :underline t)
+    (define-fringe-bitmap 'my-flycheck-fringe-indicator
+      (vector #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00011100
+              #b00111110
+              #b00111110
+              #b00111110
+              #b00011100
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000))
+    (let ((bitmap 'my-flycheck-fringe-indicator))
+      (flycheck-define-error-level 'error
+        :severity 2
+        :overlay-category 'flycheck-error-overlay
+        :fringe-bitmap bitmap
+        :error-list-face 'flycheck-error-list-error
+        :fringe-face 'flycheck-fringe-error)
+      (flycheck-define-error-level 'warning
+        :severity 1
+        :overlay-category 'flycheck-warning-overlay
+        :fringe-bitmap bitmap
+        :error-list-face 'flycheck-error-list-warning
+        :fringe-face 'flycheck-fringe-warning)
+      (flycheck-define-error-level 'info
+        :severity 0
+        :overlay-category 'flycheck-info-overlay
+        :fringe-bitmap bitmap
+        :error-list-face 'flycheck-error-list-info
+        :fringe-face 'flycheck-fringe-info))
+#+end_src
+#+end_collapsible
+
+* YASnippet
+YASnippet is the premiere package for snippets, so let's install it.
+
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :init (yas-global-mode))
+#+end_src
+
+~auto-activating-snippets~ provides the very useful ability to automatically expand snippets while typing.
+#+begin_src emacs-lisp
+(use-package aas
+  :hook (LaTeX-mode . ass-activate-for-major-mode)
+  :hook (org-mode . ass-activate-for-major-mode)
+  :hook (c-mode . ass-activate-for-major-mode)
+  :hook (c++-mode . ass-activate-for-major-mode)
+  :config
+  (aas-set-snippets 'c-mode
+                    "u64" "uint64_t"
+					"u32" "uint32_t"
+					"u16" "uint16_t"
+					"u8" "uint8_t"
+				    "i64" "int64_t"
+					"i32" "int32_t"
+					"i16" "int16_t"
+					"i8" "int8_t"
+					"sz" "size_t")
+  (aas-set-snippets 'c++-mode
+					"mxf" "Eigen::MatrixXf"
+                    "mxd" "Eigen::MatrixXd" 
+					"v2f" "Eigen::Vector2f" 
+					"v2d" "Eigen::Vector2d" 
+					"v2i" "Eigen::Vector2i" 
+					"v3f" "Eigen::Vector3f" 
+					"v3d" "Eigen::Vector3d" 
+					"v3i" "Eigen::Vector3i"))
+#+end_src
+
+* Git
+Let's install the wonderful git porcelain Magit and some extra usefulness.
+
+#+begin_src emacs-lisp
+  ;; The ultimate Git porcelain.
+  (use-package magit)
+  ;; Show all TODOs in a git repo
+  (use-package magit-todos)
+  ;; Edit gitignores w/ highlighting
+  (use-package gitignore-mode)
+#+end_src
+
+* TODO C++
+* TODO Python
+* TODO Code Aesthetics
+* TODO Writing
+* TODO Scratch
+* The End.
+Well, that's it. We're done. Time to get going!
+#+begin_src emacs-lisp
+(require 'notifications)
+(notifications-notify :title "Up and at 'em!"
+					  :body (format "Loaded %d packages in %s with %d GCs."
+		 (length package-activated-list)
+		 (format "%.2f seconds"
+				 (float-time
+				  (time-subtract after-init-time before-init-time)))
+		 gcs-done))
+#+end_src
+
+
