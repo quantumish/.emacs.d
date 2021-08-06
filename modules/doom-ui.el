@@ -38,9 +38,10 @@
   (setq centaur-tabs-icon-scale-factor 0.7)
   (setq centaur-tabs-set-bar 'left)
   (setq x-underline-at-descent-line t)
-  ;; (defun contextual-tabs ()
-  ;; 	(if (and (centaur-tabs-mode-on-p) (eq (derived-mode-p 'prog-mode) nil))
-  ;; 		(centaur-tabs-local-mode)))
+  (defun contextual-tabs ()
+	(interactive)
+	(if (and (centaur-tabs-mode-on-p) (eq (derived-mode-p 'prog-mode) nil))
+		(centaur-tabs-local-mode)))
   (defun centaur-tabs-hide-tab (x)
 	(let ((name (format "%s" x)))
 	  (or
@@ -58,12 +59,10 @@
 	   (and (string-prefix-p "magit" name)
 			(not (file-name-extension name)))
 	   )))
-  (setq centaur-tabs-hide-tab-function 'centaur-tabs-hide-tab)
+  (defun centaur-tabs-hide-tab-cached (x) (centaur-tabs-hide-tab x))
   (centaur-tabs-mode)
   :hook
-  (dired-mode . centaur-tabs-local-mode)
-  (compilation-mode . centaur-tabs-local-mode)
-  (dashboard-mode . centaur-tabs-local-mode)
+  (after-change-major-mode . contextual-tabs)
   :bind
   ("H-l" . 'centaur-tabs-forward-tab)
   ("H-h" . 'centaur-tabs-backward-tab))

@@ -1,11 +1,9 @@
 (use-package company
   :init
   (setq company-idle-delay 0)
-  (setq company-tooltip-maximum-width 40)
+  (setq company-tooltip-maximum-width 40) 
   :hook
-  (prog-mode . company-mode)
-  :bind (:map company-active-map
-			  ("<ret>" . 'company-complete-selection)))
+  (prog-mode . company-mode))
 
 (use-package company-quickhelp
   :after company

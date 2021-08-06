@@ -1,7 +1,35 @@
 (use-package exwm)
 (require 'exwm)
-(require 'exwm-config)
-(exwm-config-example)
+(setq exwm-workspace-number 3)
+(setq exwm-input-global-keys
+      `(
+        ;; 's-r': Reset (to line-mode).
+        ([?\s-r] . exwm-reset)
+        ;; 's-w': Switch workspace.
+        ([?\s-w] . exwm-workspace-switch)
+        ;; 's-&': Launch application.
+        ([?\s-&] . (lambda (command)
+                     (interactive (list (read-shell-command "$ ")))
+                     (start-process-shell-command command nil command)))
+        ;; 's-N': Switch to certain workspace.
+        ,@(mapcar (lambda (i)
+                    `(,(kbd (format "s-%d" i)) .
+                      (lambda ()
+                        (interactive)
+                        (exwm-workspace-switch-create ,i))))
+                  (number-sequence 0 9))))
+(setq exwm-input-simulation-keys
+      '(([?\C-b] . [left])
+        ([?\C-f] . [right])
+        ([?\C-p] . [up])
+        ([?\C-n] . [down])
+        ([?\C-a] . [home])
+        ([?\C-e] . [end])
+        ([?\M-v] . [prior])
+        ([?\C-v] . [next])
+        ([?\C-d] . [delete])
+        ([?\C-k] . [S-end delete])))
+(exwm-enable)
 (require 'exwm-randr)
 
 (defvar left-screen "DP-1")
@@ -14,6 +42,8 @@
 		 "xrandr" nil (concat "xrandr --output " left-screen " --output " middle-screen " --output " right-screen " --auto"))))
 (exwm-randr-enable)
 
+(setq exwm-layout-show-all-buffers t)
+(setq exwm-workspace-show-all-buffers t)
 
 (if (eq system-type 'gnu/linux)
 	(progn
@@ -72,8 +102,6 @@
 (general-def exwm-mode-map
   "C-M-j" #'exwmsw-cycle-screens
   "C-M-k" #'exwmsw-cycle-screens-backward)
-
-(exwm-input-set-key (kbd "s-w") #'exwm-workspace-switch)
 
 (defun b3n-exwm-set-buffer-name ()
   (if (and exwm-title (string-match "\\`http[^ ]+" exwm-title))

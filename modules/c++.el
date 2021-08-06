@@ -1,3 +1,4 @@
+
 (setq c-default-style "k&r")
 (setq-default c-basic-offset 4)
 

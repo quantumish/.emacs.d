@@ -1,19 +1,17 @@
 (use-package hl-todo
   :init
   (global-hl-todo-mode)
+  ;; HACK Hardcoded values are bad!
   (setq hl-todo-keyword-faces
-		'(("TODO"   . "#99bb66")
-		  ("FIXME"  . "#ff6655")
-		  ("DEBUG"  . "#a9a1e1")
-		  ("HACK"   . "#6c78dd")
-		  ("NOTE"   . "#44b9b1")))
+		'(("TODO"   . "#29558F")
+		  ("FIXME"  . "#447BD0")
+		  ("DEBUG"  . "#4776A7")
+		  ("HACK"   . "#3367A2")
+		  ("NOTE"   . "#a2c5de")))
   ;; We already have todos in Org Mode!
   (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
   (set-face-attribute 'hl-todo nil :italic t)
   :bind (:map hl-todo-mode-map
-  ("C-c p" . hl-todo-previous)
-  ("C-c n" . hl-todo-next)
-  ("C-c o" . hl-todo-occur)
-  ("C-c i" . hl-todo-insert)))
-
-
+  ("C-c t p" . hl-todo-previous)
+  ("C-c t n" . hl-todo-next)
+  ("C-c t i" . hl-todo-insert)))

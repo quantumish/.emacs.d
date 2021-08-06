@@ -34,6 +34,7 @@
 
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
+(menu-bar-mode -1)
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
 (setq mouse-wheel-progressive-speed nil)
 
@@ -53,7 +54,6 @@
 	(set-face-attribute 'header-line nil :height height :background "#0e121a")))
 
 (set-face-attribute 'default nil :family "IBM Plex Mono")
-(set-face-attribute 'font-lock-comment-face nil :italic t)
 
 (defun determine-olivetti ()
   (interactive)
@@ -65,8 +65,6 @@
 	  (setq mac-option-modifier 'super)
 	  (use-package ns-auto-titlebar
 		:init (ns-auto-titlebar-mode))))
- 
-(use-package projectile)
 
 (load-module "doom-ui")
 ;; TODO: (load-module "quantum-ui")
@@ -81,7 +79,7 @@
 (load-module "vanilla++")
 
 (load-module "ivy")
-(load-module "help")
+(load-module "help") ; 
 
 (load-module "perspectives")
 (load-module "movement-intraframe")
@@ -93,15 +91,15 @@
 (load-module "org-aesthetic")
 ;; TODO: (load-module "org-gtd")
 
-(load-module "lsp")
-(load-module "company")
+(load-module "lsp") ;
+(load-module "company") ;
 (load-module "compilation")
 (load-module "documentation")
-(load-module "git")
-(load-module "snippets")
+(load-module "git") ;
+(load-module "snippets") ;
 ;; TODO: (load-module "debug")
 (load-module "projectile")
-(load-module "lint")
+(load-module "lint") ; 
 (load-module "vc")
 
 (load-module "c++")
@@ -143,9 +141,13 @@
     :after org-roam
     :hook (org-roam . org-roam-ui-mode))
 
-(message "Emacs loaded (with %d packages) in %s with %d garbage collections."
+(set-face-attribute 'font-lock-comment-face nil :italic t)
+
+(require 'notifications)
+(notifications-notify :title "Up and at 'em!"
+					  :body (format "Loaded %d packages in %s with %d GCs."
 		 (length package-activated-list)
 		 (format "%.2f seconds"
 				 (float-time
 				  (time-subtract after-init-time before-init-time)))
-		 gcs-done)
+		 gcs-done))

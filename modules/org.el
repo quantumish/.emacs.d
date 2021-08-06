@@ -23,10 +23,6 @@
   (setq org-agenda-start-day "0d")
   (setq org-agenda-span 14)
   (setq org-agenda-start-on-weekday nil)
-  (setq org-agenda-files '("~/sync/org/inbox.org"
-						   "~/sync/org/schoolwork.org"
-						   "~/sync/org/extra.org"
-						   "~/sync/org/projects.org"))
   :bind
   ("C-c c" . org-capture)
   (:map org-mode-map

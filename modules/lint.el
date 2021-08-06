@@ -5,6 +5,7 @@
   (set-face-attribute 'flycheck-error nil :underline '(:color "#265087"))
   (set-face-attribute 'flycheck-warning nil :underline '(:color "#43709e"))
   (set-face-attribute 'flycheck-info nil :underline t)
+
   (define-fringe-bitmap 'my-flycheck-fringe-indicator
 	(vector #b00000000
 			#b00000000
@@ -56,6 +57,7 @@
   :init
   (setq flycheck-clang-tidy-executable "/usr/bin/clang-tidy")
   (setq flycheck-clang-tidy-extra-options "-checks='*'")
+  (add-hook 'flycheck-mode-hook (lambda () (set-window-fringes nil 15 0)))
   :hook
   (flycheck-mode . flycheck-clang-tidy-setup))
 

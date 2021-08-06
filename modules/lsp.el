@@ -21,8 +21,9 @@
   :after lsp
   :init
   (setq lsp-ui-doc-delay 5)
-  :config
-  (set-face-attribute 'lsp-ui-doc-background nil :background "#0b0f16")
-  :hook () ((lsp-mode . lsp-ui-mode)))
+  (add-hook 'flycheck-mode-hook 'lsp-ui-mode)
+  :config 
+  ;; HACK Hardcoded values are bad.
+  (set-face-attribute 'lsp-ui-doc-background nil :background "#0b0f16"))
 
-(add-hook 'lsp-mode-hook (lambda () (set-window-fringes nil 15 0)))
+
