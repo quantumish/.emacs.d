@@ -70,21 +70,21 @@ Let's then use a variety of the tips for speeding up initialization time given b
 Let's now move on to system-level configuration. First, some utility functions for running commands and deducing distro/OS.
 
 #+begin_src emacs-lisp
-(defun process-exit-code-and-output (program &rest args)
-  "Run PROGRAM with ARGS and return the exit code and output in a list."
-  (with-temp-buffer
-	(list (apply 'call-process program nil (current-buffer) nil args)
-		  (buffer-string))))
-
-(defun get-distro-or-os ()
-  "Return the Linux distribution or OS Emacs is running on."
-  (if (eq system-type 'darwin)
-	  "Darwin")
-  (if (eq system-type 'gnu/linux)
-	  (progn
-		(if (file-exists-p "/etc/os-release")
-			(substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
-		  (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))
+  (defun process-exit-code-and-output (program &rest args)
+    "Run PROGRAM with ARGS and return the exit code and output in a list."
+    (with-temp-buffer
+      (list (apply 'call-process program nil (current-buffer) nil args)
+            (buffer-string))))
+  
+  (defun get-distro-or-os ()
+    "Return the Linux distribution or OS Emacs is running on."
+    (if (eq system-type 'darwin)
+        "Darwin")
+    (if (eq system-type 'gnu/linux)
+        (progn
+          (if (file-exists-p "/etc/os-release")
+              (substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
+            (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))  
 #+end_src
 
 Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packages]], an awesome package that lets you programmatically install packages from Emacs across operating systems.
@@ -175,7 +175,10 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
     (add-hook 'exwm-randr-screen-change-hook
               (lambda ()
                 (start-process-shell-command
-                 "xrandr" nil (concat "xrandr --output " left-screen " --output " middle-screen " --output " right-screen " --auto"))))
+                 "xrandr" nil (concat "xrandr --output " left-screen
+                                      " --output " middle-screen
+                                      " --output " right-screen
+                                      " --auto"))))
     (exwm-randr-enable)  
     (add-hook 'exwm-init-hook
               (lambda ()
@@ -358,11 +361,23 @@ Let's define a quick script to reload it based on pywal, too.
         -frame_color "${color2}" &
 #+end_src
 
+~picom~ is a nice compositor, and will allow us to have effects like rounded corners and transparency if we want them. Dual kawase blur looks very nice, so let's use it.
+#+begin_src conf :tangle ~/.emacs.d/picom.conf
+backend = "glx";
+blur: {
+      method = "dual_kawase";
+      strength = 10;
+      background = false;
+      background-frame = false;
+      background-fixed = false;
+}
+#+end_src
+
 Finally, we actually run the startup.
 #+begin_src emacs-lisp  
   (if (eq system-type 'gnu/linux)      
       (use-package exwm
-        :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh)
+        :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
         :init
         ;; Rebind keys
         (call-process-shell-command "xmodmap ~/.emacs.d/Xmodmap" nil 0)
@@ -375,6 +390,8 @@ Finally, we actually run the startup.
         (call-process-shell-command "unclutter &" nil 0)
         ;; The best screenshot utility!
         (call-process-shell-command "flameshot &" nil 0)
+        ;; Compositor
+        (call-process-shell-command "picom &" nil 0)  
         ))
 #+end_src
 
@@ -449,6 +466,376 @@ Finally, update polybar config file to match monitor.
               middle-screen
               "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
 #+end_src
+
+* External Programs
+~pywal~ will be our savior for theming by allowing for thematic consistency.
+#+begin_src emacs-lisp
+  (use-package exwm
+    :ensure-system-package python-pywal)  
+#+end_src
+
+~kitty~ is a terminal emulator that's featureful and usable.
+#+begin_src conf :tangle ~/.emacs.d/kitty.conf  
+  include ~/.cache/wal/colors-kitty.conf # import pywal theme
+  font_family IBM Plex Mono
+  # breathing room
+  window_padding_width 10 15
+  # make page up/down do things
+  map page_up scroll_page_up
+  map page_down scroll_page_down
+  # sane text size binds
+  map ctrl+shift+equal change_font_size all +2.0
+  map ctrl+shift+plus change_font_size all +2.0
+  map ctrl+shift+kp_add change_font_size all +2.0
+  initial_window_width 1000
+  initial_window_height 400
+#+end_src
+
+~zsh~ is good.
+#+begin_src sh :tangle ~/.emacs.d/.zshrc
+  # p10k instant prompt
+  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+  fi
+  
+  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
+  
+  export ZSH="$HOME/.oh-my-zsh"
+  
+  ZSH_THEME="powerlevel10k/powerlevel10k"
+  
+  plugins=(git)
+  
+  source $ZSH/oh-my-zsh.sh
+  
+  export EDITOR='emacs'
+  
+  # Aliases
+  alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
+  alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
+  alias gs="git status"
+  alias nano=mg
+  alias ls=lsd
+  alias hexdump=hexyl
+  alias cat=bat
+  alias rm=rip
+  alias gcc="gcc -Wall -Werror -pedantic-errors"
+  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
+    
+  function recompile() {
+      cd ~/.config/$1
+      sudo make clean install &> /dev/null
+      cd -
+  }
+  
+  function fix_titles() {
+      for a in *
+      id3v2 -t ${a%.mp3} $a
+  }  
+  
+  function themeage() {
+      wal -i $1 &> /dev/null
+      xdotool key alt+r &> /dev/null
+      emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
+      /home/quantumish/.local/bin/pywalfox update
+      python ~/test.py colors-wal-dwm2.h
+      python ~/test.py colors-wal-dmenu2.h
+      python ~/test.py zathurarc
+      python ~/test.py colors-vis
+      recompile dmenu
+  }
+  
+  # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+  source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 
+#+end_src
+
+It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good (it looks bad here but trust me, it's better in the terminal).
+#+begin_src text :tangle ~/.emacs.d/neofetch/arch.ascii
+${c1}
+                   ▄
+                  ▟█▙
+                 ▟███▙
+                ▟█████▙
+               ▟███████▙
+              ▂▔▀▜██████▙
+             ▟██▅▂▝▜█████▙
+            ▟█████████████▙
+           ▟███████████████▙
+          ▟█████████████████▙
+         ▟███████████████████▙
+        ▟█████████▛▀▀▜████████▙
+       ▟████████▛      ▜███████▙
+      ▟█████████        ████████▙
+     ▟██████████        █████▆▅▄▃▂
+    ▟██████████▛        ▜█████████▙
+   ▟██████▀▀▀              ▀▀██████▙
+  ▟███▀▘                       ▝▀███▙
+ ▟▛▀                               ▀▜▙
+
+#+end_src
+
+Let's configure ~neofetch~ while we're at it.
+#+begin_src sh :tangle ~/.emacs.d/neofetch/config.conf
+  # See this wiki page for more info:
+  # https://github.com/dylanaraps/neofetch/wiki/Customizing-Info
+  print_info() {
+      info title
+      info underline
+      info "OS" distro
+      info "Host" model
+      info "Kernel" kernel
+      info "Uptime" uptime
+      info "Packages" packages
+      info "Shell" shell
+      info "DE" de
+      info "WM" wm
+      info "Terminal" term
+      info "CPU" cpu
+      info "GPU" gpu
+      info "Memory" memory
+      info "GPU Driver" gpu_driver  # Linux/macOS only
+      info cols
+  }
+  
+  # Title
+  # Hide/Show Fully qualified domain name.
+  title_fqdn="off"
+  
+  # Kernel
+  # Shorten the output of the kernel function.
+  kernel_shorthand="on"
+  
+  # Distro
+  # Shorten the output of the distro function
+  distro_shorthand="off"
+  
+  # Show/Hide OS Architecture.
+  # Show 'x86_64', 'x86' and etc in 'Distro:' output.
+  os_arch="on"
+  
+  # Uptime
+  # Shorten the output of the uptime function
+  uptime_shorthand="on"
+  
+  # Memory
+  # Show memory pecentage in output.
+  memory_percent="off"
+  
+  # Change memory output unit.
+  memory_unit="mib"
+  
+  # Packages
+  # Show/Hide Package Manager names.
+  package_managers="on"
+  
+  # Shell
+  # Show the path to $SHELL
+  shell_path="off"
+  
+  # Show $SHELL version
+  shell_version="on"
+  
+  # CPU
+  # CPU speed type
+  speed_type="bios_limit"
+  
+  # CPU speed shorthand
+  speed_shorthand="off"
+  
+  # Enable/Disable CPU brand in output.
+  cpu_brand="on"
+  
+  # CPU Speed
+  cpu_speed="on"
+  
+  # CPU Cores
+  cpu_cores="logical"
+  
+  # CPU Temperature
+  # Hide/Show CPU temperature.
+  cpu_temp="off"
+  
+  # GPU
+  # Enable/Disable GPU Brand
+  gpu_brand="on"
+  
+  # Which GPU to display
+  gpu_type="all"
+  
+  # Resolution
+  # Display refresh rate next to each monitor
+  refresh_rate="off"
+  
+  # Gtk Theme / Icons / Font
+  # Shorten output of GTK Theme / Icons / Font
+  gtk_shorthand="off"
+  
+  # Enable/Disable gtk2 Theme / Icons / Font
+  gtk2="on"
+  
+  # Enable/Disable gtk3 Theme / Icons / Font
+  gtk3="on"
+  
+  # IP Address
+  # Website to ping for the public IP
+  public_ip_host="http://ident.me"
+  
+  # Public IP timeout.
+  public_ip_timeout=2
+  
+  # Desktop Environment  
+  # Show Desktop Environment version
+  de_version="on"
+  
+  # Disk
+  # Which disks to display.
+  disk_show=('/')
+  
+  # Disk subtitle.
+  disk_subtitle="mount"
+  
+  # Disk percent.
+  disk_percent="on"
+    
+  # Song
+   
+  # Manually specify a music player.
+  music_player="auto"
+  
+  # Format to display song information.
+  song_format="%artist% - %album% - %title%"
+  
+  # Print the Artist, Album and Title on separate lines
+  song_shorthand="off"
+  
+  # 'mpc' arguments (specify a host, password etc).
+  mpc_args=()
+  
+  
+  # Text Colors
+  colors=(distro)
+  
+  # Text Options
+  # Toggle bold text
+  bold="on"
+  
+  # Enable/Disable Underline
+  underline_enabled="on"
+  
+  # Underline character
+  underline_char="-"  
+  
+  # Info Separator
+  separator=":"
+  
+  # Color Blocks
+  # Color block range
+  block_range=(0 15)
+  
+  # Toggle color blocks
+  color_blocks="on"
+  
+  # Color block width in spaces
+  block_width=3
+  
+  # Color block height in lines
+  block_height=1
+  
+  # Color Alignment
+  col_offset="auto"
+  
+  # Progress Bars
+  # Bar characters
+  bar_char_elapsed="-"
+  bar_char_total="="
+  
+  # Toggle Bar border
+  bar_border="on"
+  
+  # Progress bar length in spaces
+  bar_length=15
+  
+  # Progress bar colors
+  bar_color_elapsed="distro"
+  bar_color_total="distro"
+  
+  
+  # Info display
+  cpu_display="off"
+  memory_display="off"
+  battery_display="off"
+  disk_display="off"
+  
+  
+  # Backend Settings
+  
+  # Image backend.
+  image_backend="ascii"
+  
+  # Image Source
+  # Which image or ascii file to display.
+  image_source="auto"
+  
+  
+  # Ascii Options
+  # Ascii distro
+  # Which distro's ascii art to display.
+  ascii_distro="auto"
+  
+  # Ascii Colors
+  ascii_colors=(distro)
+  
+  # Bold ascii logo
+  ascii_bold="on"
+  
+  # Image Options
+  # Image loop
+  image_loop="off"
+  
+  # Thumbnail directory
+  thumbnail_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/thumbnails/neofetch"
+  
+  # Crop mode
+  crop_mode="normal"
+  
+  # Crop offset
+  crop_offset="center"
+  
+  # Image size
+  image_size="auto"
+  
+  # Gap between image and text
+  gap=3
+  
+  # Image offsets
+  yoffset=0
+  xoffset=0
+  
+  # Image background color
+  background_color=
+  
+  # Misc Options
+  
+  # Stdout mode
+  stdout="off"
+  
+#+end_src
+
+Firefox could be prettier.
+#+begin_src emacs-lisp
+  (use-package exwm
+    :ensure-system-package (firefox python-pywalfox))
+#+end_src
+#+begin_src css :tangle ~/.emacs.d/userChrome.css
+  #TabsToolbar {visibility: collapse;}
+  #statuspanel[type="overLink"] #statuspanel-label {
+      display:none!important;
+  }
+#+end_src
+
+
 
 * Undoing Defaults
 Emacs has some default behaviors that are generally annoying. Let's disable them!
