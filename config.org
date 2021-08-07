@@ -13,18 +13,32 @@ First, let's set the package archives and do some basic tweaks.
   (setq package-check-signature nil)  
 #+end_src
 
-This configuration uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword Argos are for specifying package-related keybinds and hooks respectively.
+We're going to use ~straight.el~ for package management.
+#+begin_src emacs-lisp
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+#+end_src
 
-Install it via =M-x package-install RET use-package=. Then, we can set it up.
+This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword Argos are for specifying package-related keybinds and hooks respectively.
 
 #+begin_src emacs-lisp
-  ;; TODO Look into bootstrapping? 
+  (straight-use-package 'use-package)
   (eval-when-compile
     (require 'use-package))
-  ;; Automatically install all packages if not present.
-  (setq use-package-always-ensure t)
+  ;; Automatically install all packages with straight.el if not present.
+  (setq straight-use-package-by-default t)
   ;; Always lazy-load if doable. TODO Properly look into good defer setup
-  (setq use-package-always-defer t)  
+  (setq use-package-always-defer t) 
 #+end_src
 
 Are we using native-comp? If so, let's actually native compile things. Also, the popup compilation warnings are really bothersome, so turn those off, too.
@@ -415,19 +429,21 @@ Finally, we actually run the startup.
    (use-package exwm-mff
      :init (exwm-mff-mode))
    
-   (load "exwmsw")
-   (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
-   (setq exwmsw-the-right-screen right-screen)
-   (setq exwmsw-the-center-screen middle-screen)
-   (setq exwmsw-the-left-screen left-screen)
-   (general-def override-global-map
-     "C-M-j" #'exwmsw-cycle-screens
-     "C-M-k" #'exwmsw-cycle-screens-backward)
-   
-   ;; HACK
-   (general-def exwm-mode-map
-     "C-M-j" #'exwmsw-cycle-screens
-     "C-M-k" #'exwmsw-cycle-screens-backward)   
+   (use-package exwmsw
+     :straight (exwmsw :type git :host github :repo "Lemonbreezes/exwmsw"
+                       :fork (:host github :repo "richardfeynmanrocks/exwmsw"))
+     :init
+     (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
+     (setq exwmsw-the-right-screen right-screen)
+     (setq exwmsw-the-center-screen middle-screen)
+     (setq exwmsw-the-left-screen left-screen)
+     :general
+     (override-global-map
+               "C-M-j" #'exwmsw-cycle-screens
+               "C-M-k" #'exwmsw-cycle-screens-backward)
+     (exwm-mode-map ;; HACK
+       "C-M-j" #'exwmsw-cycle-screens
+       "C-M-k" #'exwmsw-cycle-screens-backward))
  #+end_src
 
  Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
@@ -458,13 +474,17 @@ Finally, we actually run the startup.
     (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name))
 #+end_src
 
-Finally, update polybar config file to match monitor.
+Finally, update polybar config file to match monitor and make it so we have decorative gaps around all of EXWM (not individual buffers/windows unfortunately).
 #+begin_src emacs-lisp
   ;; TODO Use Org Babel and tangle polybar config?
   (start-process-shell-command "polybar-update" nil
       (concat "sed s/<MONITOR>/"
               middle-screen
               "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
+  
+  (use-package exwm-outer-gaps
+    :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
+    :hook (exwm-init-hook . (lambda () (exwm-outer-gaps-mode))))
 #+end_src
 
 * External Programs
@@ -737,8 +757,6 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
 
 
 * TODO Dashboard
-* TODO Exit Message
-* TODO Vanilla++
 * Minibuffer Completion
 Next, let's improve interactions with Emacs: things like finding files, running commands, switching buffers, etc... by using ~ivy~, a light(ish) minibuffer completion system. Ivy is one of the more popular packages for this, meaning that there's quite a bit of integration with other packages. Notably, ~counsel~ extends its functionality and ~swiper~ provides a nicer interface to interactive search.
 
@@ -801,9 +819,19 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
   (use-package which-key
     :init (which-key-mode))
 #+end_src
+
 * TODO Perspectives
 * TODO Movement
 * TODO Org
+First, let's set up the basics. 
+#+begin_src emacs-lisp
+  (use-package org
+    :ensure nil    
+    (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)"))) 
+    (setq org-modules (append org-modules '(org-habit org-id)))
+  
+#+end_src
+
 * LSP
 ~lsp-mode~ enables us to get Intellisense-esque features in Emacs: setting it up requires both config on Emacs' side and installing actual language servers on your side. We'll auto-install them with the magic of ~use-package-ensure-system-package~, although brace yourself for the potential for lots of debugging if the server doesn't work as expected on your system.
 
@@ -981,6 +1009,9 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 * TODO Python
 * TODO Code Aesthetics
 * TODO Writing
+* TODO Vanilla++
+* TODO Fun
+** TODO Exit Message
 * TODO Scratch
 * The End.
 Well, that's it. We're done. Time to get going!
