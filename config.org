@@ -28,7 +28,7 @@ We're going to use ~straight.el~ for package management.
   (load bootstrap-file nil 'nomessage))
 #+end_src
 
-This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword Argos are for specifying package-related keybinds and hooks respectively.
+This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword arguments are for specifying package-related keybinds and hooks respectively.
 
 #+begin_src emacs-lisp
   (straight-use-package 'use-package)
@@ -227,41 +227,41 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 
 ~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
 #+begin_src sh :tangle ~/.xbindkeysrc
-	# -*- shell-script -*-
+  # -*- shell-script -*-
   # TODO Phase me out!
-  
+
   # Increase volume
   "amixer set Master 5%+"
   XF86AudioRaiseVolume
-  
+
   # Decrease volume
   "amixer set Master 5%-"
   XF86AudioLowerVolume
-  
+
   "amixer set Master toggle"
   XF86AudioMute
-  
+
   "bash ~/.config/rofi/applets/menu/screenshot.sh"
   Print
-  
+
   "bash ~/.config/rofi/applets/menu/powermenu.sh"
   Pause
-  
+
   "bash ~/.config/rofi/applets/menu/apps.sh"
   Scroll_Lock
-  
+
   "bash ~/.config/rofi/launchers/text/launcher.sh"
   alt + p
-  
+
   "bash ~/.config/rofi/launchers/ribbon/launcher.sh"
   alt + shift + p
-  
+
   "sh ~/.config/focus.sh"
   alt + shift + f
-  
+
   "python ~/.config/modeset.py 'normal'"
   m:0x20 + c:37 + F1
-  
+
   "rofi -show calc -modi calc -no-show-match -no-sort"
   XF86Calculator
 #+end_src
@@ -478,10 +478,10 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
    (use-package exwm-outer-gaps
      :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
-     :hook (exwm-init-hook . (lambda () (exwm-outer-gaps-mode))))
+     :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))
 
    (use-package exwm
-     :hook (exwm-init-hook .
+     :hook (exwm-init .
 	(lambda () (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
 #+end_src
 
@@ -569,7 +569,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
   source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 #+end_src
 
-It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good (it looks bad here but trust me, it's better in the terminal).
+It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good.
 #+begin_src text :tangle ~/.config/neofetch/arch.ascii
 ${c1}
                    ▄
@@ -974,6 +974,7 @@ Let's add aesthetics for normal prose-style Org usage.
     :config
     (setq org-fontify-quote-and-verse-blocks t)
     (setq org-fontify-emphasized-text t)
+    (setq org-hide-emphasis-markers t)
     (setq org-ellipsis " ")
     (setq org-hide-leading-stars t))
 #+end_src
@@ -983,31 +984,30 @@ Let's add aesthetics for normal prose-style Org usage.
   ;; This is preferred over `mixed-pitch` because of small details
   (use-package org-variable-pitch
     :init (org-variable-pitch-setup))
-  
+
   ;; Better headline icons
   (use-package org-superstar
     :config
     (setq org-superstar-headline-bullets-list '("◉" "○" "◈" "◎"))
     :hook (org-mode . org-superstar-mode))
-  
+
   ;; Auto-toggle emphasis
   (use-package org-appear
     :straight (:host github :repo "awth13/org-appear")
-    :hook (org-mode . org-fragtog-mode))
-  
+    :hook (org-mode . org-appear-mode))
+
   ;; Auto-toggle LaTeX rendering
   (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode))
-  
+
   ;; Natural bulleted lists
   (use-package org-autolist
     :hook (org-mode . org-autolist-mode))
-  
+
   ;; Centering w/ Olivetti
   (use-package olivetti
     :hook (org-mode . (lambda () (interactive) (olivetti-mode) (olivetti-set-width 100))))
-  
-  
+
 #+end_src
 
 ** Icons
