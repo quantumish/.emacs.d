@@ -1,7 +1,7 @@
 #+TITLE: Emacs
 * Packages
 First, let's set the package archives and do some basic tweaks.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp(
   (require 'package)
   (setq package-enable-at-startup nil) ;; Speed tip taken from Doom Emacs
   (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
@@ -695,8 +695,6 @@ Firefox could be prettier.
   }
 #+end_src
 
-
-
 * Undoing Defaults
 Emacs has some default behaviors that are generally annoying. Let's disable them!
 
@@ -841,7 +839,6 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
         (set-frame-parameter (selected-frame) 'alpha '(90)))))
 #+end_src
 
-
 * TODO Dashboard
 #+BEGIN_SRC emacs-lisp
 
@@ -968,6 +965,7 @@ First, let's set up the basics.
     (setq org-modules (append org-modules '(org-habit org-id)))  )
 #+end_src
 
+** Aesthetics
 Let's add aesthetics for normal prose-style Org usage.
 #+begin_src emacs-lisp
   (use-package org
@@ -976,9 +974,14 @@ Let's add aesthetics for normal prose-style Org usage.
     (setq org-fontify-emphasized-text t)
     (setq org-hide-emphasis-markers t)
     (setq org-ellipsis " ")
-    (setq org-hide-leading-stars t))
+    (setq org-hide-leading-stars t)
+    (set-face-attribute 'org-document-title nil
+			:height 2.0
+			:weight 'bold)
+    )
 #+end_src
 
+There are a variety of useful packages that make Org look nicer:
 #+begin_src emacs-lisp
   ;; Smart mixing of variable pitch and monospace
   ;; This is preferred over `mixed-pitch` because of small details
@@ -1007,61 +1010,127 @@ Let's add aesthetics for normal prose-style Org usage.
   ;; Centering w/ Olivetti
   (use-package olivetti
     :hook (org-mode . (lambda () (interactive) (olivetti-mode) (olivetti-set-width 100))))
-
 #+end_src
 
-** Icons
-#+begin_src emacs-lisp
-    (use-package org
-      :config
-      (defun magic-icon-fix ()
-        (let ((fontset (face-attribute 'default :fontset)))
-          (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
-      :hook
-      (org-mode . (lambda () (interactive)
-            (setq prettify-symbols-alist '(("[#A]" . "")
-                                           ("[#B]" . "")
-                                           ("[#C]" . "")
-                                           ("[ ]" . "")
-                                           ("[X]" . "")
-                                           ("[-]" . "")
-                                           ("#+begin_src" . "")
-                                           ("#+end_src" . "―")
-                                           (":PROPERTIES:" . "")
-                                           (":END:" . "―")
-                                           ("#+STARTUP:" . "")
-                                           ("#+TITLE: " . "")
-                                           ("#+RESULTS:" . "")
-                                           ("#+NAME:" . "")
-                                           ("#+ROAM_TAGS:" . "")
-                                           ("#+FILETAGS:" . "")
-                                           ("#+HTML_HEAD:" . "")
-                                           ("#+SUBTITLE:" . "")
-                                           ("#+AUTHOR:" . "")
-                                           (":Effort:" . "")
-                                           ("SCHEDULED:" . "")
-                                           ("DEADLINE:" . "")))
-            (prettify-symbols-mode)
-            (let ((fontset (face-attribute 'default :fontset)))
-              (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))  
-#+end_src
+*** Icons
+ #+begin_src emacs-lisp
+     (use-package org
+       :config
+       (defun magic-icon-fix ()
+         (let ((fontset (face-attribute 'default :fontset)))
+           (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
+       :hook
+       (org-mode . (lambda () (interactive)
+             (setq prettify-symbols-alist '(("[#A]" . "")
+                                            ("[#B]" . "")
+                                            ("[#C]" . "")
+                                            ("[ ]" . "")
+                                            ("[X]" . "")
+                                            ("[-]" . "")
+                                            ("#+begin_src" . "")
+                                            ("#+end_src" . "―")
+                                            (":PROPERTIES:" . "")
+                                            (":END:" . "―")
+                                            ("#+STARTUP:" . "")
+                                            ("#+TITLE: " . "")
+                                            ("#+RESULTS:" . "")
+                                            ("#+NAME:" . "")
+                                            ("#+ROAM_TAGS:" . "")
+                                            ("#+FILETAGS:" . "")
+                                            ("#+HTML_HEAD:" . "")
+                                            ("#+SUBTITLE:" . "")
+                                            ("#+AUTHOR:" . "")
+                                            (":Effort:" . "")
+                                            ("SCHEDULED:" . "")
+                                            ("DEADLINE:" . "")))
+             (prettify-symbols-mode)
+             (let ((fontset (face-attribute 'default :fontset)))
+               (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))  
+ #+end_src
 
-** Extras
-#+begin_src emacs-lisp
-  ;; Google Docs style comments
-  (use-package org-marginalia
-    :straight (:host github :repo "nobiot/org-marginalia")
-    :init (add-hook 'org-mode-hook 'org-marginalia-mode)
-    (defun org-marginalia-save-and-open (point)
-      (interactive "d")
-      (org-marginalia-save)
-      (org-marginalia-open point))
-    :bind (:map org-marginalia-mode-map
-                ("C-c n o" . org-marginalia-save-and-open)
-                ("C-c m" . org-marginalia-mark)
-                ("C-c n ]" . org-marginalia-next)
-                ("C-c n [" . org-marginalia-prev)))
-#+end_src
+*** Extras
+ #+begin_src emacs-lisp
+   ;; Google Docs style comments
+   (use-package org-marginalia
+     :straight (:host github :repo "nobiot/org-marginalia")
+     :init (add-hook 'org-mode-hook 'org-marginalia-mode)
+     (defun org-marginalia-save-and-open (point)
+       (interactive "d")
+       (org-marginalia-save)
+       (org-marginalia-open point))
+     :bind (:map org-marginalia-mode-map
+                 ("C-c n o" . org-marginalia-save-and-open)
+                 ("C-c m" . org-marginalia-mark)
+                 ("C-c n ]" . org-marginalia-next)
+                 ("C-c n [" . org-marginalia-prev)))
+ #+end_src
+
+** Projects
+   #+begin_src emacs-lisp
+     (use-package org
+       :init
+       (setq org-enforce-todo-dependencies t)
+       (setq org-enforce-todo-checkbox-dependencies t)
+       (setq org-agenda-dim-blocked-tasks t))
+   #+end_src
+
+** Roam
+   #+begin_src emacs-lisp
+     (use-package org-roam
+       :init
+       (setq org-roam-directory "~/sync/notes"))
+
+     (use-package org-roam-ui
+       :straight
+       (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+       :after org-roam
+       ;; :hook (after-init . org-roam-ui-mode)
+       :config
+       (setq org-roam-ui-sync-theme t
+	     org-roam-ui-follow t
+	     org-roam-ui-update-on-save t
+	     org-roam-ui-open-on-start t))
+   #+end_src
+
+** Export
+   #+begin_src emacs-lisp
+     (use-package org-special-block-extras
+       :init
+       (org-special-block-extras-defblock collapsible (title "Details") (contents "")
+					  (format
+					   (pcase backend     
+					     (_ "<details>
+					    <summary> <i> %s </i> </summary>
+					    %s
+					 </details>"))
+					   title contents)))
+
+     (use-package org
+       :init
+       (setq org-html-text-markup-alist
+	     '((bold . "<b>%s</b>")
+	       (code . "<code>%s</code>")
+	       (italic . "<i>%s</i>")
+	       (strike-through . "<del>%s</del>")
+	       (underline . "<span class=\"underline\">%s</span>")
+	       (verbatim . "<kbd>%s</kbd>")))
+       (setq org-html-head "<link rel=\"stylesheet\" href=\"https://quantumish.github.io/org.css\">")
+       (setq org-html-postamble nil)
+       (setq org-publish-project-alist
+	     '(("github.io"
+		:base-directory "~/Dropbox/publicnotes/"
+		:base-extension "org"
+		:publishing-directory "~/richardfeynmanrocks.github.io/notes/"
+		:recursive t
+		:publishing-function org-html-publish-to-html
+		:headline-levels 4
+		:html-extension "html"
+		:with-toc nil
+		:section-numbers nil
+		:html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
+		:preserve-breaks t
+	))))
+   #+end_src
 
 * LSP
 ~lsp-mode~ enables us to get Intellisense-esque features in Emacs: setting it up requires both config on Emacs' side and installing actual language servers on your side. We'll auto-install them with the magic of ~use-package-ensure-system-package~, although brace yourself for the potential for lots of debugging if the server doesn't work as expected on your system.
