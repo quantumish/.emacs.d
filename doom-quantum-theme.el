@@ -113,9 +113,9 @@ determine the exact padding."
 
   ;; --- extra faces ------------------------
   (
-   ((lazy-highlight &override) :foreground base1 :weight 'bold)
-   ((line-number &override) :foreground fg-alt)
-   ((line-number-current-line &override) :foreground fg)
+   ;; ((lazy-highlight &override) :foreground base1 :weight 'bold)
+   ;; ((line-number &override) :foreground fg-alt)
+   ;; ((line-number-current-line &override) :foreground fg)
 
    (font-lock-comment-face
 	:foreground comments
@@ -150,5 +150,10 @@ determine the exact padding."
 	:inherit 'mode-line-inactive
 	:background modeline-bg-inactive-l
 	:box (if -modeline-pad `(:line-width ,-modeline-pad :color ,modeline-bg-inactive-l)))))
+
+(require 'dashboard)
+(setq dashboard-startup-banner "~/.emacs.d/quantumish.png")
+(setq dashboard-image-banner-max-height 300)
+(setq dashboard-image-banner-max-width 300)
 
 ;;; doom-opera-light-theme.el ends here
