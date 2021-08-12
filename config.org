@@ -1,12 +1,12 @@
 #+TITLE: Emacs
 * Packages
 First, let's set the package archives and do some basic tweaks.
-#+begin_src emacs-lisp(
+#+begin_src emacs-lisp
   (require 'package)
   (setq package-enable-at-startup nil) ;; Speed tip taken from Doom Emacs
   (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
-                           ("gnu" . "https://elpa.gnu.org/packages/")
-                           ("melpa" . "https://melpa.org/packages/")))
+			   ("gnu" . "https://elpa.gnu.org/packages/")
+			   ("melpa" . "https://melpa.org/packages/")))
   ;; General convieniences, somewhat questionable
   (setq url-http-attempt-keepalives nil)
   (setq package-check-signature nil)
@@ -14,18 +14,18 @@ First, let's set the package archives and do some basic tweaks.
 
 We're going to use ~straight.el~ for package management.
 #+begin_src emacs-lisp
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 #+end_src
 
 This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword arguments are for specifying package-related keybinds and hooks respectively.
@@ -38,6 +38,9 @@ This configuration also uses ~use-package~ for package management: it's a macro 
   (setq straight-use-package-by-default t)
   ;; Always lazy-load if doable. TODO Properly look into good defer setup
   (setq use-package-always-defer t)
+  (use-package general)
+  (use-package projectile)
+  (use-package s)
 #+end_src
 
 Are we using native-comp? If so, let's actually native compile things. Also, the popup compilation warnings are really bothersome, so turn those off, too.
@@ -705,14 +708,22 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
   (scroll-bar-mode -1)
 
   ;; If you compiled with native compilation, turn off warning popups.
-  (setq warning-suppress-log-types '((comp)))
+  (setq warning-suppress-log-types '((comp emacs)))
+
+  ;; customize is the worst.
+  (setq custom-file "/dev/null")
+  (setq package-selected-packages "/dev/null/")
 
   ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
   ;; This has *only* caused me trouble in GUI Emacs.
   (if (display-graphic-p)
       (progn
-        (global-unset-key (kbd "C-z"))
-        (global-unset-key (kbd "C-x C-z"))))
+	(global-unset-key (kbd "C-z"))
+	(global-unset-key (kbd "C-x C-z"))))
+
+  ;; Stop making backup files everywhere, put them all in one place!
+  (setq backup-directory-alist `(("." . "~/.saves")))
+  (setq backup-by-copying t)
 
   ;; Stop Emacs from bothering you about disabled commands.
   (setq disabled-command-function nil)
@@ -1096,6 +1107,7 @@ There are a variety of useful packages that make Org look nicer:
    #+begin_src emacs-lisp
      (use-package org-special-block-extras
        :init
+       (org-special-block-extras-mode)
        (org-special-block-extras-defblock collapsible (title "Details") (contents "")
 					  (format
 					   (pcase backend     
@@ -1256,7 +1268,7 @@ With a tweak courtesy of [[https://github.com/jemoka/][@jemoka]], we can smooth 
 #+end_src
 #+end_collapsible
 
-* YASnippet
+* Snippets
 YASnippet is the premiere package for snippets, so let's install it.
 
 #+begin_src emacs-lisp
@@ -1292,7 +1304,6 @@ YASnippet is the premiere package for snippets, so let's install it.
                     "v3d" "Eigen::Vector3d"
                     "v3i" "Eigen::Vector3i"))
 #+end_src
-
 * Git
 Let's install the wonderful git porcelain Magit and some extra usefulness.
 
@@ -1489,9 +1500,9 @@ Smudge is nice.
 #+begin_src emacs-lisp
   (use-package smudge
     :straight (smudge :type git :host github :repo "danielfm/smudge"
-                      :fork (:host github :repo "richardfeynmanrocks/smudge"))
-    :commands (global-smudge-remote-mode)
-    :config
+		      :fork (:host github :repo "richardfeynmanrocks/smudge"))
+    :init
+    (global-smudge-remote-mode)
     (load-file "secrets.el")
     (setq smudge-status-location nil)
     ;; FIXME actively destructive to potential mode-line config!
@@ -1500,7 +1511,7 @@ Smudge is nice.
     ("C-S-s-l" . smudge-controller-next-track)
     ("C-S-s-h" . smudge-controller-previous-track)
     ("C-S-s-j" . smudge-controller-volume-down)
-    ("C-S-s-k" . smudge-controller-volume-up)
+    ("C-S-s-k" . smudge-controller-volume-up) 	
     ("C-S-s-p" . smudge-controller-toggle-play)
     ("C-S-s-s" . smudge-controller-toggle-shuffle)
     ("C-S-s-r" . smudge-controller-toggle-repeat))  
@@ -1518,4 +1529,5 @@ Well, that's it. We're done. Time to get going!
                  (float-time
                   (time-subtract after-init-time before-init-time)))
          gcs-done))
+
 #+end_src
