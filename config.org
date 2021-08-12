@@ -5,8 +5,8 @@ First, let's set the package archives and do some basic tweaks.
   (require 'package)
   (setq package-enable-at-startup nil) ;; Speed tip taken from Doom Emacs
   (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
-                           ("gnu" . "https://elpa.gnu.org/packages/")
-                           ("melpa" . "https://melpa.org/packages/")))
+			   ("gnu" . "https://elpa.gnu.org/packages/")
+			   ("melpa" . "https://melpa.org/packages/")))
   ;; General convieniences, somewhat questionable
   (setq url-http-attempt-keepalives nil)
   (setq package-check-signature nil)
@@ -14,18 +14,18 @@ First, let's set the package archives and do some basic tweaks.
 
 We're going to use ~straight.el~ for package management.
 #+begin_src emacs-lisp
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 #+end_src
 
 This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword arguments are for specifying package-related keybinds and hooks respectively.
@@ -38,6 +38,9 @@ This configuration also uses ~use-package~ for package management: it's a macro 
   (setq straight-use-package-by-default t)
   ;; Always lazy-load if doable. TODO Properly look into good defer setup
   (setq use-package-always-defer t)
+  (use-package general)
+  (use-package projectile)
+  (use-package s)
 #+end_src
 
 Are we using native-comp? If so, let's actually native compile things. Also, the popup compilation warnings are really bothersome, so turn those off, too.
@@ -695,8 +698,6 @@ Firefox could be prettier.
   }
 #+end_src
 
-
-
 * Undoing Defaults
 Emacs has some default behaviors that are generally annoying. Let's disable them!
 
@@ -707,14 +708,22 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
   (scroll-bar-mode -1)
 
   ;; If you compiled with native compilation, turn off warning popups.
-  (setq warning-suppress-log-types '((comp)))
+  (setq warning-suppress-log-types '((comp emacs)))
+
+  ;; customize is the worst.
+  (setq custom-file "/dev/null")
+  (setq package-selected-packages "/dev/null/")
 
   ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
   ;; This has *only* caused me trouble in GUI Emacs.
   (if (display-graphic-p)
       (progn
-        (global-unset-key (kbd "C-z"))
-        (global-unset-key (kbd "C-x C-z"))))
+	(global-unset-key (kbd "C-z"))
+	(global-unset-key (kbd "C-x C-z"))))
+
+  ;; Stop making backup files everywhere, put them all in one place!
+  (setq backup-directory-alist `(("." . "~/.saves")))
+  (setq backup-by-copying t)
 
   ;; Stop Emacs from bothering you about disabled commands.
   (setq disabled-command-function nil)
@@ -840,7 +849,6 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
         (call-process-shell-command "pkill polybar" nil 0)
         (set-frame-parameter (selected-frame) 'alpha '(90)))))
 #+end_src
-
 
 * TODO Dashboard
 #+BEGIN_SRC emacs-lisp
@@ -968,6 +976,7 @@ First, let's set up the basics.
     (setq org-modules (append org-modules '(org-habit org-id)))  )
 #+end_src
 
+** Aesthetics
 Let's add aesthetics for normal prose-style Org usage.
 #+begin_src emacs-lisp
   (use-package org
@@ -976,9 +985,14 @@ Let's add aesthetics for normal prose-style Org usage.
     (setq org-fontify-emphasized-text t)
     (setq org-hide-emphasis-markers t)
     (setq org-ellipsis " ")
-    (setq org-hide-leading-stars t))
+    (setq org-hide-leading-stars t)
+    (set-face-attribute 'org-document-title nil
+			:height 2.0
+			:weight 'bold)
+    )
 #+end_src
 
+There are a variety of useful packages that make Org look nicer:
 #+begin_src emacs-lisp
   ;; Smart mixing of variable pitch and monospace
   ;; This is preferred over `mixed-pitch` because of small details
@@ -1007,61 +1021,128 @@ Let's add aesthetics for normal prose-style Org usage.
   ;; Centering w/ Olivetti
   (use-package olivetti
     :hook (org-mode . (lambda () (interactive) (olivetti-mode) (olivetti-set-width 100))))
-
 #+end_src
 
-** Icons
-#+begin_src emacs-lisp
-    (use-package org
-      :config
-      (defun magic-icon-fix ()
-        (let ((fontset (face-attribute 'default :fontset)))
-          (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
-      :hook
-      (org-mode . (lambda () (interactive)
-            (setq prettify-symbols-alist '(("[#A]" . "")
-                                           ("[#B]" . "")
-                                           ("[#C]" . "")
-                                           ("[ ]" . "")
-                                           ("[X]" . "")
-                                           ("[-]" . "")
-                                           ("#+begin_src" . "")
-                                           ("#+end_src" . "―")
-                                           (":PROPERTIES:" . "")
-                                           (":END:" . "―")
-                                           ("#+STARTUP:" . "")
-                                           ("#+TITLE: " . "")
-                                           ("#+RESULTS:" . "")
-                                           ("#+NAME:" . "")
-                                           ("#+ROAM_TAGS:" . "")
-                                           ("#+FILETAGS:" . "")
-                                           ("#+HTML_HEAD:" . "")
-                                           ("#+SUBTITLE:" . "")
-                                           ("#+AUTHOR:" . "")
-                                           (":Effort:" . "")
-                                           ("SCHEDULED:" . "")
-                                           ("DEADLINE:" . "")))
-            (prettify-symbols-mode)
-            (let ((fontset (face-attribute 'default :fontset)))
-              (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))  
-#+end_src
+*** Icons
+ #+begin_src emacs-lisp
+     (use-package org
+       :config
+       (defun magic-icon-fix ()
+         (let ((fontset (face-attribute 'default :fontset)))
+           (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
+       :hook
+       (org-mode . (lambda () (interactive)
+             (setq prettify-symbols-alist '(("[#A]" . "")
+                                            ("[#B]" . "")
+                                            ("[#C]" . "")
+                                            ("[ ]" . "")
+                                            ("[X]" . "")
+                                            ("[-]" . "")
+                                            ("#+begin_src" . "")
+                                            ("#+end_src" . "―")
+                                            (":PROPERTIES:" . "")
+                                            (":END:" . "―")
+                                            ("#+STARTUP:" . "")
+                                            ("#+TITLE: " . "")
+                                            ("#+RESULTS:" . "")
+                                            ("#+NAME:" . "")
+                                            ("#+ROAM_TAGS:" . "")
+                                            ("#+FILETAGS:" . "")
+                                            ("#+HTML_HEAD:" . "")
+                                            ("#+SUBTITLE:" . "")
+                                            ("#+AUTHOR:" . "")
+                                            (":Effort:" . "")
+                                            ("SCHEDULED:" . "")
+                                            ("DEADLINE:" . "")))
+             (prettify-symbols-mode)
+             (let ((fontset (face-attribute 'default :fontset)))
+               (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))  
+ #+end_src
 
-** Extras
-#+begin_src emacs-lisp
-  ;; Google Docs style comments
-  (use-package org-marginalia
-    :straight (:host github :repo "nobiot/org-marginalia")
-    :init (add-hook 'org-mode-hook 'org-marginalia-mode)
-    (defun org-marginalia-save-and-open (point)
-      (interactive "d")
-      (org-marginalia-save)
-      (org-marginalia-open point))
-    :bind (:map org-marginalia-mode-map
-                ("C-c n o" . org-marginalia-save-and-open)
-                ("C-c m" . org-marginalia-mark)
-                ("C-c n ]" . org-marginalia-next)
-                ("C-c n [" . org-marginalia-prev)))
-#+end_src
+*** Extras
+ #+begin_src emacs-lisp
+   ;; Google Docs style comments
+   (use-package org-marginalia
+     :straight (:host github :repo "nobiot/org-marginalia")
+     :init (add-hook 'org-mode-hook 'org-marginalia-mode)
+     (defun org-marginalia-save-and-open (point)
+       (interactive "d")
+       (org-marginalia-save)
+       (org-marginalia-open point))
+     :bind (:map org-marginalia-mode-map
+                 ("C-c n o" . org-marginalia-save-and-open)
+                 ("C-c m" . org-marginalia-mark)
+                 ("C-c n ]" . org-marginalia-next)
+                 ("C-c n [" . org-marginalia-prev)))
+ #+end_src
+
+** Projects
+   #+begin_src emacs-lisp
+     (use-package org
+       :init
+       (setq org-enforce-todo-dependencies t)
+       (setq org-enforce-todo-checkbox-dependencies t)
+       (setq org-agenda-dim-blocked-tasks t))
+   #+end_src
+
+** Roam
+   #+begin_src emacs-lisp
+     (use-package org-roam
+       :init
+       (setq org-roam-directory "~/sync/notes"))
+
+     (use-package org-roam-ui
+       :straight
+       (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+       :after org-roam
+       ;; :hook (after-init . org-roam-ui-mode)
+       :config
+       (setq org-roam-ui-sync-theme t
+	     org-roam-ui-follow t
+	     org-roam-ui-update-on-save t
+	     org-roam-ui-open-on-start t))
+   #+end_src
+
+** Export
+   #+begin_src emacs-lisp
+     (use-package org-special-block-extras
+       :init
+       (org-special-block-extras-mode)
+       (org-special-block-extras-defblock collapsible (title "Details") (contents "")
+					  (format
+					   (pcase backend     
+					     (_ "<details>
+					    <summary> <i> %s </i> </summary>
+					    %s
+					 </details>"))
+					   title contents)))
+
+     (use-package org
+       :init
+       (setq org-html-text-markup-alist
+	     '((bold . "<b>%s</b>")
+	       (code . "<code>%s</code>")
+	       (italic . "<i>%s</i>")
+	       (strike-through . "<del>%s</del>")
+	       (underline . "<span class=\"underline\">%s</span>")
+	       (verbatim . "<kbd>%s</kbd>")))
+       (setq org-html-head "<link rel=\"stylesheet\" href=\"https://quantumish.github.io/org.css\">")
+       (setq org-html-postamble nil)
+       (setq org-publish-project-alist
+	     '(("github.io"
+		:base-directory "~/Dropbox/publicnotes/"
+		:base-extension "org"
+		:publishing-directory "~/richardfeynmanrocks.github.io/notes/"
+		:recursive t
+		:publishing-function org-html-publish-to-html
+		:headline-levels 4
+		:html-extension "html"
+		:with-toc nil
+		:section-numbers nil
+		:html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
+		:preserve-breaks t
+	))))
+   #+end_src
 
 * LSP
 ~lsp-mode~ enables us to get Intellisense-esque features in Emacs: setting it up requires both config on Emacs' side and installing actual language servers on your side. We'll auto-install them with the magic of ~use-package-ensure-system-package~, although brace yourself for the potential for lots of debugging if the server doesn't work as expected on your system.
@@ -1187,7 +1268,7 @@ With a tweak courtesy of [[https://github.com/jemoka/][@jemoka]], we can smooth 
 #+end_src
 #+end_collapsible
 
-* YASnippet
+* Snippets
 YASnippet is the premiere package for snippets, so let's install it.
 
 #+begin_src emacs-lisp
@@ -1223,7 +1304,6 @@ YASnippet is the premiere package for snippets, so let's install it.
                     "v3d" "Eigen::Vector3d"
                     "v3i" "Eigen::Vector3i"))
 #+end_src
-
 * Git
 Let's install the wonderful git porcelain Magit and some extra usefulness.
 
@@ -1420,9 +1500,9 @@ Smudge is nice.
 #+begin_src emacs-lisp
   (use-package smudge
     :straight (smudge :type git :host github :repo "danielfm/smudge"
-                      :fork (:host github :repo "richardfeynmanrocks/smudge"))
-    :commands (global-smudge-remote-mode)
-    :config
+		      :fork (:host github :repo "richardfeynmanrocks/smudge"))
+    :init
+    (global-smudge-remote-mode)
     (load-file "secrets.el")
     (setq smudge-status-location nil)
     ;; FIXME actively destructive to potential mode-line config!
@@ -1431,7 +1511,7 @@ Smudge is nice.
     ("C-S-s-l" . smudge-controller-next-track)
     ("C-S-s-h" . smudge-controller-previous-track)
     ("C-S-s-j" . smudge-controller-volume-down)
-    ("C-S-s-k" . smudge-controller-volume-up)
+    ("C-S-s-k" . smudge-controller-volume-up) 	
     ("C-S-s-p" . smudge-controller-toggle-play)
     ("C-S-s-s" . smudge-controller-toggle-shuffle)
     ("C-S-s-r" . smudge-controller-toggle-repeat))  
@@ -1449,4 +1529,5 @@ Well, that's it. We're done. Time to get going!
                  (float-time
                   (time-subtract after-init-time before-init-time)))
          gcs-done))
+
 #+end_src
