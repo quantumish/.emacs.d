@@ -1,4 +1,6 @@
+
 #+TITLE: Emacs
+
 * Packages
 First, let's set the package archives and do some basic tweaks.
 #+begin_src emacs-lisp
@@ -45,12 +47,11 @@ This configuration also uses ~use-package~ for package management: it's a macro 
 
 Are we using native-comp? If so, let's actually native compile things. Also, the popup compilation warnings are really bothersome, so turn those off, too.
 #+begin_src emacs-lisp
-  (if (string-match-p (regexp-quote "NATIVE_COMP") system-configuration-features)
-      (progn
-        (setq package-native-compile t)
-        (setq comp-deferred-compilation t)
-        (setq native-comp-deferred-compilation-deny-list nil)
-        (setq warning-suppress-log-types '((comp)))))
+  (when (string-match-p (regexp-quote "NATIVE_COMP") system-configuration-features)
+    (setq package-native-compile t)
+    (setq comp-deferred-compilation t)
+    (setq native-comp-deferred-compilation-deny-list nil)
+    (setq warning-suppress-log-types '((comp))))
 #+end_src
 
 * Speed
@@ -95,12 +96,16 @@ Let's now move on to system-level configuration. First, some utility functions f
   (defun get-distro-or-os ()
     "Return the Linux distribution or OS Emacs is running on."
     (if (eq system-type 'darwin)
-        "Darwin")
-    (if (eq system-type 'gnu/linux)
-        (progn
-          (if (file-exists-p "/etc/os-release")
-              (substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
-            (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))
+        "Darwin"
+      (when (eq system-type 'gnu/linux)
+        (if (file-exists-p "/etc/os-release")
+            (substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
+          (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))
+#+end_src
+
+#+begin_src emacs-lisp :tangle (if (eq system-type 'darwin) "yes" "no")
+    (when (eq system-type 'darwin)
+      (add-to-list 'exec-path "/opt/homebrew/bin"))
 #+end_src
 
 Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packages]], an awesome package that lets you programmatically install packages from Emacs across operating systems.
@@ -110,33 +115,31 @@ Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packag
     :init
     (let (os-name (get-distro-or-os))
       ;; system-packages doesn't support yay by default, so add it.
-      (if (string= os-name "Arch Linux")
-          (progn
-            (add-to-list 'system-packages-supported-package-managers
-                         '(yay .
-                               ((default-sudo . nil)
-                                (install . "yay -S")
-                                (uninstall . "yay -Rs")
-                                (update . "yay -Syu")
-                                (log . "cat /var/log/pacman.log")
-                                (change-log . "yay -Qc")
-                                (clean-cache . "yay -Sc")
-                                (get-info . "yay -Qi")
-                                (get-info-remote . "yay -Si")
-                                (list-files-provided-by . "yay -Ql")
-                                (owning-file . "yay -Qo")
-                                (verify-all-dependencies . "yay -Dk")
-                                (remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
-                                (list-installed-packages . "yay -Qe")
-                                (list-installed-packages-all . "yay -Q")
-                                (noconfirm . "--noconfirm"))))
-            (setq system-packages-package-manager 'yay)))
-      (if (string= os-name "Debian GNU/Linux")
-          (progn
-            (setq system-packages-use-sudo t)
-            (setq system-packages-package-manager 'apt)))
+      (when (string= os-name "Arch Linux")
+	    (add-to-list 'system-packages-supported-package-managers
+			 '(yay .
+			       ((default-sudo . nil)
+				(install . "yay -S")
+				(uninstall . "yay -Rs")
+				(update . "yay -Syu")
+				(log . "cat /var/log/pacman.log")
+				(change-log . "yay -Qc")
+				(clean-cache . "yay -Sc")
+				(get-info . "yay -Qi")
+				(get-info-remote . "yay -Si")
+				(list-files-provided-by . "yay -Ql")
+				(owning-file . "yay -Qo")
+				(verify-all-dependencies . "yay -Dk")
+				(remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
+				(list-installed-packages . "yay -Qe")
+				(list-installed-packages-all . "yay -Q")
+				(noconfirm . "--noconfirm"))))
+	    (setq system-packages-package-manager 'yay))
+      (when (string= os-name "Debian GNU/Linux")
+	    (setq system-packages-use-sudo t)
+	    (setq system-packages-package-manager 'apt))
       (if (string= os-name "Darwin")
-          (setq system-packages-package-manager 'brew)))
+	  (setq system-packages-package-manager 'brew)))
       (setq system-packages-noconfirm t))
 #+end_src
 
@@ -148,10 +151,16 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
     :commands (helm-system-packages))
 #+end_src
 
+** OSX
+#+begin_src emacs-lisp
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'super)
+#+end_src
+
 * Desktop
 It's time to load EXWM, the Emacs X Window Manager.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no")
   (use-package exwm
     :init
     (setq exwm-workspace-number 3)
@@ -181,7 +190,7 @@ It's time to load EXWM, the Emacs X Window Manager.
 
 Setting up multi-monitor support is a bit of a hack in my configuration since my input devices tend to mysteriously swap around. You'll notice I'm using ~use-package~ for the same package twice in a row here, but fear not, it merely executes them sequentially and it means I can intersperse long-winded package configuration with text without fear of accidentally breaking something one day.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no")
   (use-package exwm
     :init
     (defvar left-screen "DP-1")
@@ -206,7 +215,7 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
 Next, if we're on Linux, let's do everything we need to do at startup.
 
 ~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
-#+begin_src sh :tangle ~/.config/X/Xmodmap
+#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.config/X/Xmodmap" "no")
   # Clear things
   clear      lock
   clear   control
@@ -229,7 +238,7 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 #+end_src
 
 ~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
-#+begin_src sh :tangle ~/.xbindkeysrc
+#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.xbindkeysrc" "no") 
   # -*- shell-script -*-
   # TODO Phase me out!
 
@@ -270,14 +279,14 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 #+end_src
 
 ~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as remap tapping caps-lock to escape.
-#+begin_src sh :tangle ~/.config/X/xcape.sh
+#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.config/X/xcape.sh" "no")
 xcape -e "Control_L=Escape"
 xcape -e "Shift_R=parenright"
 xcape -e "Shift_L=parenleft"
 #+end_src
 
 ~dunst~ is a great notification server.
-#+begin_src conf :tangle ~/.config/dunst/dunstrc
+#+begin_src conf :tangle (if (eq system-type 'gnu/linux) "~/.config/dunst/dunstrc" "no")
   [global]
   monitor = 0
   follow = keyboard
@@ -356,7 +365,7 @@ xcape -e "Shift_L=parenleft"
 #+end_src
 
 Let's define a quick script to reload it based on pywal, too.
-#+begin_src sh :tangle ~/.config/dunst/reload_dunst.sh
+#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.config/dunst/reload_dunst.sh" "no")
   . "${HOME}/.cache/wal/colors.sh"
 
   pkill dunst
@@ -373,7 +382,7 @@ Let's define a quick script to reload it based on pywal, too.
 #+end_src
 
 ~picom~ is a nice compositor, and will allow us to have effects like rounded corners and transparency if we want them. Dual kawase blur looks very nice, so let's use it.
-#+begin_src conf :tangle ~/.config/picom.conf
+#+begin_src conf :tangle (if (eq system-type 'gnu/linux) "~/.config/picom.conf" "no")
 backend = "glx";
 blur: {
       method = "dual_kawase";
@@ -385,29 +394,27 @@ blur: {
 #+end_src
 
 Finally, we actually run the startup.
-#+begin_src emacs-lisp
-  (if (eq system-type 'gnu/linux)
-      (use-package exwm
-        :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
-        :init
-        ;; Rebind keys
-        (call-process-shell-command "xmodmap ~/.config/X/Xmodmap" nil 0)
-        (call-process-shell-command "xbindkeys" nil 0)
-        (call-process-shell-command "sh ~/.config/X/xcape.sh" nil 0)
-        ;; Notifications w/ dunst
-        (call-process-shell-command "dunst &" nil 0)
-        (call-process-shell-command "sh ~/.config/dunst/reload_dunst.sh" nil 0)
-        ;; Make mouse vanish when not used
-        (call-process-shell-command "unclutter &" nil 0)
-        ;; The best screenshot utility!
-        (call-process-shell-command "flameshot &" nil 0)
-        ;; Compositor
-        (call-process-shell-command "picom &" nil 0)
-        ))
+#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no") 
+  (use-package exwm
+    :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
+    :init
+    ;; Rebind keys
+    (call-process-shell-command "xmodmap ~/.config/X/Xmodmap" nil 0)
+    (call-process-shell-command "xbindkeys" nil 0)
+    (call-process-shell-command "sh ~/.config/X/xcape.sh" nil 0)
+    ;; Notifications w/ dunst
+    (call-process-shell-command "dunst &" nil 0)
+    (call-process-shell-command "sh ~/.config/dunst/reload_dunst.sh" nil 0)
+    ;; Make mouse vanish when not used
+    (call-process-shell-command "unclutter &" nil 0)
+    ;; The best screenshot utility!
+    (call-process-shell-command "flameshot &" nil 0)
+    ;; Compositor
+    (call-process-shell-command "picom &" nil 0))
 #+end_src
 
- Let's make moving across monitors and workspaces a little easier.
- #+begin_src emacs-lisp
+Let's make moving across monitors and workspaces a little easier.
+#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no") 
    (defun exwm-workspace-next ()
      (interactive)
      (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
@@ -443,7 +450,7 @@ Finally, we actually run the startup.
        "C-M-k" #'exwmsw-cycle-screens-backward))
  #+end_src
 
- Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
+Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
 #+begin_src emacs-lisp
   (use-package exwm
     :init
@@ -496,7 +503,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
 #+end_src
 
 ~kitty~ is a terminal emulator that's featureful and usable.
-#+begin_src conf :tangle ~/.emacs.d/kitty.conf
+#+begin_src conf :tangle ~/.config/kitty/kitty.conf
   include ~/.cache/wal/colors-kitty.conf # import pywal theme
   font_family IBM Plex Mono
   # breathing room
@@ -716,10 +723,9 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
 
   ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
   ;; This has *only* caused me trouble in GUI Emacs.
-  (if (display-graphic-p)
-      (progn
-	(global-unset-key (kbd "C-z"))
-	(global-unset-key (kbd "C-x C-z"))))
+  (when (display-graphic-p)
+    (global-unset-key (kbd "C-z"))
+    (global-unset-key (kbd "C-x C-z")))
 
   ;; Stop making backup files everywhere, put them all in one place!
   (setq backup-directory-alist `(("." . "~/.saves")))
@@ -746,7 +752,7 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
 #+end_src
 
 * TODO Theming
-  #+BEGIN_SRC emacs-lisp
+  #+begin_src emacs-lisp
     ;; TODO: Set up treemacs.
 
     (use-package hide-mode-line)
@@ -755,8 +761,8 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
       :init
       ;; Global settings (defaults)
       (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-	    doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  
+            doom-themes-enable-italic t) ; if nil, italics is universally disabled
+
       (doom-themes-visual-bell-config)
 
       ;(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
@@ -788,26 +794,26 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
       (setq centaur-tabs-set-bar 'left)
       (setq x-underline-at-descent-line t)
       (defun contextual-tabs ()
-	    (interactive)
-	    (if (and (centaur-tabs-mode-on-p) (eq (derived-mode-p 'prog-mode) nil))
-		    (centaur-tabs-local-mode)))
+            (interactive)
+            (if (and (centaur-tabs-mode-on-p) (eq (derived-mode-p 'prog-mode) nil))
+                    (centaur-tabs-local-mode)))
       (defun centaur-tabs-hide-tab (x)
-	    (let ((name (format "%s" x)))
-	      (or
-	       (window-dedicated-p (selected-window))
-	       (string-match-p (regexp-quote "<") name)
-	       (string-prefix-p "*lsp" name)
-	       (string-prefix-p "*Compile-Log*" name)
-	       (string-prefix-p "*company" name)
-	       (string-prefix-p "*compilation" name)
-	       (string-prefix-p "*Help" name)
-	       (string-prefix-p "*straight" name)
-	       (string-prefix-p "*Flycheck" name)
-	       (string-prefix-p "*tramp" name)
-	       (string-prefix-p "*help" name)
-	       (and (string-prefix-p "magit" name)
-			    (not (file-name-extension name)))
-	       )))
+            (let ((name (format "%s" x)))
+              (or
+               (window-dedicated-p (selected-window))
+               (string-match-p (regexp-quote "<") name)
+               (string-prefix-p "*lsp" name)
+               (string-prefix-p "*Compile-Log*" name)
+               (string-prefix-p "*company" name)
+               (string-prefix-p "*compilation" name)
+               (string-prefix-p "*Help" name)
+               (string-prefix-p "*straight" name)
+               (string-prefix-p "*Flycheck" name)
+               (string-prefix-p "*tramp" name)
+               (string-prefix-p "*help" name)
+               (and (string-prefix-p "magit" name)
+                            (not (file-name-extension name)))
+               )))
       (defun centaur-tabs-hide-tab-cached (x) (centaur-tabs-hide-tab x))
       (centaur-tabs-mode)
       :hook
@@ -831,9 +837,8 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
       (treemacs-load-theme "all-the-icons"))
 
     (use-package olivetti
-      :hook
-      (prog-mode . (lambda () (olivetti-mode) (determine-olivetti))))
-  #+END_SRC
+      :hook (prog-mode . (lambda () (olivetti-mode))))
+  #+end_src
 ** Translucent
 Transparency can look nice - sometimes. Polybar clashes with transparency, so disable it while we're using it.
 #+begin_src emacs-lisp
@@ -842,16 +847,16 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
     "Make the current frame slightly transparent and don't use polybar."
     :init-value nil
     (if translucent-mode
-        (progn
-          (set-frame-parameter (selected-frame) 'alpha '(100))
-          (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))
+	(progn
+	  (set-frame-parameter (selected-frame) 'alpha '(100))
+	  (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))
       (progn
-        (call-process-shell-command "pkill polybar" nil 0)
-        (set-frame-parameter (selected-frame) 'alpha '(90)))))
+	(call-process-shell-command "pkill polybar" nil 0)
+	(set-frame-parameter (selected-frame) 'alpha '(90)))))
 #+end_src
 
 * TODO Dashboard
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 
   (use-package dashboard
     :init
@@ -883,7 +888,7 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
     :hook
     (dashboard-mode . hide-mode-line-mode)
     (dashboard-mode . turn-off-solaire-mode))
-#+END_SRC
+#+end_src
   
 * Minibuffer Completion
 Next, let's improve interactions with Emacs: things like finding files, running commands, switching buffers, etc... by using ~ivy~, a light(ish) minibuffer completion system. Ivy is one of the more popular packages for this, meaning that there's quite a bit of integration with other packages. Notably, ~counsel~ extends its functionality and ~swiper~ provides a nicer interface to interactive search.
@@ -950,7 +955,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 
 * TODO Perspectives
 * TODO Movement
-  #+BEGIN_SRC emacs-lisp
+  #+begin_src emacs-lisp
 (use-package zygospore
   :bind ("M-m" . 'zygospore-toggle-delete-other-windows))
 
@@ -966,7 +971,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 (general-def 'exwm-mode-map
  "M-k" 'other-window
  "M-j" 'opposite-other-window)
-  #+END_SRC
+  #+end_src
 * TODO Org
 First, let's set up the basics.
 #+begin_src emacs-lisp
@@ -987,9 +992,9 @@ Let's add aesthetics for normal prose-style Org usage.
     (setq org-ellipsis " ")
     (setq org-hide-leading-stars t)
     (set-face-attribute 'org-document-title nil
-			:height 2.0
-			:weight 'bold)
-    )
+                        :height 2.0
+                        :weight 'bold)
+    :hook (org-mode . org-indent-mode))
 #+end_src
 
 There are a variety of useful packages that make Org look nicer:
@@ -1086,25 +1091,25 @@ There are a variety of useful packages that make Org look nicer:
    #+end_src
 
 ** Roam
-   #+begin_src emacs-lisp
-     (use-package org-roam
-       :init
-       (setq org-roam-directory "~/sync/notes"))
+  #+begin_src emacs-lisp
+  (use-package org-roam
+    :init
+    (setq org-roam-directory "~/sync/notes"))
 
-     (use-package org-roam-ui
-       :straight
-       (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-       :after org-roam
-       ;; :hook (after-init . org-roam-ui-mode)
-       :config
-       (setq org-roam-ui-sync-theme t
-	     org-roam-ui-follow t
-	     org-roam-ui-update-on-save t
-	     org-roam-ui-open-on-start t))
+  (use-package org-roam-ui
+    :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+    ;; :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
    #+end_src
 
 ** Export
-   #+begin_src emacs-lisp
+  #+begin_src emacs-lisp
      (use-package org-special-block-extras
        :init
        (org-special-block-extras-mode)
@@ -1142,7 +1147,133 @@ There are a variety of useful packages that make Org look nicer:
 		:html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
 		:preserve-breaks t
 	))))
-   #+end_src
+  #+end_src
+   
+* Terminal
+  #+begin_src emacs-lisp
+ (use-package vterm)
+  #+end_src
+
+  #+begin_src emacs-lisp
+	 (defun dw/get-prompt-path ()
+	  (let* ((current-path (eshell/pwd))
+		 (git-output (shell-command-to-string "git rev-parse --show-toplevel"))
+		 (has-path (not (string-match "^fatal" git-output))))
+	    (if (not has-path)
+	      (abbreviate-file-name current-path)
+	      (string-remove-prefix (file-name-directory git-output) current-path))))
+
+	;; This prompt function mostly replicates my custom zsh prompt setup
+	;; that is powered by github.com/denysdovhan/spaceship-prompt.
+
+    (defun dw/eshell-prompt ()  
+	  (concat
+	   "\n"
+	   (propertize "davfrei" 'face `(:foreground "#C62D43") 'read-only t)
+	   (propertize " " 'face `(:foreground "white") 'read-only t)
+	   (propertize (dw/get-prompt-path) 'face `(:foreground "#FD7446") 'read-only t)
+	   (propertize " · " 'face `(:foreground "white") 'read-only t)
+	   (propertize (format-time-string "%I:%M:%S %p") 'face `(:foreground "#F1BCA3") 'read-only t)
+	   (if (= (user-uid) 0)
+	       (propertize "\n#" 'face `(:foreground "red2") 'read-only t)
+	     (propertize "\nλ" 'face `(:foreground "#F98859") 'read-only t))
+	   (propertize " " 'face `(:foreground "#f6e5db"))
+	   ))
+
+	(defun dw/eshell-configure ()
+	  (use-package xterm-color)
+
+	  (push 'eshell-tramp eshell-modules-list)
+	  (push 'xterm-color-filter eshell-preoutput-filter-functions)
+	  (delq 'eshell-handle-ansi-color eshell-output-filter-functions)
+
+	  ;; Save command history when commands are entered
+	  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+	  (add-hook 'eshell-before-prompt-hook
+		    (lambda ()
+		      (setq xterm-color-preserve-properties t)))
+
+	  ;; Truncate buffer for performance
+	  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+	  ;; We want to use xterm-256color when running interactive commands
+	  ;; in eshell but not during other times when we might be launching
+	  ;; a shell command to gather its output.
+	  (add-hook 'eshell-pre-command-hook
+		    (lambda () (setenv "TERM" "xterm-256color")))
+	  (add-hook 'eshell-post-command-hook
+		    (lambda () (setenv "TERM" "dumb")))
+
+	  ;; Use completion-at-point to provide completions in eshell
+	  (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
+
+	  ;; Initialize the shell history
+	  (eshell-hist-initialize)
+
+	  (setenv "PAGER" "cat")
+
+	  (setq eshell-prompt-function      'dw/eshell-prompt
+		eshell-prompt-regexp        "^λ " 
+		eshell-history-size         10000
+		eshell-buffer-maximum-lines 10000
+		eshell-hist-ignoredups t
+		eshell-highlight-prompt t
+		eshell-scroll-to-bottom-on-input t
+		eshell-prefer-lisp-functions nil))
+
+	(use-package eshell
+	  :hook (eshell-first-time-mode . dw/eshell-configure)
+	  :init
+	  (setq eshell-directory-name "~/.dotfiles/.emacs.d/eshell/"
+		eshell-aliases-file (expand-file-name "~/.dotfiles/.emacs.d/eshell/alias")))
+
+	(use-package eshell-z
+	  :hook ((eshell-mode . (lambda () (require 'eshell-z)))
+		 (eshell-z-change-dir .  (lambda () (eshell/pushd (eshell/pwd))))))
+
+	(use-package exec-path-from-shell
+	  :init
+	  (setq exec-path-from-shell-check-startup-files nil)
+	  :config
+	  (when (memq window-system '(mac ns x))
+	    (exec-path-from-shell-initialize)))
+
+	(setq eshell-prompt-function 'dw/eshell-prompt)
+
+	(use-package esh-autosuggest
+	  :hook (eshell-mode . esh-autosuggest-mode))
+
+	(use-package eshell-toggle
+	  :straight (eshell-toggle :type git :host github :repo "4DA/eshell-toggle")
+	  :init
+	  (setq eshell-toggle-size-fraction 4)
+	  (setq eshell-toggle-use-projectile-root t)
+	  (setq eshell-toggle-run-command nil))
+
+	(use-package eshell-up) ;; TODO eshell-up
+
+	;; (use-package eshell-info-banner
+	;;   :straight (eshell-info-banner :type git :host github
+	;; 								:repo "phundrak/eshell-info-banner.el")
+	;;   :hook (eshell-banner-load . eshell-info-banner-update-banner))
+
+	(use-package eshell-manual
+	  :straight (eshell-manual :type git :host github
+							   :repo "nicferrier/eshell-manual"))
+
+	;; (use-package eshell-fringe-status
+	;;   :init
+	;;   (setq eshell-fringe-status-success-bitmap 'my-flycheck-fringe-indicator)
+	;;   (setq eshell-fringe-status-failure-bitmap 'my-flycheck-fringe-indicator)
+	;;   :hook (eshell-mode . eshell-fringe-status-mode))
+
+	;; (use-package esh-help
+	;;   :init (setup-esh-help-eldoc))
+
+  #+end_src
+
+  #+RESULTS:
 
 * LSP
 ~lsp-mode~ enables us to get Intellisense-esque features in Emacs: setting it up requires both config on Emacs' side and installing actual language servers on your side. We'll auto-install them with the magic of ~use-package-ensure-system-package~, although brace yourself for the potential for lots of debugging if the server doesn't work as expected on your system.
@@ -1225,46 +1356,46 @@ With a tweak courtesy of [[https://github.com/jemoka/][@jemoka]], we can smooth 
     (setq flycheck-check-syntax-automatically '(mode-enabled save))
 
     ;; HACK Hardcoded values are bad!
-    (set-face-attribute 'flycheck-error nil :underline '(:color "#265087"))
-    (set-face-attribute 'flycheck-warning nil :underline '(:color "#43709e"))
+    (set-face-attribute 'flycheck-error nil :underline '(:color "#C62D43"))
+    (set-face-attribute 'flycheck-warning nil :underline '(:color "#F98859"))
     (set-face-attribute 'flycheck-info nil :underline t)
     (define-fringe-bitmap 'my-flycheck-fringe-indicator
       (vector #b00000000
-              #b00000000
-              #b00000000
-              #b00000000
-              #b00000000
-              #b00000000
-              #b00000000
-              #b00011100
-              #b00111110
-              #b00111110
-              #b00111110
-              #b00011100
-              #b00000000
-              #b00000000
-              #b00000000
-              #b00000000
-              #b00000000))
+	      #b00000000
+	      #b00000000
+	      #b00000000
+	      #b00000000
+	      #b00000000
+	      #b00000000
+	      #b00011100
+	      #b00111110
+	      #b00111110
+	      #b00111110
+	      #b00011100
+	      #b00000000
+	      #b00000000
+	      #b00000000
+	      #b00000000
+	      #b00000000))
     (let ((bitmap 'my-flycheck-fringe-indicator))
       (flycheck-define-error-level 'error
-        :severity 2
-        :overlay-category 'flycheck-error-overlay
-        :fringe-bitmap bitmap
-        :error-list-face 'flycheck-error-list-error
-        :fringe-face 'flycheck-fringe-error)
+	:severity 2
+	:overlay-category 'flycheck-error-overlay
+	:fringe-bitmap bitmap
+	:error-list-face 'flycheck-error-list-error
+	:fringe-face 'flycheck-fringe-error)
       (flycheck-define-error-level 'warning
-        :severity 1
-        :overlay-category 'flycheck-warning-overlay
-        :fringe-bitmap bitmap
-        :error-list-face 'flycheck-error-list-warning
-        :fringe-face 'flycheck-fringe-warning)
+	:severity 1
+	:overlay-category 'flycheck-warning-overlay
+	:fringe-bitmap bitmap
+	:error-list-face 'flycheck-error-list-warning
+	:fringe-face 'flycheck-fringe-warning)
       (flycheck-define-error-level 'info
-        :severity 0
-        :overlay-category 'flycheck-info-overlay
-        :fringe-bitmap bitmap
-        :error-list-face 'flycheck-error-list-info
-        :fringe-face 'flycheck-fringe-info)))
+	:severity 0
+	:overlay-category 'flycheck-info-overlay
+	:fringe-bitmap bitmap
+	:error-list-face 'flycheck-error-list-info
+	:fringe-face 'flycheck-fringe-info)))
 #+end_src
 #+end_collapsible
 
@@ -1317,7 +1448,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 #+end_src
 
 * TODO C++
-  #+BEGIN_SRC emacs-lisp
+  #+begin_src emacs-lisp
 
 (setq c-default-style "k&r")
 (setq-default c-basic-offset 4)
@@ -1355,9 +1486,9 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
 (use-package cpp-auto-include)  
 
-  #+END_SRC
+  #+end_src
 * TODO Python
-  #+BEGIN_SRC emacs-lisp
+  #+begin_src emacs-lisp
 (use-package ein)
 
 (use-package lsp-mode
@@ -1410,30 +1541,35 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 (use-package python-docstring
     :straight t
     :hook (python-mode . python-docstring-mode))
-  #+END_SRC
+  #+end_src
 * TODO Code Aesthetics
-  #+BEGIN_SRC emacs-lisp
-(use-package hl-todo
-  :init
-  (global-hl-todo-mode)
-  ;; HACK Hardcoded values are bad!
-  (setq hl-todo-keyword-faces
-		'(("TODO"   . "#29558F")
-		  ("FIXME"  . "#447BD0")
-		  ("DEBUG"  . "#4776A7")
-		  ("HACK"   . "#3367A2")
-		  ("NOTE"   . "#a2c5de")))
-  ;; We already have todos in Org Mode!
-  (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
-  (set-face-attribute 'hl-todo nil :italic t)
-  :bind (:map hl-todo-mode-map
-  ("C-c t p" . hl-todo-previous)
-  ("C-c t n" . hl-todo-next)
-  ("C-c t i" . hl-todo-insert)))
-  #+END_SRC
+  #+begin_src emacs-lisp
+    (use-package hl-todo
+      :init
+      (global-hl-todo-mode)
+      ;; HACK Hardcoded values are bad!
+      (setq hl-todo-keyword-faces
+                    '(("TODO"   . "#F05644")
+                      ("FIXME"  . "#C62D43")
+                      ("DEBUG"  . "#F98859")
+                      ("HACK"   . "#FD7446")
+                      ("NOTE"   . "#F1BCA3")))
+      ;; We already have todos in Org Mode!
+      (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))~
+      (set-face-attribute 'hl-todo nil :italic t)
+      :bind (:map hl-todo-mode-map
+      ("C-c t p" . hl-todo-previous)
+      ("C-c t n" . hl-todo-next)
+      ("C-c t i" . hl-todo-insert)))
+  #+end_src
+
+  #+begin_src emacs-lisp
+    (use-package rainbow-mode)
+  #+end_src
+  
 * TODO Writing
 * TODO Vanilla++
-  #+BEGIN_SRC emacs-lisp
+  #+begin_src emacs-lisp
 (use-package crux
   :bind
   (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
@@ -1455,10 +1591,15 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
 (use-package diredfl
   :init (diredfl-global-mode))
-  #+END_SRC
+  #+end_src
 * TODO Fun
+  FIXME
+  #+begin_src emacs-lisp
+(use-package pdf-tools)
+#+end_src
+
 ** TODO Exit Message
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      (setq exit-messages '(
 	     "Please don't leave, there's more demons to toast!"
 	     "Let's beat it -- This is turning into a bloodbath!"
@@ -1494,27 +1635,25 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 	     (save-buffers-kill-emacs)))
 
      (global-set-key "\C-x\C-c" 'save-buffers-kill-emacs-with-confirm)
-   #+END_SRC
+   #+end_src
 ** Spotify
 Smudge is nice. 
 #+begin_src emacs-lisp
-  (use-package smudge
-    :straight (smudge :type git :host github :repo "danielfm/smudge"
-		      :fork (:host github :repo "richardfeynmanrocks/smudge"))
-    :init
-    (global-smudge-remote-mode)
-    (load-file "secrets.el")
-    (setq smudge-status-location nil)
-    ;; FIXME actively destructive to potential mode-line config!
-    (setq global-mode-string '(("   ")))
-    :bind
-    ("C-S-s-l" . smudge-controller-next-track)
-    ("C-S-s-h" . smudge-controller-previous-track)
-    ("C-S-s-j" . smudge-controller-volume-down)
-    ("C-S-s-k" . smudge-controller-volume-up) 	
-    ("C-S-s-p" . smudge-controller-toggle-play)
-    ("C-S-s-s" . smudge-controller-toggle-shuffle)
-    ("C-S-s-r" . smudge-controller-toggle-repeat))  
+  ;; (use-package smudge
+  ;;   :straight (smudge :type git :host github :repo "danielfm/smudge"
+  ;; 		    :fork (:host github :repo "richardfeynmanrocks/smudge"))
+  ;;   :init
+  ;;   (setq smudge-status-location nil)
+  ;;   ;; FIXME actively destructive to potential mode-line config!
+  ;;   (setq global-mode-string '(("   ")))
+  ;;   :bind
+  ;;   ("C-S-s-l" . smudge-controller-next-track)
+  ;;   ("C-S-s-h" . smudge-controller-previous-track)
+  ;;   ("C-S-s-j" . smudge-controller-volume-down)
+  ;;   ("C-S-s-k" . smudge-controller-volume-up) 	
+  ;;   ("C-S-s-p" . smudge-controller-toggle-play)
+  ;;   ("C-S-s-s" . smudge-controller-toggle-shuffle)
+  ;;   ("C-S-s-r" . smudge-controller-toggle-repeat))  
 #+end_src
 
 * TODO Scratch
