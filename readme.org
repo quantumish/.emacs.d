@@ -1,10 +1,18 @@
 #+TITLE: .emacs.d - revamped!
 
-** About
-An opinionated Emacs configuration with emphasis on functionality and visuals.
+* About
+My personal (and opinionated) Emacs configuration with emphasis on functionality and visuals.
 
-** EXWM Screenshots!
-[[https://i.imgur.com/oXqwT4P.jpg]]
+* Gallery
 
-Multi-monitor:
-[[https://i.imgur.com/bZpIoFM.png]]
+[[./gallery/dashboard.gif]]
+
+[[./gallery/lsp-cpp.gif]]
+
+[[./gallery/exwm.gif]]
+
+[[./gallery/roam.gif]]
+
+[[./gallery/babel.png]]
+
+[[./gallery/translucent.png]]
