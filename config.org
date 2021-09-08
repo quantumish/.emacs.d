@@ -149,7 +149,7 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
 * Desktop
 It's time to load EXWM, the Emacs X Window Manager.
 
-#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no")
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
     (setq exwm-workspace-number 3)
@@ -179,7 +179,7 @@ It's time to load EXWM, the Emacs X Window Manager.
 
 Setting up multi-monitor support is a bit of a hack in my configuration since my input devices tend to mysteriously swap around. You'll notice I'm using ~use-package~ for the same package twice in a row here, but fear not, it merely executes them sequentially and it means I can intersperse long-winded package configuration with text without fear of accidentally breaking something one day.
 
-#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no")
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
     (defvar left-screen "DP-1")
@@ -204,7 +204,7 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
 Next, if we're on Linux, let's do everything we need to do at startup.
 
 ~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
-#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.config/X/Xmodmap" "no")
+#+begin_src sh :tangle (config-tangle "~/.config/X/Xmodmap" 'gnu/linux)
   # Clear things
   clear      lock
   clear   control
@@ -227,7 +227,7 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 #+end_src
 
 ~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
-#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.xbindkeysrc" "no") 
+#+begin_src sh :tangle (config-tangle "~/.xbindkeysrc" 'gnu/linux) 
   # -*- shell-script -*-
   # TODO Phase me out!
 
@@ -268,14 +268,14 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 #+end_src
 
 ~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as remap tapping caps-lock to escape.
-#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.config/X/xcape.sh" "no")
+#+begin_src sh :tangle (config-tangle "~/.config/X/xcape.sh" 'gnu/linux)
 xcape -e "Control_L=Escape"
 xcape -e "Shift_R=parenright"
 xcape -e "Shift_L=parenleft"
 #+end_src
 
 ~dunst~ is a great notification server.
-#+begin_src conf :tangle (if (eq system-type 'gnu/linux) "~/.config/dunst/dunstrc" "no")
+#+begin_src conf :tangle (config-tangle "~/.config/dunst/dunstrc" 'gnu/linux)
   [global]
   monitor = 0
   follow = keyboard
@@ -354,7 +354,7 @@ xcape -e "Shift_L=parenleft"
 #+end_src
 
 Let's define a quick script to reload it based on pywal, too.
-#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.config/dunst/reload_dunst.sh" "no")
+#+begin_src sh :tangle (config-tangle "~/.config/dunst/reload_dunst.sh" 'gnu/linux) 
   . "${HOME}/.cache/wal/colors.sh"
 
   pkill dunst
@@ -371,7 +371,7 @@ Let's define a quick script to reload it based on pywal, too.
 #+end_src
 
 ~picom~ is a nice compositor, and will allow us to have effects like rounded corners and transparency if we want them. Dual kawase blur looks very nice, so let's use it.
-#+begin_src conf :tangle (if (eq system-type 'gnu/linux) "~/.config/picom.conf" "no")
+#+begin_src conf :tangle (config-tangle "~/.config/picom.conf" 'gnu/linux)
 backend = "glx";
 blur: {
       method = "dual_kawase";
@@ -383,7 +383,7 @@ blur: {
 #+end_src
 
 Finally, we actually run the startup.
-#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no") 
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux) 
   (use-package exwm
     :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
     :init
@@ -403,7 +403,7 @@ Finally, we actually run the startup.
 #+end_src
 
 Let's make moving across monitors and workspaces a little easier.
-#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no") 
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
    (defun exwm-workspace-next ()
      (interactive)
      (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
@@ -468,7 +468,7 @@ Then, make it so EXWM buffer names contain part of the the window title based of
 #+end_src
 
 Finally, update polybar config file to match monitor and make it so we have decorative gaps around all of EXWM (not individual buffers/windows unfortunately).
-#+begin_src emacs-lisp :tangle (if (eq system-type 'gnu/linux) "yes" "no")
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
    ;; TODO Use Org Babel and tangle polybar config?
    (start-process-shell-command "polybar-update" nil
        (concat "sed s/<MONITOR>/"
@@ -492,7 +492,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
 #+end_src
 
 ~kitty~ is a terminal emulator that's featureful and usable.
-#+begin_src conf :tangle ~/.config/kitty/kitty.conf
+#+begin_src conf :tangle (config-tangle "~/.config/kitty/kitty.conf")
   include ~/.cache/wal/colors-kitty.conf # import pywal theme
   font_family IBM Plex Mono
   # breathing room
@@ -509,7 +509,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
 #+end_src
 
 ~zsh~ is good.
-#+begin_src sh :tangle (if (eq system-type 'gnu/linux) "~/.zshrc" "no") 
+#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux) 
   # p10k instant prompt
   if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
     source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -568,7 +568,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
   source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 #+end_src
 
-#+begin_src sh :tangle (if (eq system-type 'darwin) "~/.zshrc" "no")
+#+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
 export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
 
 export ZSH="$HOME/.oh-my-zsh"
@@ -589,7 +589,7 @@ alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
 
 
 It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good.
-#+begin_src text :tangle ~/.config/neofetch/arch.ascii
+#+begin_src text :tangle (config-tangle "~/.config/neofetch/arch.ascii" 'gnu/linux)
 ${c1}
                    ▄
                   ▟█▙
@@ -611,95 +611,6 @@ ${c1}
   ▟███▀▘                       ▝▀███▙
  ▟▛▀                               ▀▜▙
 
-#+end_src
-
-Let's configure ~neofetch~ while we're at it.
-#+begin_src sh :tangle ~/.config/neofetch/config.conf
-  print_info() {
-      info title
-      info underline
-      info "OS" distro
-      info "Host" model
-      info "Kernel" kernel
-      info "Uptime" uptime
-      info "Packages" packages
-      info "Shell" shell
-      info "DE" de
-      info "WM" wm
-      info "Terminal" term
-      info "CPU" cpu
-      info "GPU" gpu
-      info "Memory" memory
-      info cols
-  }
-
-  title_fqdn="off"
-  kernel_shorthand="on"
-  distro_shorthand="off"
-  os_arch="on"
-  uptime_shorthand="on"
-  memory_percent="off"
-  memory_unit="mib"
-  package_managers="on"
-  shell_path="off"
-  shell_version="on"
-  speed_type="bios_limit"
-  speed_shorthand="off"
-  cpu_brand="on"
-  cpu_speed="on"
-  cpu_cores="logical"
-  cpu_temp="off"
-  gpu_brand="on"
-  gpu_type="all"
-  refresh_rate="off"
-  gtk_shorthand="off"
-  gtk2="on"
-  gtk3="on"
-  public_ip_host="http://ident.me"
-  public_ip_timeout=2
-  de_version="on"
-  disk_show=('/')
-  disk_subtitle="mount"
-  disk_percent="on"
-  music_player="auto"
-  song_format="%artist% - %album% - %title%"
-  song_shorthand="off"
-  mpc_args=()
-  colors=(distro)
-  bold="on"
-  underline_enabled="on"
-  underline_char="-"
-  separator=":"
-  block_range=(0 15)
-  color_blocks="on"
-  block_width=3
-  block_height=1
-  col_offset="auto"
-  bar_char_elapsed="-"
-  bar_char_total="="
-  bar_border="on"
-  bar_length=15
-  bar_color_elapsed="distro"
-  bar_color_total="distro"
-  cpu_display="off"
-  memory_display="off"
-  battery_display="off"
-  disk_display="off"
-  image_backend="ascii"
-  image_source="auto"
-  ascii_distro="auto"
-  ascii_colors=(distro)
-  ascii_bold="on"
-  image_loop="off"
-  thumbnail_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/thumbnails/neofetch"
-  crop_mode="normal"
-  crop_offset="center"
-  image_size="auto"
-  gap=3
-  yoffset=0
-  xoffset=0
-  background_color=
-  stdout="off"
 #+end_src
 
 Firefox could be prettier.
