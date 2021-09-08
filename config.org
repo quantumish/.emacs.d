@@ -385,7 +385,7 @@ blur: {
 Finally, we actually run the startup.
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux) 
   (use-package exwm
-    :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
+    ; :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
     :init
     ;; Rebind keys
     (call-process-shell-command "xmodmap ~/.config/X/Xmodmap" nil 0)
@@ -1273,9 +1273,9 @@ There are a variety of useful packages that make Org look nicer:
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
-    :ensure-system-package ccls
-    :ensure-system-package (pyls . "python -m pip install pyls")
-    :ensure-system-package rust-analyzer
+    ; :ensure-system-package ccls
+    ; :ensure-system-package (pyls . "python -m pip install pyls")
+    ; :ensure-system-package rust-analyzer
     :init
     ;; Disable annoying headerline
     (setq lsp-headerline-breadcrumb-enable nil)
@@ -1452,7 +1452,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 (use-package cuda-mode)
 
 (use-package ccls
-  :ensure-system-package ccls
+  ; :ensure-system-package ccls
   :hook ((c-mode c++-mode cuda-mode) .
 		 (lambda () (require 'ccls) (lsp)))
   :custom
