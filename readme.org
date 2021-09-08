@@ -3,8 +3,6 @@
 * About
 My personal (and opinionated) Emacs configuration with emphasis on functionality and visuals.
 
-*WARNING* This will overwrite files, most importantly your ~.zshrc~!
-
 * Gallery
 
 [[./gallery/dashboard.gif]]
