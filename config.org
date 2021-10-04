@@ -1171,16 +1171,15 @@ Let's define a function to export to Taproot:
 
 And a function to open in Taproot:
 #+begin_src emacs-lisp
-  (defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
-
-  (defun org-roam-open-in-taproot ()
-    (interactive)
-    (if (not (eq (buffer-file-name) nil))
-        (if (eq (substring (buffer-file-name) 0 (len taproot-dir)) taproot-dir)
-            (call-process-shell-command (concat "open https://taproot3.sanity.gq/" (substr (file-name-sans-extension (buffer-file-name)) (len taproot-dir))))
-          (message "Not a Taproot buffer!"))
-      (message "Not a file buffer!")))
-
+   (defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
+  
+   (defun org-roam-open-in-taproot ()
+     (interactive)
+     (if (not (eq (buffer-file-name) nil))
+         (if (string= (substring (buffer-file-name) 0 (length taproot-dir)) taproot-dir)
+             (call-process-shell-command (concat "open https://taproot3.sanity.gq" (substring (file-name-sans-extension (buffer-file-name)) (length taproot-dir))))
+           (message "Not a Taproot buffer!"))
+       (message "Not a file buffer!")))  
 #+end_src
 
    
