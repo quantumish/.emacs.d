@@ -4,7 +4,7 @@
 
 * Packages
 First, let's set the package archives and do some basic tweaks.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (require 'package)
   (setq package-enable-at-startup nil) ;; Speed tip taken from Doom Emacs
   (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
@@ -16,7 +16,8 @@ First, let's set the package archives and do some basic tweaks.
 #+end_src
 
 We're going to use ~straight.el~ for package management.
-#+begin_src emacs-lisp
+
+#+begin_src emacs-lisp :tangle "yes"
   (defvar bootstrap-version)
   (let ((bootstrap-file
 	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -31,9 +32,12 @@ We're going to use ~straight.el~ for package management.
     (load bootstrap-file nil 'nomessage))
 #+end_src
 
+#+RESULTS:
+: t
+
 This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword arguments are for specifying package-related keybinds and hooks respectively.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (straight-use-package 'use-package)
   (eval-when-compile
     (require 'use-package))
@@ -51,12 +55,12 @@ Are we using native-comp? If so, let's actually native compile things. Also, the
     (setq package-native-compile t)
     (setq comp-deferred-compilation t)
     (setq native-comp-deferred-compilation-deny-list nil)
-    (setq warning-suppress-log-types '((comp))))
+    (setq warning-suppress-log-types '((comp)))
 #+end_src
 
 * Speed
 Let's then use a variety of the tips for speeding up initialization time given by the creator of Doom Emacs.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
     ;; Go back to normal GC behavior after init
     (add-hook 'emacs-startup-hook
               (lambda ()
@@ -86,7 +90,7 @@ Let's then use a variety of the tips for speeding up initialization time given b
 * System
 Let's now move on to system-level configuration. First, some utility functions for running commands and deducing distro/OS.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (defun process-exit-code-and-output (program &rest args)
     "Run PROGRAM with ARGS and return the exit code and output in a list."
     (with-temp-buffer
@@ -105,7 +109,7 @@ Let's now move on to system-level configuration. First, some utility functions f
 
 Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packages]], an awesome package that lets you programmatically install packages from Emacs across operating systems.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package system-packages
     :init
     (let (os-name (get-distro-or-os))
@@ -140,7 +144,7 @@ Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packag
 
 This package also has some nice extensions like ~use-package-ensure-system-package~ which lets you express system-level dependencies for Emacs packages, and ~helm-system-packages~ which is the ultimate package manager interface (although it unfortunately means we'll need to install all of Helm for just this).
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package use-package-ensure-system-package)
   (use-package helm-system-packages
     :commands (helm-system-packages))
@@ -149,7 +153,7 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
 * Desktop
 It's time to load EXWM, the Emacs X Window Manager.
 
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
+#+begin_src emacs-lisp :tangle "yes" :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
     (setq exwm-workspace-number 3)
@@ -183,8 +187,8 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
   (use-package exwm
     :init
     (defvar left-screen "DP-1")
-    (defvar middle-screen "HDMI-0")
-    (defvar right-screen "DP-3")
+    (defvar middle-screen "HDMI-1")
+    (defvar right-screen "DP-2")
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
     (add-hook 'exwm-randr-screen-change-hook
@@ -205,7 +209,6 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 
 ~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
 #+begin_src sh :tangle (config-tangle "~/.config/X/Xmodmap" 'gnu/linux)
-  # Clear things
   clear      lock
   clear   control
   clear      mod1
@@ -213,9 +216,8 @@ Next, if we're on Linux, let's do everything we need to do at startup.
   clear      mod3
   clear      mod4
   clear      mod5
-  keycode      37 = Hyper_L # Control -> Hyper
-  keycode      66 = Control_L # Caps -> Control
-  # Escape trickery to allow xcape? TODO Figure out what I meant to do by this
+  keycode      37 = Hyper_L
+  keycode      66 = Control_L
   keycode       9 = Escape
   keycode  0xffca = Escape
   add     control = Control_L Control_R
@@ -399,7 +401,8 @@ Finally, we actually run the startup.
     ;; The best screenshot utility!
     (call-process-shell-command "flameshot &" nil 0)
     ;; Compositor
-    (call-process-shell-command "picom &" nil 0))
+    (call-process-shell-command "picom &" nil 0)
+    (call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0))
 #+end_src
 
 Let's make moving across monitors and workspaces a little easier.
@@ -440,7 +443,7 @@ Let's make moving across monitors and workspaces a little easier.
  #+end_src
 
 Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package exwm
     :init
 
@@ -486,21 +489,18 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
 * External Programs
 ~pywal~ will be our savior for theming by allowing for thematic consistency.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   ;; (use-package exwm
   ;;   :ensure-system-package python-pywal)
 #+end_src
 
 ~kitty~ is a terminal emulator that's featureful and usable.
 #+begin_src conf :tangle (config-tangle "~/.config/kitty/kitty.conf")
-  include ~/.cache/wal/colors-kitty.conf # import pywal theme
+  include ~/.cache/wal/colors-kitty.conf
   font_family IBM Plex Mono
-  # breathing room
   window_padding_width 10 15
-  # make page up/down do things
   map page_up scroll_page_up
   map page_down scroll_page_down
-  # sane text size binds
   map ctrl+shift+equal change_font_size all +2.0
   map ctrl+shift+plus change_font_size all +2.0
   map ctrl+shift+kp_add change_font_size all +2.0
@@ -532,7 +532,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
   alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
   alias gs="git status"
   alias nano=mg
-  alias ls=exa --icons
+  alias ls="exa --icons"
   alias hexdump=hexyl
   alias cat=bat
   alias rm=rip
@@ -614,7 +614,7 @@ ${c1}
 #+end_src
 
 Firefox could be prettier.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   ;; (use-package exwm
   ;;   :ensure-system-package (firefox python-pywalfox))
 #+end_src
@@ -628,7 +628,7 @@ Firefox could be prettier.
 * Undoing Defaults
 Emacs has some default behaviors that are generally annoying. Let's disable them!
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   ;; Turn off all unnecessary GUI elements.
   (tool-bar-mode -1)
   (menu-bar-mode -1)
@@ -671,168 +671,168 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
   (global-visual-line-mode)
 #+end_src
 
-* TODO Theming
-#   #+begin_src emacs-lisp
-#     ;; TODO: Set up treemacs.
+* Theming
+  #+begin_src emacs-lisp :tangle "yes"
+    ;; TODO: Set up treemacs.
 
-#     (use-package hide-mode-line)
+    (use-package hide-mode-line)
 
-#     (use-package doom-themes
-#       :init
-#       ;; Global settings (defaults)
-#       (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-#             doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    (use-package doom-themes
+      :init
+      ;; Global settings (defaults)
+      (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+            doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-#       (doom-themes-visual-bell-config)
+      (doom-themes-visual-bell-config)
 
-#       ;(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
-#       ;(doom-themes-treemacs-config)
-#       (doom-themes-org-config))
+      ;(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+      ;(doom-themes-treemacs-config)
+      (doom-themes-org-config))
 
-#     (use-package ewal)
-#     (use-package ewal-doom-themes
-#       :init
-#       (load-theme 'ewal-doom-one t))
+    (use-package ewal)
+    (use-package ewal-doom-themes
+      :init
+      (load-theme 'ewal-doom-one t))
 
-#     (use-package doom-modeline
-#       :init
-#       (setq doom-modeline-height 40)
-#       (setq doom-modeline-buffer-encoding nil)
-#       (doom-modeline-mode))
+    (use-package doom-modeline
+      :init
+      (setq doom-modeline-height 40)
+      (setq doom-modeline-buffer-encoding nil)
+      (doom-modeline-mode))
 
-#     ;; TODO: Contextual solaire
-#     (use-package solaire-mode
-#       :init
-#       (solaire-global-mode))
+    ;; TODO: Contextual solaire
+    (use-package solaire-mode
+      :init
+      (solaire-global-mode))
 
-#     (use-package centaur-tabs
-#       :init
-#       (setq centaur-tabs-height 16)
-#       (setq centaur-tabs-style "bar")
-#       (setq centaur-tabs-set-icons t)
-#       (setq centaur-tabs-icon-scale-factor 0.7)
-#       (setq centaur-tabs-set-bar 'left)
-#       (setq x-underline-at-descent-line t)
-#       (defun contextual-tabs ()
-#             (interactive)
-#             (if (and (centaur-tabs-mode-on-p) (eq (derived-mode-p 'prog-mode) nil))
-#                     (centaur-tabs-local-mode)))
-#       (defun centaur-tabs-hide-tab (x)
-#             (let ((name (format "%s" x)))
-#               (or
-#                (window-dedicated-p (selected-window))
-#                (string-match-p (regexp-quote "<") name)
-#                (string-prefix-p "*lsp" name)
-#                (string-prefix-p "*Compile-Log*" name)
-#                (string-prefix-p "*company" name)
-#                (string-prefix-p "*compilation" name)
-#                (string-prefix-p "*Help" name)
-#                (string-prefix-p "*straight" name)
-#                (string-prefix-p "*Flycheck" name)
-#                (string-prefix-p "*tramp" name)
-#                (string-prefix-p "*help" name)
-#                (and (string-prefix-p "magit" name)
-#                             (not (file-name-extension name)))
-#                )))
-#       (defun centaur-tabs-hide-tab-cached (x) (centaur-tabs-hide-tab x))
-#       (centaur-tabs-mode)
-#       :hook
-#       (after-change-major-mode . contextual-tabs)
-#       :bind
-#       ("H-l" . 'centaur-tabs-forward-tab)
-#       ("H-h" . 'centaur-tabs-backward-tab))
+    (use-package centaur-tabs
+      :init
+      (setq centaur-tabs-height 16)
+      (setq centaur-tabs-style "bar")
+      (setq centaur-tabs-set-icons t)
+      (setq centaur-tabs-icon-scale-factor 0.7)
+      (setq centaur-tabs-set-bar 'left)
+      (setq x-underline-at-descent-line t)
+      (defun contextual-tabs ()
+            (interactive)
+            (if (and (centaur-tabs-mode-on-p) (eq (derived-mode-p 'prog-mode) nil))
+                    (centaur-tabs-local-mode)))
+      (defun centaur-tabs-hide-tab (x)
+            (let ((name (format "%s" x)))
+              (or
+               (window-dedicated-p (selected-window))
+               (string-match-p (regexp-quote "<") name)
+               (string-prefix-p "*lsp" name)
+               (string-prefix-p "*Compile-Log*" name)
+               (string-prefix-p "*company" name)
+               (string-prefix-p "*compilation" name)
+               (string-prefix-p "*Help" name)
+               (string-prefix-p "*straight" name)
+               (string-prefix-p "*Flycheck" name)
+               (string-prefix-p "*tramp" name)
+               (string-prefix-p "*help" name)
+               (and (string-prefix-p "magit" name)
+                            (not (file-name-extension name)))
+               )))
+      (defun centaur-tabs-hide-tab-cached (x) (centaur-tabs-hide-tab x))
+      (centaur-tabs-mode)
+      :hook
+      (after-change-major-mode . contextual-tabs)
+      :bind
+      ("H-l" . 'centaur-tabs-forward-tab)
+      ("H-h" . 'centaur-tabs-backward-tab))
 
-#     (use-package treemacs
-#       :after doom-themes
-#       :init
-#       (doom-themes-treemacs-config)
-#       (setq doom-themes-treemacs-theme "doom-colors")
-#       (setq treemacs-width 30)
-#       :bind
-#       ("C-c t" . treemacs))
+    (use-package treemacs
+      :after doom-themes
+      :init
+      (doom-themes-treemacs-config)
+      (setq doom-themes-treemacs-theme "doom-colors")
+      (setq treemacs-width 30)
+      :bind
+      ("C-c t" . treemacs))
 
-#     (use-package treemacs-all-the-icons
-#       :after treemacs
-#       :init
-#       (treemacs-load-theme "all-the-icons"))
+    (use-package treemacs-all-the-icons
+      :after treemacs
+      :init
+      (treemacs-load-theme "all-the-icons"))
 
-#     (use-package olivetti
-#       :hook (prog-mode . (lambda () (olivetti-mode))))
-#   #+end_src
-# ** Translucent
-# Transparency can look nice - sometimes. Polybar clashes with transparency, so disable it while we're using it.
-# #+begin_src emacs-lisp
-#   ;; FIXME hacky and broken
-#   (define-minor-mode translucent-mode
-#     "Make the current frame slightly transparent and don't use polybar."
-#     nil
-#     :global t
-#     (if translucent-mode
-#         (set-frame-parameter (selected-frame) 'alpha '(100))
-#       (set-frame-parameter (selected-frame) 'alpha '(90))))
-# #+end_src
+    (use-package olivetti
+      :hook (prog-mode . (lambda () (olivetti-mode))))
+  #+end_src
+** Translucent
+Transparency can look nice - sometimes. Polybar clashes with transparency, so disable it while we're using it.
+#+begin_src emacs-lisp :tangle "yes"
+  ;; FIXME hacky and broken
+  (define-minor-mode translucent-mode
+    "Make the current frame slightly transparent and don't use polybar."
+    nil
+    :global t
+    (if translucent-mode
+        (set-frame-parameter (selected-frame) 'alpha '(100))
+      (set-frame-parameter (selected-frame) 'alpha '(90))))
+#+end_src
 
-# * TODO Dashboard
-# #+begin_src emacs-lisp
+* TODO Dashboard
+#+begin_src emacs-lisp :tangle "yes"
 
-#   (use-package dashboard
-#     :straight (emacs-dashboard :type git :host github :repo "emacs-dashboard/emacs-dashboard"
-#                       :fork (:host github :repo "richardfeynmanrocks/emacs-dashboard"))
-#     :init
-#     (setq dashboard-center-content t)
-#     (setq dashboard-set-heading-icons t)
-#     (setq dashboard-projects-backend 'projectile)
-#     (setq dashboard-footer-messages '("The One True Editor!"
-#                                       "Protocol 3: Protect the Pilot"
-#                                       "All systems nominal."
-#                                       "Democracy... is non negotiable."
-#                                       "It's my way or... hell, it's my way!"
-#                                       "Make life rue the day it though it could give Richard Stallman lemons!"
-#                                       "Vi-Vi-Vi, the editor of the beast."
-#                                       "Happy hacking!"
-#                                       "While any text editor can save your files, only Emacs can save your soul."
-#                                       "There's an Emacs package for that."
-#                                       "Rip and tear, until it is done!"
-#                                       "It's time to kick ass and chew bubblegum... and I'm all outta gum."
-#                                       "M-x butterfly"
-#                                       ""))
-#     (setq dashboard-items '((recents  . 3)
-#                             (projects . 3)
-#                             (agenda . 5)))
-#     (setq dashboard-startup-banner "~/Downloads/firewatch-logo.png")
-#     (setq dashboard-image-banner-max-height 250)
-#     (setq dashboard-image-banner-max-width 250)
+  (use-package dashboard
+    :straight (emacs-dashboard :type git :host github :repo "emacs-dashboard/emacs-dashboard"
+                      :fork (:host github :repo "richardfeynmanrocks/emacs-dashboard"))
+    :init
+    (setq dashboard-center-content t)
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-projects-backend 'projectile)
+    (setq dashboard-footer-messages '("The One True Editor!"
+                                      "Protocol 3: Protect the Pilot"
+                                      "All systems nominal."
+                                      "Democracy... is non negotiable."
+                                      "It's my way or... hell, it's my way!"
+                                      "Make life rue the day it though it could give Richard Stallman lemons!"
+                                      "Vi-Vi-Vi, the editor of the beast."
+                                      "Happy hacking!"
+                                      "While any text editor can save your files, only Emacs can save your soul."
+                                      "There's an Emacs package for that."
+                                      "Rip and tear, until it is done!"
+                                      "It's time to kick ass and chew bubblegum... and I'm all outta gum."
+                                      "M-x butterfly"
+                                      ""))
+    (setq dashboard-items '((recents  . 3)
+                            (projects . 3)
+                            (agenda . 5)))
+    (setq dashboard-startup-banner "~/Downloads/firewatch-logo.png")
+    (setq dashboard-image-banner-max-height 250)
+    (setq dashboard-image-banner-max-width 250)
 
-#     (setq dashboard-set-init-info nil)
-#     ;; (setq dashboard-set-navigator nil)
-#     ;; ;; Format: "(icon title help action face prefix suffix)"
-#     ;; (setq dashboard-navigator-buttons
-#     ;; 	`(;; line1
-#     ;;         ((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust 0.0)
-#     ;;           "Homepage"
-#     ;;           "Browse homepage"
-#     ;;           (lambda (&rest _) (browse-url "homepage")))
-#     ;;          ("★" "Star" "Show stars" (lambda (&rest _) (show-stars)) warning)
-#     ;;          ("?" "" "?/h" #'show-help nil "<" ">"))
-#     ;;         ;; line 2
-#     ;;         ((,(all-the-icons-faicon "linkedin" :height 1.1 :v-adjust 0.0)
-#     ;;           "Linkedin"
-#     ;;           ""
-#     ;;           (lambda (&rest _) (browse-url "homepage")))
-#     ;;          ("⚑" nil "Show flags" (lambda (&rest _) (message "flag")) error))))
-#     (setq dashboard-page-separator "\n\n")
-#     (dashboard-setup-startup-hook)
-#     :hook
-#     (dashboard-mode . hide-mode-line-mode)
-#     (dashboard-mode . turn-off-solaire-mode))
-# #+end_src
+    (setq dashboard-set-init-info nil)
+    ;; (setq dashboard-set-navigator nil)
+    ;; ;; Format: "(icon title help action face prefix suffix)"
+    ;; (setq dashboard-navigator-buttons
+    ;; 	`(;; line1
+    ;;         ((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust 0.0)
+    ;;           "Homepage"
+    ;;           "Browse homepage"
+    ;;           (lambda (&rest _) (browse-url "homepage")))
+    ;;          ("★" "Star" "Show stars" (lambda (&rest _) (show-stars)) warning)
+    ;;          ("?" "" "?/h" #'show-help nil "<" ">"))
+    ;;         ;; line 2
+    ;;         ((,(all-the-icons-faicon "linkedin" :height 1.1 :v-adjust 0.0)
+    ;;           "Linkedin"
+    ;;           ""
+    ;;           (lambda (&rest _) (browse-url "homepage")))
+    ;;          ("⚑" nil "Show flags" (lambda (&rest _) (message "flag")) error))))
+    (setq dashboard-page-separator "\n\n")
+    (dashboard-setup-startup-hook)
+    :hook
+    (dashboard-mode . hide-mode-line-mode)
+    (dashboard-mode . turn-off-solaire-mode))
+#+end_src
   
 * Minibuffer Completion
 Next, let's improve interactions with Emacs: things like finding files, running commands, switching buffers, etc... by using ~ivy~, a light(ish) minibuffer completion system. Ivy is one of the more popular packages for this, meaning that there's quite a bit of integration with other packages. Notably, ~counsel~ extends its functionality and ~swiper~ provides a nicer interface to interactive search.
 
 On top of this, ~prescient~ allows for completions to be even more useful by basing them off of history and sorting them better. Finally, we can add some icons and extra text to make it all prettier.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package prescient
     :init (setq prescient-persist-mode t))
 
@@ -865,7 +865,7 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
 * Help
 In order to make some parts of exploring Emacs slightly nicer, let's install ~helpful~ which overhauls the Help interface, and ~which-key~ which helps you discover keybinds.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package helpful
     :init
     ;; Advise describe-style functions so that Helpful appears no matter what
@@ -892,7 +892,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 
 * TODO Perspectives
 * TODO Movement
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore
       :bind ("M-m" . 'zygospore-toggle-delete-other-windows))
 
@@ -921,7 +921,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 
 * TODO Org
 First, let's set up the basics.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package org
     :init
     (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
@@ -929,7 +929,7 @@ First, let's set up the basics.
 #+end_src
 
 ** Agenda
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package org
     :init
     (defvar org-inbox-file (concat (getenv "HOME") "/sync/org/inbox.org"))
@@ -943,7 +943,7 @@ First, let's set up the basics.
 
 ** Aesthetics
 Let's add aesthetics for normal prose-style Org usage.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package org
     :config
     (setq org-fontify-quote-and-verse-blocks t)
@@ -958,7 +958,7 @@ Let's add aesthetics for normal prose-style Org usage.
 #+end_src
 
 There are a variety of useful packages that make Org look nicer:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (setq org-latex-create-formula-image-program 'dvisvgm)
   ;; Smart mixing of variable pitch and monospace
   ;; This is preferred over `mixed-pitch` because of small details
@@ -990,50 +990,56 @@ There are a variety of useful packages that make Org look nicer:
 #+end_src
 
 *** Icons
- #+begin_src emacs-lisp
-         (use-package org
-           :config
-           (defun magic-icon-fix ()
-             (let ((fontset (face-attribute 'default :fontset)))
-               (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
-           :hook
-           (org-mode . (lambda () (interactive)
-                 (setq prettify-symbols-alist '(("[#A]" . "")
-                                                ("[#B]" . "")
-                                                ("[#C]" . "")
-                                                ("[ ]" . "")
-                                                ("[X]" . "")
-                                                ("[-]" . "")
-                                                ("#+begin_src" . "")
-                                                ("#+end_src" . "―")
-                                                ("#+begin_collapsible" . "")
-                                                ("#+end_collapsible" . "―")
-                                                ("#+begin_aside" . "")
-                                                ("#+end_aside" . "―")
-                                                (":PROPERTIES:" . "\n")
-                                                (":END:" . "―")
-                                                ("#+STARTUP:" . "")
-                                                ("#+TITLE: " . "")
-                                                ("#+title: " . "")
-                                                ("#+RESULTS:" . "")
-                                                ("#+NAME:" . "")
-                                                ("#+ROAM_TAGS:" . "")
-                                                ("#+FILETAGS:" . "")
-                                                ("#+HTML_HEAD:" . "")
-                                                ("#+SUBTITLE:" . "")
-                                                ("#+AUTHOR:" . "")
-                                                (":Effort:" . "")
-                                                ("SCHEDULED:" . "")
-                                                ("DEADLINE:" . "")
-                                                ("#+begin_defn" .  "")
-                                                ("#+end_defn" . "―")))
-                 (prettify-symbols-mode)
-                 (let ((fontset (face-attribute 'default :fontset)))
-                   (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))
+ #+begin_src emacs-lisp :tangle "yes"
+   (use-package org
+     :config
+     (defun magic-icon-fix ()
+       (let ((fontset (face-attribute 'default :fontset)))
+         (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
+     :hook
+     (org-mode . (lambda () (interactive)
+                   (setq prettify-symbols-alist '(("[#A]" . "")
+                                                  ("[#B]" . "")
+                                                  ("[#C]" . "")
+                                                  ("[ ]" . "")
+                                                  ("[X]" . "")
+                                                  ("[-]" . "")
+                                                  ("#+begin_src" . "")
+                                                  ("#+end_src" . "―")
+                                                  ("#+begin_collapsible" . "")
+                                                  ("#+end_collapsible" . "―")
+                                                  ("#+begin_aside" . "")
+                                                  ("#+end_aside" . "―")
+                                                  ("#+begin_defn" .  "")
+                                                  ("#+end_defn" . "―")
+                                                  ("#+begin_questionable" .  "")
+                                                  ("#+end_questionable" . "―")
+                                                  ("#+begin_problem" .  "")
+                                                  ("#+end_problem" . "―")
+                                                  (":PROPERTIES:" . "\n")
+                                                  (":END:" . "―")
+                                                  ("#+STARTUP:" . "")
+                                                  ("#+TITLE: " . "")
+                                                  ("#+title: " . "")
+                                                  ("#+RESULTS:" . "")
+                                                  ("#+NAME:" . "")
+                                                  ("#+ROAM_TAGS:" . "")
+                                                  ("#+FILETAGS:" . "")
+                                                  ("#+HTML_HEAD:" . "")
+                                                  ("#+SUBTITLE:" . "")
+                                                  ("#+AUTHOR:" . "")
+                                                  (":Effort:" . "")
+                                                  ("SCHEDULED:" . "")
+                                                  ("DEADLINE:" . "")
+                                                  ("#+begin_defn" .  "")
+                                                  ("#+end_defn" . "―")))
+                   (prettify-symbols-mode)
+                   (let ((fontset (face-attribute 'default :fontset)))
+                     (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))
  #+end_src
 
 *** Property Drawers
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (defun org-cycle-hide-drawers (state)
     "Re-hide all drawers after a visibility state change."
     (when (and (derived-mode-p 'org-mode)
@@ -1073,7 +1079,7 @@ There are a variety of useful packages that make Org look nicer:
 #+end_src
 
 *** Extras
- #+begin_src emacs-lisp
+ #+begin_src emacs-lisp :tangle "yes"
    ;; Google Docs style comments
    (use-package org-marginalia
      :straight (:host github :repo "nobiot/org-marginalia")
@@ -1090,7 +1096,7 @@ There are a variety of useful packages that make Org look nicer:
  #+end_src
 
 ** Projects
-   #+begin_src emacs-lisp
+   #+begin_src emacs-lisp :tangle "yes"
      (use-package org
        :init
        (setq org-enforce-todo-dependencies t)
@@ -1099,53 +1105,87 @@ There are a variety of useful packages that make Org look nicer:
    #+end_src
 
 ** Notes
-  #+begin_src emacs-lisp
-      (use-package org-roam
-        :init
-        (setq org-roam-directory "~/sync/notes")
-        (setq org-roam-v2-ack t)
-        :bind
-        ("C-c n i" . org-roam-node-insert)
-        ("C-c n f" . org-roam-node-find)
-        ("C-c n s" . org-roam-db-sync))
-    
-      (use-package org-roam-ui
-        :straight
-        (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-        :after org-roam
-        ;; :hook (after-init . org-roam-ui-mode)
-        :config
-        (setq org-roam-ui-sync-theme t
-              org-roam-ui-follow t
-              org-roam-ui-update-on-save t
-              org-roam-ui-open-on-start t))
-    
-      (use-package deft
-    :init
-    (setq deft-directory org-roam-directory)
-    (defun my/deft-parse-title (file contents)
-       "Parse the given FILE and CONTENTS and determine the title.
+  #+begin_src emacs-lisp :tangle "yes"
+    (use-package org-roam
+      :init
+      (setq org-roam-directory "~/sync/notes")
+      (setq org-roam-v2-ack t)
+      :bind
+      ("C-c n i" . org-roam-node-insert)
+      ("C-c n f" . org-roam-node-find)
+      ("C-c n s" . org-roam-db-sync))
+
+    (use-package org-roam-ui
+      :straight
+      (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+      :after org-roam
+      ;; :hook (after-init . org-roam-ui-mode)
+      :config
+      (setq org-roam-ui-sync-theme t
+            org-roam-ui-follow t
+            org-roam-ui-update-on-save t
+            org-roam-ui-open-on-start t))
+
+    (use-package deft
+      :init
+      (setq deft-directory org-roam-directory)
+      (defun my/deft-parse-title (file contents)
+        "Parse the given FILE and CONTENTS and determine the title.
     If `deft-use-filename-as-title' is nil, the title is taken to
     be the first non-empty line of the FILE.  Else the base name of the FILE is
     used as title."
-       (let ((begin (string-match "^#\\+[tT][iI][tT][lL][eE]: .*$" contents)))
-         (if begin
-             (string-trim (substring contents begin (match-end 0)) "#\\+[tT][iI][tT][lL][eE]: *" "[\n\t ]+")
-           (deft-base-filename file))))
-    
-     (advice-add 'deft-parse-title :override #'my/deft-parse-title)
-    
-     (setq deft-strip-summary-regexp
-           (concat "\\("
-                   "[\n\t]" ;; blank
-                   "\\|^#\\+[[:alpha:]_]+:.*$" ;; org-mode metadata
-                   "\\|^:PROPERTIES:\n\\(.+\n\\)+:END:\n"
-                   "\\)")))
-    
-   #+end_src
+        (let ((begin (string-match "^#\\+[tT][iI][tT][lL][eE]: .*$" contents)))
+          (if begin
+              (string-trim (substring contents begin (match-end 0)) "#\\+[tT][iI][tT][lL][eE]: *" "[\n\t ]+")
+            (deft-base-filename file))))
 
+      (advice-add 'deft-parse-title :override #'my/deft-parse-title)
+
+      (setq deft-strip-summary-regexp
+            (concat "\\("
+                    "[\n\t]" ;; blank
+                    "\\|^#\\+[[:alpha:]_]+:.*$" ;; org-mode metadata
+                    "\\|^:PROPERTIES:\n\\(.+\n\\)+:END:\n"
+                    "\\)")))
+
+   #+end_src
+*** Taproot-specific
+Let's define a function to export to Taproot:
+#+begin_src emacs-lisp
+
+(defun org-roam-export-all (in-path out-path)
+  "Emergency exit from Org Roam v2. 
+   Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
+  (let ((sed (if (eq system-type 'darwin) "gsed" "sed")))
+    (progn 
+      (call-process-shell-command (concat "cp -R " in-path "*.org " out-path))
+      (dolist (pair (org-roam-db-query [:select [ID FILE] :from nodes]))      
+	(call-process-shell-command (concat sed " -i \"s/id:" (car pair)
+					    "/file:" (substring (car (cdr pair)) (length in-path))
+					    "/g\" " out-path "*.org")))
+      (message (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
+      (call-process-shell-command (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
+      (call-process-shell-command (concat sed " -i \"/:ID:/d\" " out-path "*.org"))
+      (call-process-shell-command (concat sed " -i \"/:END:/d\" " out-path "*.org")))))
+#+end_src
+
+And a function to open in Taproot:
+#+begin_src emacs-lisp
+  (defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
+
+  (defun org-roam-open-in-taproot ()
+    (interactive)
+    (if (not (eq (buffer-file-name) nil))
+        (if (eq (substring (buffer-file-name) 0 (len taproot-dir)) taproot-dir)
+            (call-process-shell-command (concat "open https://taproot3.sanity.gq/" (substr (file-name-sans-extension (buffer-file-name)) (len taproot-dir))))
+          (message "Not a Taproot buffer!"))
+      (message "Not a file buffer!")))
+
+#+end_src
+
+   
 ** Export
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle "yes"
     (use-package org-special-block-extras
       :init
       (org-special-block-extras-mode)
@@ -1187,12 +1227,13 @@ There are a variety of useful packages that make Org look nicer:
        ))))
   #+end_src
    
-* Terminal
-  #+begin_src emacs-lisp
+* Development
+** Terminal
+  #+begin_src emacs-lisp :tangle "yes"
  (use-package vterm)
   #+end_src
 
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle "yes"
 	 (defun dw/get-prompt-path ()
 	  (let* ((current-path (eshell/pwd))
 		 (git-output (shell-command-to-string "git rev-parse --show-toplevel"))
@@ -1207,15 +1248,15 @@ There are a variety of useful packages that make Org look nicer:
     (defun dw/eshell-prompt ()  
 	  (concat
 	   "\n"
-	   (propertize "davfrei" 'face `(:foreground "#C62D43") 'read-only t)
+	   (propertize "davfrei" 'face `(:foreground ,(doom-color 'orange)) 'read-only t)
 	   (propertize " " 'face `(:foreground "white") 'read-only t)
-	   (propertize (dw/get-prompt-path) 'face `(:foreground "#FD7446") 'read-only t)
+	   (propertize (dw/get-prompt-path) 'face `(:foreground ,(doom-color 'orange)) 'read-only t)
 	   (propertize " · " 'face `(:foreground "white") 'read-only t)
-	   (propertize (format-time-string "%I:%M:%S %p") 'face `(:foreground "#F1BCA3") 'read-only t)
+	   (propertize (format-time-string "%I:%M:%S %p") 'face `(:foreground ,(doom-color 'cyan)) 'read-only t)
 	   (if (= (user-uid) 0)
 	       (propertize "\n#" 'face `(:foreground "red2") 'read-only t)
-	     (propertize "\nλ" 'face `(:foreground "#F98859") 'read-only t))
-	   (propertize " " 'face `(:foreground "#f6e5db"))
+	     (propertize "\nλ" 'face `(:foreground ,(doom-color 'blue)) 'read-only t))
+	   (propertize " " 'face `(:foreground ,(doom-color 'fg)))
 	   ))
 
 	(defun dw/eshell-configure ()
@@ -1313,12 +1354,12 @@ There are a variety of useful packages that make Org look nicer:
 
   #+RESULTS:
 
-* LSP
+** LSP
 ~lsp-mode~ enables us to get Intellisense-esque features in Emacs: setting it up requires both config on Emacs' side and installing actual language servers on your side. We'll auto-install them with the magic of ~use-package-ensure-system-package~, although brace yourself for the potential for lots of debugging if the server doesn't work as expected on your system.
 
 ~lsp-mode~ can do more than just provide good completions: you can jump to definitions and references with ~lsp-find-definition~ and ~lsp-find-references~ respectively, as well as most other things you'd expect from an IDE.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package lsp-mode
     ; :ensure-system-package ccls
     ; :ensure-system-package (pyls . "python -m pip install pyls")
@@ -1345,14 +1386,13 @@ There are a variety of useful packages that make Org look nicer:
     (setq lsp-ui-doc-delay 5)
     (add-hook 'flycheck-mode-hook 'lsp-ui-mode) ;; HACK
     :config
-    ;; HACK Hardcoded values are bad.
-    (set-face-attribute 'lsp-ui-doc-background nil :background "#0b0f16"))
+    (eval `(set-face-attribute 'lsp-ui-doc-background nil :background ,(doom-darken 'bg .2))))
 #+end_src
 
-* Company
+** Company
 ~company-mode~ provides code completions in Emacs, and will work together with ~lsp-mode~ to provide a nice experience. On top of that, let's use add-ons that allow documentation for completions to pop up and also let ~prescient~ make things better like it did with Ivy.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package company
     :init
     (setq company-idle-delay 0)
@@ -1375,12 +1415,12 @@ There are a variety of useful packages that make Org look nicer:
     :init (company-prescient-mode))
 #+end_src
 
-* TODO Compilation
-* TODO Documentation
-* TODO Projectile?
-* Linting
+** TODO Compilation
+** TODO Documentation
+** TODO Projectile?
+** Linting
 Next, we can add linting to the editor with flycheck!
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package flycheck
     :hook
     (prog-mode . flycheck-mode)
@@ -1388,95 +1428,105 @@ Next, we can add linting to the editor with flycheck!
 #+end_src
 
 With a tweak courtesy of [[https://github.com/jemoka/][@jemoka]], we can smooth over bits of the interface. Goodbye squiggly lines and strange fringe indicators. Goodbye linter errors while typing.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package flycheck
     :config
     (setq flycheck-check-syntax-automatically '(mode-enabled save))
-
-    ;; HACK Hardcoded values are bad!
-    (set-face-attribute 'flycheck-error nil :underline '(:color "#C62D43"))
-    (set-face-attribute 'flycheck-warning nil :underline '(:color "#F98859"))
+    (set-face-attribute 'flycheck-error nil :underline `(:color ,(doom-color 'orange)))
+    (set-face-attribute 'flycheck-warning nil :underline `(:color ,(doom-color 'blue)))
     (set-face-attribute 'flycheck-info nil :underline t)
     (define-fringe-bitmap 'my-flycheck-fringe-indicator
       (vector #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00011100
-	      #b00111110
-	      #b00111110
-	      #b00111110
-	      #b00011100
-	      #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00000000
-	      #b00000000))
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00011100
+              #b00111110
+              #b00111110
+              #b00111110
+              #b00011100
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000))
     (let ((bitmap 'my-flycheck-fringe-indicator))
       (flycheck-define-error-level 'error
-	:severity 2
-	:overlay-category 'flycheck-error-overlay
-	:fringe-bitmap bitmap
-	:error-list-face 'flycheck-error-list-error
-	:fringe-face 'flycheck-fringe-error)
+        :severity 2
+        :overlay-category 'flycheck-error-overlay
+        :fringe-bitmap bitmap
+        :error-list-face 'flycheck-error-list-error
+        :fringe-face 'flycheck-fringe-error)
       (flycheck-define-error-level 'warning
-	:severity 1
-	:overlay-category 'flycheck-warning-overlay
-	:fringe-bitmap bitmap
-	:error-list-face 'flycheck-error-list-warning
-	:fringe-face 'flycheck-fringe-warning)
+        :severity 1
+        :overlay-category 'flycheck-warning-overlay
+        :fringe-bitmap bitmap
+        :error-list-face 'flycheck-error-list-warning
+        :fringe-face 'flycheck-fringe-warning)
       (flycheck-define-error-level 'info
-	:severity 0
-	:overlay-category 'flycheck-info-overlay
-	:fringe-bitmap bitmap
-	:error-list-face 'flycheck-error-list-info
-	:fringe-face 'flycheck-fringe-info)))
+        :severity 0
+        :overlay-category 'flycheck-info-overlay
+        :fringe-bitmap bitmap
+        :error-list-face 'flycheck-error-list-info
+        :fringe-face 'flycheck-fringe-info)))
 #+end_src
 #+end_collapsible
 
-* Snippets
+** Snippets
 YASnippet is the premiere package for snippets, so let's install it.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package yasnippet
     :init (yas-global-mode))
 #+end_src
 
 ~auto-activating-snippets~ provides the very useful ability to automatically expand snippets while typing.
-#+begin_src emacs-lisp
-(use-package aas
-  :hook (LaTeX-mode . ass-activate-for-major-mode)
-  :hook (org-mode . ass-activate-for-major-mode)
-  :hook (c-mode . ass-activate-for-major-mode)
-  :hook (c++-mode . ass-activate-for-major-mode)
-  :config
-  (aas-set-snippets 'c-mode
-                    "u64" "uint64_t"
-                    "u32" "uint32_t"
-                    "u16" "uint16_t"
-                    "u8" "uint8_t"
-                    "i64" "int64_t"
-                    "i32" "int32_t"
-                    "i16" "int16_t"
-                    "i8" "int8_t"
-                    "sz" "size_t")
-  (aas-set-snippets 'c++-mode
-                    "mxf" "Eigen::MatrixXf"
-                    "mxd" "Eigen::MatrixXd"
-                    "v2f" "Eigen::Vector2f"
-                    "v2d" "Eigen::Vector2d"
-                    "v2i" "Eigen::Vector2i"
-                    "v3f" "Eigen::Vector3f"
-                    "v3d" "Eigen::Vector3d"
-                    "v3i" "Eigen::Vector3i"))
+#+begin_src emacs-lisp :tangle "yes"
+    (use-package aas
+      :hook (LaTeX-mode . ass-activate-for-major-mode)
+      :hook (org-mode . ass-activate-for-major-mode)
+      :hook (c-mode . ass-activate-for-major-mode)
+      :hook (c++-mode . ass-activate-for-major-mode)
+      :config
+      (aas-set-snippets 'c-mode
+                        "u64" "uint64_t"~
+                        "u32" "uint32_t"
+                        "u16" "uint16_t"
+                        "u8" "uint8_t"
+                        "i64" "int64_t"
+                        "i32" "int32_t"
+                        "i16" "int16_t"
+                        "i8" "int8_t"
+                        "sz" "size_t")
+      (aas-set-snippets 'c++-mode
+                        "mxf" "Eigen::MatrixXf"
+                        "mxd" "Eigen::MatrixXd"
+                        "v2f" "Eigen::Vector2f"
+                        "v2d" "Eigen::Vector2d"
+                        "v2i" "Eigen::Vector2i"
+                        "v3f" "Eigen::Vector3f"
+                        "v3d" "Eigen::Vector3d"
+                        "v3i" "Eigen::Vector3i"))
+  (use-package laas
+    :config ; do whatever here
+    (aas-set-snippets 'laas-mode
+                      ;; set condition!
+                      :cond #'texmathp ; expand only while in math
+                      "bff" (lambda () (interactive)
+                              (yas-expand-snippet "\\mathbf{$1}$0"))                    
+                      ;; add accent snippets
+                      :cond #'laas-object-on-left-condition
+                      "qq" (lambda () (interactive) (laas-wrap-previous-object "sqrt"))
+                      ))
+
 #+end_src
-* Git
+** Git
 Let's install the wonderful git porcelain Magit and some extra usefulness.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   ;; The ultimate Git porcelain.
   (use-package magit)
   ;; Show all TODOs in a git repo
@@ -1484,9 +1534,22 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   ;; Edit gitignores w/ highlighting
   (use-package gitignore-mode)
 #+end_src
+** Language-Specific
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package rustic)
+  (use-package cuda-mode)
+  (use-package clojure-mode)
+  (use-package cmake-mode)
+  (use-package json-mode)
+  (use-package rust-mode) ;; for when rustic breaks
+  (use-package nim-mode)
+  (use-package zig-mode)
+  (use-package typescript-mode)
+  (use-package css-mode)
+#+end_src
 
-* TODO C++
-  #+begin_src emacs-lisp
+*** TODO C++
+  #+begin_src emacs-lisp :tangle "yes"
 
 (setq c-default-style "k&r")
 (setq-default c-basic-offset 4)
@@ -1525,8 +1588,8 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 (use-package cpp-auto-include)  
 
   #+end_src
-* TODO Python
-  #+begin_src emacs-lisp
+*** TODO Python
+  #+begin_src emacs-lisp :tangle "yes"
 (use-package ein)
 
 (use-package lsp-mode
@@ -1580,18 +1643,18 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     :straight t
     :hook (python-mode . python-docstring-mode))
   #+end_src
-* TODO Code Aesthetics
-  #+begin_src emacs-lisp
+** TODO Code Aesthetics
+  #+begin_src emacs-lisp :tangle "yes"
     (use-package hl-todo
       :init
       (global-hl-todo-mode)
-      ;; HACK Hardcoded values are bad!
+      (doom-color 'red)
       (setq hl-todo-keyword-faces
-                    '(("TODO"   . "#F05644")
-                      ("FIXME"  . "#C62D43")
-                      ("DEBUG"  . "#F98859")
-                      ("HACK"   . "#FD7446")
-                      ("NOTE"   . "#F1BCA3")))
+            `(("TODO"   . ,(doom-color 'green))
+              ("FIXME"  . ,(doom-color 'red))
+              ("DEBUG"  . ,(doom-color 'magenta))
+              ("HACK"   . ,(doom-color 'violet))
+              ("NOTE"   . ,(doom-color 'cyan))))
       ;; We already have todos in Org Mode!
       (add-hook 'org-mode-hook (lambda () (hl-todo-mode -1)))
       (set-face-attribute 'hl-todo nil :italic t)
@@ -1601,13 +1664,13 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
       ("C-c t i" . hl-todo-insert)))
   #+end_src
 
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle "yes"
     (use-package rainbow-mode)
   #+end_src
   
 * TODO Writing
 * TODO Vanilla++
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle "yes"
 (use-package crux
   :bind
   (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
@@ -1632,12 +1695,12 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+end_src
 * TODO Fun
   FIXME
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle "yes"
 (use-package pdf-tools)
 #+end_src
 
 ** TODO Exit Message
-   #+begin_src emacs-lisp
+   #+begin_src emacs-lisp :tangle "yes"
      (setq exit-messages '(
 	     "Please don't leave, there's more demons to toast!"
 	     "Let's beat it -- This is turning into a bloodbath!"
@@ -1676,7 +1739,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
    #+end_src
 ** WAIT Spotify
 Smudge is nice. 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle "yes" 
   (use-package smudge
     :straight (smudge :type git :host github :repo "danielfm/smudge"
                       :fork (:host github :repo "richardfeynmanrocks/smudge"))
@@ -1691,7 +1754,7 @@ Smudge is nice.
     ("C-S-s-k" . smudge-controller-volume-up) 	
     ("C-S-s-p" . smudge-controller-toggle-play)
     ("C-S-s-s" . smudge-controller-toggle-shuffle)
-    ("C-S-s-r" . smudge-controller-toggle-repeat))  
+    ("C-S-s-r" . smudge-controller-toggle-repeat))
 #+end_src
 
 * Scratch
