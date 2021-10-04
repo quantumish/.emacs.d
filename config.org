@@ -2,7 +2,8 @@
 #+TITLE: Emacs
 #+SUBTITLE: All of my Emacs and system config.
 
-* Packages
+* Preparation
+** Packages
 First, let's set the package archives and do some basic tweaks.
 #+begin_src emacs-lisp :tangle "yes"
   (require 'package)
@@ -58,7 +59,7 @@ Are we using native-comp? If so, let's actually native compile things. Also, the
     (setq warning-suppress-log-types '((comp)))
 #+end_src
 
-* Speed
+** Speed
 Let's then use a variety of the tips for speeding up initialization time given by the creator of Doom Emacs.
 #+begin_src emacs-lisp :tangle "yes"
     ;; Go back to normal GC behavior after init
@@ -87,7 +88,54 @@ Let's then use a variety of the tips for speeding up initialization time given b
       (gcmh-mode))
 #+end_src
 
+** Undoing Defaults
+Emacs has some default behaviors that are generally annoying. Let's disable them!
+
+#+begin_src emacs-lisp :tangle "yes"
+  ;; Turn off all unnecessary GUI elements.
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+
+  ;; Unless something is actively exploding, I do not care.
+  (setq warning-minimum-level :emergency)
+
+  ;; customize is the worst.
+  (setq custom-file "/dev/null")
+  (setq package-selected-packages "/dev/null/")
+
+  ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
+  ;; This has *only* caused me trouble in GUI Emacs.
+  (when (display-graphic-p)
+    (global-unset-key (kbd "C-z"))
+    (global-unset-key (kbd "C-x C-z")))
+
+  ;; Stop making backup files everywhere, put them all in one place!
+  (setq backup-directory-alist `(("." . "~/.saves")))
+  (setq backup-by-copying t)
+
+  ;; Stop Emacs from bothering you about disabled commands.
+  (setq disabled-command-function nil)
+
+  ;; Prevent any attempts to resize the frame.
+  (setq frame-inhibit-implied-resize t)
+
+  ;; Stop Emacs from trying to use dialog boxes.
+  (setq use-dialog-box nil)
+
+  ;; Prefer y/n over yes/no.
+  (fset 'yes-or-no-p 'y-or-n-p)
+
+  ;; Mouse behavior tweaks? TODO look into me
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
+  (setq mouse-wheel-progressive-speed nil)
+
+  ;; Visual line mode is just better.
+  (global-visual-line-mode)
+#+end_src
+
 * System
+** System Packages
 Let's now move on to system-level configuration. First, some utility functions for running commands and deducing distro/OS.
 
 #+begin_src emacs-lisp :tangle "yes"
@@ -150,7 +198,145 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
     :commands (helm-system-packages))
 #+end_src
 
-* Desktop
+** External Programs
+~pywal~ will be our savior for theming by allowing for thematic consistency.
+#+begin_src emacs-lisp :tangle "yes"
+  ;; (use-package exwm
+  ;;   :ensure-system-package python-pywal)
+#+end_src
+
+~kitty~ is a terminal emulator that's featureful and usable.
+#+begin_src conf :tangle (config-tangle "~/.config/kitty/kitty.conf")
+  include ~/.cache/wal/colors-kitty.conf
+  font_family IBM Plex Mono
+  window_padding_width 10 15
+  map page_up scroll_page_up
+  map page_down scroll_page_down
+  map ctrl+shift+equal change_font_size all +2.0
+  map ctrl+shift+plus change_font_size all +2.0
+  map ctrl+shift+kp_add change_font_size all +2.0
+  initial_window_width 1000
+  initial_window_height 400
+#+end_src
+
+~zsh~ is good.
+#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux) 
+  # p10k instant prompt
+  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+  fi
+
+  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
+
+  export ZSH="$HOME/.oh-my-zsh"
+
+  ZSH_THEME="powerlevel10k/powerlevel10k"
+
+  plugins=(git)
+
+  source $ZSH/oh-my-zsh.sh
+
+  export EDITOR='emacs'
+
+  # Aliases
+  alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
+  alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
+  alias gs="git status"
+  alias nano=mg
+  alias ls="exa --icons"
+  alias hexdump=hexyl
+  alias cat=bat
+  alias rm=rip
+  alias gcc="gcc -Wall -Werror -pedantic-errors"
+  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
+
+  function recompile() {
+      cd ~/.config/$1
+      sudo make clean install &> /dev/null
+      cd -
+  }
+
+  function fix_titles() {
+      for a in *
+      id3v2 -t ${a%.mp3} $a
+  }
+
+  function themeage() {
+      wal -i $1 &> /dev/null
+      xdotool key alt+r &> /dev/null
+      emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
+      /home/quantumish/.local/bin/pywalfox update
+      python ~/test.py colors-wal-dwm2.h
+      python ~/test.py colors-wal-dmenu2.h
+      python ~/test.py zathurarc
+      python ~/test.py colors-vis
+      recompile dmenu
+  }
+
+  # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+  source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+#+end_src
+
+#+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
+export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
+
+export ZSH="$HOME/.oh-my-zsh"
+
+ZSH_THEME="lambdamod"
+
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+
+source $ZSH/oh-my-zsh.sh
+
+export EDITOR='emacs'
+
+alias gs="git status"
+alias nano=mg
+alias gcc="gcc -Wall -Werror -pedantic-errors"
+alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
+#+end_src
+
+
+It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good.
+#+begin_src text :tangle (config-tangle "~/.config/neofetch/arch.ascii" 'gnu/linux)
+${c1}
+                   ▄
+                  ▟█▙
+                 ▟███▙
+                ▟█████▙
+               ▟███████▙
+              ▂▔▀▜██████▙
+             ▟██▅▂▝▜█████▙
+            ▟█████████████▙
+           ▟███████████████▙
+          ▟█████████████████▙
+         ▟███████████████████▙
+        ▟█████████▛▀▀▜████████▙
+       ▟████████▛      ▜███████▙
+      ▟█████████        ████████▙
+     ▟██████████        █████▆▅▄▃▂
+    ▟██████████▛        ▜█████████▙
+   ▟██████▀▀▀              ▀▀██████▙
+  ▟███▀▘                       ▝▀███▙
+ ▟▛▀                               ▀▜▙
+
+#+end_src
+
+Firefox could be prettier.
+#+begin_src emacs-lisp :tangle "yes"
+  ;; (use-package exwm
+  ;;   :ensure-system-package (firefox python-pywalfox))
+#+end_src
+#+begin_src css 
+  #TabsToolbar {visibility: collapse;}
+  #statuspanel[type="overLink"] #statuspanel-label {
+      display:none!important;
+  }
+#+end_src
+
+** Desktop
 It's time to load EXWM, the Emacs X Window Manager.
 
 #+begin_src emacs-lisp :tangle "yes" :tangle (config-tangle nil 'gnu/linux)
@@ -487,191 +673,8 @@ Finally, update polybar config file to match monitor and make it so we have deco
 	(lambda () (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
 #+end_src
 
-* External Programs
-~pywal~ will be our savior for theming by allowing for thematic consistency.
-#+begin_src emacs-lisp :tangle "yes"
-  ;; (use-package exwm
-  ;;   :ensure-system-package python-pywal)
-#+end_src
-
-~kitty~ is a terminal emulator that's featureful and usable.
-#+begin_src conf :tangle (config-tangle "~/.config/kitty/kitty.conf")
-  include ~/.cache/wal/colors-kitty.conf
-  font_family IBM Plex Mono
-  window_padding_width 10 15
-  map page_up scroll_page_up
-  map page_down scroll_page_down
-  map ctrl+shift+equal change_font_size all +2.0
-  map ctrl+shift+plus change_font_size all +2.0
-  map ctrl+shift+kp_add change_font_size all +2.0
-  initial_window_width 1000
-  initial_window_height 400
-#+end_src
-
-~zsh~ is good.
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux) 
-  # p10k instant prompt
-  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-  fi
-
-  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-
-  export ZSH="$HOME/.oh-my-zsh"
-
-  ZSH_THEME="powerlevel10k/powerlevel10k"
-
-  plugins=(git)
-
-  source $ZSH/oh-my-zsh.sh
-
-  export EDITOR='emacs'
-
-  # Aliases
-  alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
-  alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
-  alias gs="git status"
-  alias nano=mg
-  alias ls="exa --icons"
-  alias hexdump=hexyl
-  alias cat=bat
-  alias rm=rip
-  alias gcc="gcc -Wall -Werror -pedantic-errors"
-  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-
-  function recompile() {
-      cd ~/.config/$1
-      sudo make clean install &> /dev/null
-      cd -
-  }
-
-  function fix_titles() {
-      for a in *
-      id3v2 -t ${a%.mp3} $a
-  }
-
-  function themeage() {
-      wal -i $1 &> /dev/null
-      xdotool key alt+r &> /dev/null
-      emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
-      /home/quantumish/.local/bin/pywalfox update
-      python ~/test.py colors-wal-dwm2.h
-      python ~/test.py colors-wal-dmenu2.h
-      python ~/test.py zathurarc
-      python ~/test.py colors-vis
-      recompile dmenu
-  }
-
-  # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-  source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-#+end_src
-
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
-export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-
-export ZSH="$HOME/.oh-my-zsh"
-
-ZSH_THEME="lambdamod"
-
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-
-source $ZSH/oh-my-zsh.sh
-
-export EDITOR='emacs'
-
-alias gs="git status"
-alias nano=mg
-alias gcc="gcc -Wall -Werror -pedantic-errors"
-alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-#+end_src
-
-
-It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good.
-#+begin_src text :tangle (config-tangle "~/.config/neofetch/arch.ascii" 'gnu/linux)
-${c1}
-                   ▄
-                  ▟█▙
-                 ▟███▙
-                ▟█████▙
-               ▟███████▙
-              ▂▔▀▜██████▙
-             ▟██▅▂▝▜█████▙
-            ▟█████████████▙
-           ▟███████████████▙
-          ▟█████████████████▙
-         ▟███████████████████▙
-        ▟█████████▛▀▀▜████████▙
-       ▟████████▛      ▜███████▙
-      ▟█████████        ████████▙
-     ▟██████████        █████▆▅▄▃▂
-    ▟██████████▛        ▜█████████▙
-   ▟██████▀▀▀              ▀▀██████▙
-  ▟███▀▘                       ▝▀███▙
- ▟▛▀                               ▀▜▙
-
-#+end_src
-
-Firefox could be prettier.
-#+begin_src emacs-lisp :tangle "yes"
-  ;; (use-package exwm
-  ;;   :ensure-system-package (firefox python-pywalfox))
-#+end_src
-#+begin_src css 
-  #TabsToolbar {visibility: collapse;}
-  #statuspanel[type="overLink"] #statuspanel-label {
-      display:none!important;
-  }
-#+end_src
-
-* Undoing Defaults
-Emacs has some default behaviors that are generally annoying. Let's disable them!
-
-#+begin_src emacs-lisp :tangle "yes"
-  ;; Turn off all unnecessary GUI elements.
-  (tool-bar-mode -1)
-  (menu-bar-mode -1)
-  (scroll-bar-mode -1)
-
-  ;; Unless something is actively exploding, I do not care.
-  (setq warning-minimum-level :emergency)
-
-  ;; customize is the worst.
-  (setq custom-file "/dev/null")
-  (setq package-selected-packages "/dev/null/")
-
-  ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
-  ;; This has *only* caused me trouble in GUI Emacs.
-  (when (display-graphic-p)
-    (global-unset-key (kbd "C-z"))
-    (global-unset-key (kbd "C-x C-z")))
-
-  ;; Stop making backup files everywhere, put them all in one place!
-  (setq backup-directory-alist `(("." . "~/.saves")))
-  (setq backup-by-copying t)
-
-  ;; Stop Emacs from bothering you about disabled commands.
-  (setq disabled-command-function nil)
-
-  ;; Prevent any attempts to resize the frame.
-  (setq frame-inhibit-implied-resize t)
-
-  ;; Stop Emacs from trying to use dialog boxes.
-  (setq use-dialog-box nil)
-
-  ;; Prefer y/n over yes/no.
-  (fset 'yes-or-no-p 'y-or-n-p)
-
-  ;; Mouse behavior tweaks? TODO look into me
-  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
-  (setq mouse-wheel-progressive-speed nil)
-
-  ;; Visual line mode is just better.
-  (global-visual-line-mode)
-#+end_src
-
-* Theming
+* Interface
+** Theming
   #+begin_src emacs-lisp :tangle "yes"
     ;; TODO: Set up treemacs.
 
@@ -759,7 +762,7 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
     (use-package olivetti
       :hook (prog-mode . (lambda () (olivetti-mode))))
   #+end_src
-** Translucent
+*** Translucent
 Transparency can look nice - sometimes. Polybar clashes with transparency, so disable it while we're using it.
 #+begin_src emacs-lisp :tangle "yes"
   ;; FIXME hacky and broken
@@ -772,7 +775,7 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
       (set-frame-parameter (selected-frame) 'alpha '(90))))
 #+end_src
 
-* TODO Dashboard
+** Dashboard
 #+begin_src emacs-lisp :tangle "yes"
 
   (use-package dashboard
@@ -827,7 +830,7 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
     (dashboard-mode . turn-off-solaire-mode))
 #+end_src
   
-* Minibuffer Completion
+** Minibuffer Completion
 Next, let's improve interactions with Emacs: things like finding files, running commands, switching buffers, etc... by using ~ivy~, a light(ish) minibuffer completion system. Ivy is one of the more popular packages for this, meaning that there's quite a bit of integration with other packages. Notably, ~counsel~ extends its functionality and ~swiper~ provides a nicer interface to interactive search.
 
 On top of this, ~prescient~ allows for completions to be even more useful by basing them off of history and sorting them better. Finally, we can add some icons and extra text to make it all prettier.
@@ -862,7 +865,7 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
     :config (marginalia-mode))
 #+end_src
 
-* Help
+** Help
 In order to make some parts of exploring Emacs slightly nicer, let's install ~helpful~ which overhauls the Help interface, and ~which-key~ which helps you discover keybinds.
 
 #+begin_src emacs-lisp :tangle "yes"
@@ -891,7 +894,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 #+end_src
 
 * TODO Perspectives
-* TODO Movement
+* Movement
   #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore
       :bind ("M-m" . 'zygospore-toggle-delete-other-windows))
@@ -919,6 +922,91 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
       "M-j" 'opposite-other-window)
   #+end_src
 
+** Hydra
+#+begin_src emacs-lisp
+(use-package hydra
+  :init
+  (global-unset-key (kbd "C-x h"))
+  (general-def
+    "C-x h l" 'hydra-launcher/body
+    "C-x h a" 'hydra-org-agenda/body
+    "C-x h f" 'hydra-go-to-file/body))
+
+(use-package pretty-hydra)
+(use-package s)
+(use-package major-mode-hydra
+  :after hydra
+  :preface
+  (defun with-alltheicon (icon str &optional height v-adjust face)
+    "Display an icon from all-the-icon."
+    (s-concat (all-the-icons-alltheicon icon :v-adjust (or v-adjust 0) :height (or height 1) :face face) " " str))
+
+  (defun with-faicon (icon str &optional height v-adjust face)
+    "Display an icon from Font Awesome icon."
+    (s-concat (all-the-icons-faicon icon ':v-adjust (or v-adjust 0) :height (or height 1) :face face) " " str))
+
+  (defun with-fileicon (icon str &optional height v-adjust face)
+    "Display an icon from the Atom File Icons package."
+    (s-concat (all-the-icons-fileicon icon :v-adjust (or v-adjust 0) :height (or height 1) :face face) " " str))
+
+  (defun with-octicon (icon str &optional height v-adjust face)
+    "Display an icon from the GitHub Octicons."
+    (s-concat (all-the-icons-octicon icon :v-adjust (or v-adjust 0) :height (or height 1) :face face) " " str)))
+
+(pretty-hydra-define hydra-flycheck
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "plane" "Flycheck" 1 -0.05))
+  ("Checker"
+   (("?" flycheck-describe-checker "describe")
+    ("d" flycheck-disable-checker "disable")
+    ("m" flycheck-mode "mode")
+    ("s" flycheck-select-checker "select"))
+   "Errors"
+   (("<" flycheck-previous-error "previous" :color pink)
+    (">" flycheck-next-error "next" :color pink)
+    ("f" flycheck-buffer "check")
+    ("l" flycheck-list-errors "list"))
+   "Other"
+   (("M" flycheck-manual "manual")
+    ("v" flycheck-verify-setup "verify setup"))))
+
+(pretty-hydra-define hydra-go-to-file
+  (:hint nil :color teal :quit-key "q" :title (with-octicon "file-symlink-file" "Go To" 1 -0.05))
+  ("Org"
+   (("oi" (find-file "~/sync/org/inbox.org") "inbox")
+    ("oc" (find-file "~/sync/org/completed.org") "home")
+    ("op" (find-file "~/sync/org/projects.org") "projects"))
+   "Config"
+   (("cc" (find-file "~/.emacs.d/config.org") "config.org")
+    ("ci" (find-file "~/.emacs.d/init.el") "init.el" ))
+   "Notes"
+   (("ni" (find-file "~/sync/notes/index.org") "Main Index"))
+   ))
+
+
+(pretty-hydra-define hydra-org-agenda
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "list-ol" "Agenda" 1 -0.05))
+  ("Standard"
+   (("w" (org-agenda)))))
+
+
+(pretty-hydra-define hydra-launcher
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "arrow-right" "Launch" 1 -0.05))
+  ("Shell-likes"
+   (("v" vterm "Vterm")
+    ("e" eshell "Eshell")
+    ("l" ielm "IELM")    
+    ("k" (call-process-shell-command "open -a Kitty" nil 0) "Kitty"))
+   "Messaging"
+   (("i" erc "ERC")
+    ("d" (call-process-shell-command "open -a Discord" nil 0) "Discord")
+    ("t" (call-process-shell-command "open -a Telegram" nil 0) "Telegram"))
+   "Misc"
+   (("f" (call-process-shell-command "open -a Firefox" nil 0) "Firefox")
+    ("s" (call-process-shell-command "open -a Spotify" nil 0) "Spotify")
+    ("m" (call-process-shell-command "open -a Spark" nil 0) "Spark"))
+   ))
+#+end_src
+  
 * TODO Org
 First, let's set up the basics.
 #+begin_src emacs-lisp :tangle "yes"
@@ -1150,10 +1238,20 @@ There are a variety of useful packages that make Org look nicer:
 
    #+end_src
 *** Taproot-specific
+#+begin_src emacs-lisp
+(defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
+#+end_src
+
 Let's define a function to export to Taproot:
 #+begin_src emacs-lisp
+  (defun org-roam-export-to-taproot ()
+    (interactive)
+    (call-process-shell-command (concat "cp -R " org-roam-directory "*.org " taproot-dir)))
+#+end_src
 
-(defun org-roam-export-all (in-path out-path)
+Also, a function to convert to file-based links would be nice.
+#+begin_src emacs-lisp
+(defun org-roam-emergency-exit (in-path out-path)
   "Emergency exit from Org Roam v2. 
    Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
   (let ((sed (if (eq system-type 'darwin) "gsed" "sed")))
@@ -1170,16 +1268,16 @@ Let's define a function to export to Taproot:
 #+end_src
 
 And a function to open in Taproot:
-#+begin_src emacs-lisp
-   (defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
-  
-   (defun org-roam-open-in-taproot ()
-     (interactive)
-     (if (not (eq (buffer-file-name) nil))
-         (if (string= (substring (buffer-file-name) 0 (length taproot-dir)) taproot-dir)
-             (call-process-shell-command (concat "open https://taproot3.sanity.gq" (substring (file-name-sans-extension (buffer-file-name)) (length taproot-dir))))
-           (message "Not a Taproot buffer!"))
-       (message "Not a file buffer!")))  
+#+begin_src emacs-lisp   
+  (defun org-roam-open-in-taproot ()
+    (interactive)
+    (if (not (eq (buffer-file-name) nil))
+        (if (string= (substring (buffer-file-name) 0 (length taproot-dir)) taproot-dir)
+            (call-process-shell-command
+             (concat "open https://taproot3.sanity.gq"
+                     (substring (file-name-sans-extension (buffer-file-name)) (length taproot-dir))))
+          (message "Not a Taproot buffer!"))
+      (message "Not a file buffer!")))  
 #+end_src
 
    
@@ -1414,8 +1512,111 @@ And a function to open in Taproot:
     :init (company-prescient-mode))
 #+end_src
 
-** TODO Compilation
-** TODO Documentation
+** Compilation
+#+begin_src emacs-lisp
+  (use-package kv)
+
+  (require 'kv)
+  (defvar custom-compile-cmds
+    '((rustic-mode . ((debug . "cargo build")
+                      (release . "cargo build --release")
+                      (test . "cargo test")))
+      (c++-mode . ((cmake . "cmake .")
+                   (test . "ctest")
+                   (make . "make")
+                   (this . "g++ $this.cpp -std=c++17 -o $this")
+                   (this-speedy . "g++ $this.cpp -O3 -std=c++17 -o $this")
+                   (this-python . "g++ -shared -std=c++17 -undefined_dynamic_lookup `python3 -m pybind11 --includes` $this.cpp -o $this`python3-config --extension-suffix` -D PYTHON -fPIC")))
+      (c-mode . ((make . "make")
+                 (this . "gcc $this.c -o $this")
+                 (this-speedy . "gcc $this.c -O3 -o $this")
+                 (this-archive . "gcc $this.c -O -c -g && ar rcs $this.a $this.o")
+                 (this-mpi . "mpicc $this.c -o $this")))
+      (cuda-mode . ((this . "nvcc $this.cu -o $this")))
+      (python-mode . ((this-types . "mypy $this.py --ignore-missing-imports --strict")
+                      (this-cython . "cython --embed -o $this.c $this.py -3 && sudo gcc $this.c -o $this -I/usr/include/python3.9 -lpython3.9")))
+      ))
+
+  (defun compile-dwim ()
+    (interactive)
+    (let ((list (cdr (assoc major-mode custom-compile-cmds)))) ;; Debugging is for suckers
+      (ivy-read "Compilation preset: " (kvalist->keys list)
+                :preselect (car (kvalist->keys list))
+                :action (lambda (name)
+                          (compile
+                           (replace-regexp-in-string
+                            (regexp-quote "$this")
+                            (file-name-sans-extension (buffer-file-name))
+                            (cdr (assoc (intern-soft name) list))))))))
+
+  (use-package compile
+    :config
+    (setq compilation-scroll-output t)
+    (setq compilation-ask-about-save nil)
+    (defun compile-project ()
+      (interactive)
+      (let ((default-directory (projectile-project-root)))
+        (call-interactively 'compile-dwim)))
+    (require 'ansi-color)
+    (defun colorize-compilation-buffer ()
+      (toggle-read-only)
+      (ansi-color-apply-on-region compilation-filter-start (point))
+      (toggle-read-only))
+    (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+    :bind (:map prog-mode-map
+                ("C-;" . compile-project))
+    :hook
+    (compilation-mode . hide-mode-line-mode)
+    ; (compilation-mode . (lambda () (set-header-line 200)))
+    (compilation-start . olivetti-mode)
+    (compilation-start . determine-olivetti))
+#+end_src
+
+** Documentation
+#+begin_src emacs-lisp
+  (defun minimal-browse-url (url)
+    "Browse an arbitrary url (as URL) in a new frameless Firefox window."
+    (split-window-right)
+    (other-window 1)
+    (call-process-shell-command (concat "firefox -P default-release --new-window " url) nil 0))
+
+  (use-package dash-docs)
+  (use-package counsel-dash
+    :config
+    (setq dash-docs-browser-func 'minimal-browse-url)
+    (setq dash-docs-enable-debugging nil)
+    (defun emacs-lisp-doc ()
+      "Restrict dash docsets to Emacs Lisp."
+      (interactive)
+      (setq-local dash-docs-docsets '("Emacs Lisp")))
+    (defun c-doc ()
+      "Restrict dash docsets to C."
+      (interactive)
+      (setq-local dash-docs-docsets '("C")))
+    (defun c++-doc ()
+      "Restrict dash docsets to C/C++."
+      (interactive)
+      (setq-local dash-docs-docsets '("C" "C++")))
+    (defun rust-doc ()
+      "Restrict dash docsets to Rust."
+      (interactive)
+      (setq-local dash-docs-docsets '("Rust")))
+    (defun python-doc ()
+      "Restrict dash docsets to Python."
+      (interactive)
+      (setq-local dash-docs-docsets '("Python 3")))
+    :bind (:map prog-mode-map
+                ("C-c d" . counsel-dash)
+                ("C-c C-d" . counsel-dash-at-point))
+    :hook
+    (emacs-lisp-mode . emacs-lisp-doc)
+    (c-mode . c-doc)
+    (c++-mode . c++-doc)
+    (python-mode . python-doc)
+    (rustic-mode . rust-doc)
+    (rust-mode . rust-doc))
+#+end_src
+
 ** TODO Projectile?
 ** Linting
 Next, we can add linting to the editor with flycheck!
@@ -1668,37 +1869,47 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+end_src
   
 * TODO Writing
+#+begin_src emacs-lisp
+  (use-package flyspell)
+  (use-package lexic
+    :bind
+    ("C-c w l" . lexic-search)
+    ("C-c w w" . lexic-search-word-at-point))
+  (use-package gdoc
+    :straight (gdoc :type git :host github :repo "jemoka/gdoc.el"))
+#+end_src
+
 * TODO Vanilla++
   #+begin_src emacs-lisp :tangle "yes"
-(use-package crux
-  :bind
-  (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
-   ("C-x 4 t" . crux-transpose-windows)
-   ("C-x K" . crux-kill-other-buffers)
-   ("C-k" . crux-smart-kill-line))
-  :config
-  (crux-with-region-or-buffer indent-region)
-  (crux-with-region-or-buffer untabify)
-  (crux-with-region-or-point-to-eol kill-ring-save)
-  (defalias 'rename-file-and-buffer #'crux-rename-file-and-buffer))
+    (use-package crux
+      :bind
+      (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
+       ("C-x 4 t" . crux-transpose-windows)
+       ("C-x K" . crux-kill-other-buffers)
+       ("C-k" . crux-smart-kill-line))
+      :config
+      (crux-with-region-or-buffer indent-region)
+      (crux-with-region-or-buffer untabify)
+      (crux-with-region-or-point-to-eol kill-ring-save)
+      (defalias 'rename-file-and-buffer #'crux-rename-file-and-buffer))
 
-(use-package goto-line-preview
-  :init (general-define-key "M-g M-g" 'goto-line-preview
-							"C-x n g" 'goto-line-relative-preview))
+    (use-package goto-line-preview
+      :init (general-define-key "M-g M-g" 'goto-line-preview
+                                "C-x n g" 'goto-line-relative-preview))
 
-(use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+    (use-package all-the-icons-dired
+      :hook (dired-mode . all-the-icons-dired-mode))
 
-(use-package diredfl
-  :init (diredfl-global-mode))
+    (use-package diredfl
+      :init (diredfl-global-mode))
   #+end_src
-* TODO Fun
+* Fun
   FIXME
   #+begin_src emacs-lisp :tangle "yes"
 (use-package pdf-tools)
 #+end_src
 
-** TODO Exit Message
+** Exit Message
    #+begin_src emacs-lisp :tangle "yes"
      (setq exit-messages '(
 	     "Please don't leave, there's more demons to toast!"
@@ -1711,7 +1922,6 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 	     "Emacs will remember that."
 	     "Emacs, Emacs never changes."
 	     "Okay, look. We've both said a lot of things you're going to regret..."
-	     "You are *not* prepared!"
 	     "Look, bud. You leave now and you forfeit your body count!"
 	     "Get outta here and go back to your boring editors."
 	     "You're lucky I don't smack you for thinking about leaving."
@@ -1736,7 +1946,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
      (global-set-key "\C-x\C-c" 'save-buffers-kill-emacs-with-confirm)
    #+end_src
-** WAIT Spotify
+** Spotify
 Smudge is nice. 
 #+begin_src emacs-lisp :tangle "yes" 
   (use-package smudge
@@ -1757,7 +1967,6 @@ Smudge is nice.
 #+end_src
 
 * Scratch
-
 * The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
