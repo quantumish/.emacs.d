@@ -675,7 +675,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
 * Interface
 ** Theming
-  #+begin_src emacs-lisp :tangle "yes"
+  #+begin_src emacs-lisp :tangle (if (eq themeage 'doom) "yes" "no")
     ;; TODO: Set up treemacs.
 
     (use-package hide-mode-line)
@@ -893,7 +893,6 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
     :init (which-key-mode))
 #+end_src
 
-* TODO Perspectives
 * Movement
   #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore
@@ -1006,7 +1005,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
     ("m" (call-process-shell-command "open -a Spark" nil 0) "Spark"))
    ))
 #+end_src
-  
+** Perspectives
 * TODO Org
 First, let's set up the basics.
 #+begin_src emacs-lisp :tangle "yes"
@@ -1014,19 +1013,6 @@ First, let's set up the basics.
     :init
     (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
     (setq org-modules (append org-modules '(org-habit org-id)))  )
-#+end_src
-
-** Agenda
-#+begin_src emacs-lisp :tangle "yes"
-  (use-package org
-    :init
-    (defvar org-inbox-file (concat (getenv "HOME") "/sync/org/inbox.org"))
-    (defvar org-completed-file "~/sync/org/completed.org")
-    (setq org-archive-location (concat org-completed-file "::"))
-    (setq org-agenda-files `(,org-inbox-file ,org-completed-file))
-    :general
-    ("C-c o i" #'(lambda () (interactive) (find-file org-inbox-file)))
-    ("C-c o a" #'(lambda () (interactive) (org-agenda 'a))))
 #+end_src
 
 ** Aesthetics
@@ -1166,37 +1152,54 @@ There are a variety of useful packages that make Org look nicer:
    (add-hook 'org-mode-hook (lambda () (org-cycle-hide-drawers 'all)))
 #+end_src
 
-*** Extras
- #+begin_src emacs-lisp :tangle "yes"
-   ;; Google Docs style comments
-   (use-package org-marginalia
-     :straight (:host github :repo "nobiot/org-marginalia")
-     :init (add-hook 'org-mode-hook 'org-marginalia-mode)
-     (defun org-marginalia-save-and-open (point)
-       (interactive "d")
-       (org-marginalia-save)
-       (org-marginalia-open point))
-     :bind (:map org-marginalia-mode-map
-                 ("C-c n o" . org-marginalia-save-and-open)
-                 ("C-c m" . org-marginalia-mark)
-                 ("C-c n ]" . org-marginalia-next)
-                 ("C-c n [" . org-marginalia-prev)))
- #+end_src
-
-** Projects
-   #+begin_src emacs-lisp :tangle "yes"
-     (use-package org
-       :init
-       (setq org-enforce-todo-dependencies t)
-       (setq org-enforce-todo-checkbox-dependencies t)
-       (setq org-agenda-dim-blocked-tasks t))
-   #+end_src
-
-** Notes
+** Export
+  #+begin_src emacs-lisp :tangle "yes"
+    (use-package org-special-block-extras
+      :init
+      (org-special-block-extras-mode)
+      (org-special-block-extras-defblock collapsible (title "Details") (contents "")
+                                         (format
+                                          (pcase backend     
+                                            (_ "<details>
+                                           <summary> <i> %s </i> </summary>
+                                           %s
+                                        </details>"))
+                                          title contents)))
+    
+    (use-package org
+      :init
+      (setq org-html-text-markup-alist
+            '((bold . "<b>%s</b>")
+              (code . "<code>%s</code>")
+              (italic . "<i>%s</i>")
+              (strike-through . "<del>%s</del>")
+              (underline . "<span class=\"underline\">%s</span>")
+              (verbatim . "<kbd>%s</kbd>")))
+      (setq org-html-head "<link rel=\"stylesheet\" href=\"file:///Users/davfrei/org.css\"><link rel=\"stylesheet\" href=\"https://quantumish.github.io/admonition.css\"><script src=\"https://kit.fontawesome.com/76c5ce8bda.js\" crossorigin=\"anonymous\"")
+      (setq org-html-postamble nil)
+      (setq org-export-with-section-numbers nil)
+      (setq org-export-with-toc nil)
+      (setq org-publish-project-alist
+            '(("github.io"
+               :base-directory "~/Dropbox/publicnotes/"
+               :base-extension "org"
+               :publishing-directory "~/richardfeynmanrocks.github.io/notes/"
+               :recursive t
+               :publishing-function org-html-publish-to-html
+               :headline-levels 4
+               :html-extension "html"
+               :with-toc nil
+               :section-numbers nil
+               :html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
+               :preserve-breaks t
+       ))))
+  #+end_src
+   
+* Notes
   #+begin_src emacs-lisp :tangle "yes"
     (use-package org-roam
       :init
-      (setq org-roam-directory "~/sync/notes")
+      (setq org-roam-directory (concat (getenv "HOME") "/sync/notes"))
       (setq org-roam-v2-ack t)
       :bind
       ("C-c n i" . org-roam-node-insert)
@@ -1237,7 +1240,7 @@ There are a variety of useful packages that make Org look nicer:
                     "\\)")))
 
    #+end_src
-*** Taproot-specific
+** Taproot-specific
 #+begin_src emacs-lisp
 (defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
 #+end_src
@@ -1246,25 +1249,26 @@ Let's define a function to export to Taproot:
 #+begin_src emacs-lisp
   (defun org-roam-export-to-taproot ()
     (interactive)
-    (call-process-shell-command (concat "cp -R " org-roam-directory "*.org " taproot-dir)))
+    (call-process-shell-command (concat "cp -R " org-roam-directory "*.org " taproot-dir "/corners/david")))
 #+end_src
 
 Also, a function to convert to file-based links would be nice.
 #+begin_src emacs-lisp
-(defun org-roam-emergency-exit (in-path out-path)
-  "Emergency exit from Org Roam v2. 
-   Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
-  (let ((sed (if (eq system-type 'darwin) "gsed" "sed")))
-    (progn 
-      (call-process-shell-command (concat "cp -R " in-path "*.org " out-path))
-      (dolist (pair (org-roam-db-query [:select [ID FILE] :from nodes]))      
-	(call-process-shell-command (concat sed " -i \"s/id:" (car pair)
-					    "/file:" (substring (car (cdr pair)) (length in-path))
-					    "/g\" " out-path "*.org")))
-      (message (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
-      (call-process-shell-command (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
-      (call-process-shell-command (concat sed " -i \"/:ID:/d\" " out-path "*.org"))
-      (call-process-shell-command (concat sed " -i \"/:END:/d\" " out-path "*.org")))))
+  (defun org-roam-emergency-exit (in-path out-path)
+    "Emergency exit from Org Roam v2. 
+     Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
+    (let ((sed (if (eq system-type 'darwin) "gsed" "sed")))
+      (progn 
+        (call-process-shell-command (concat "cp -R " in-path "*.org " out-path))
+        (dolist (pair (org-roam-db-query [:select [ID FILE] :from nodes]))      
+          (call-process-shell-command (concat sed " -i \"s/id:" (car pair)
+                                              "/file:" (substring (car (cdr pair)) (length in-path))
+                                              "/g\" " out-path "*.org")))
+        (message (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
+        (call-process-shell-command (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
+        (call-process-shell-command (concat sed " -i \"/:ID:/d\" " out-path "*.org"))
+        (call-process-shell-command (concat sed " -i \"/:END:/d\" " out-path "*.org")))))
+  ;; (org-roam-emergency-exit (concat org-roam-directory "/") (concat taproot-dir "/corners/david/"))
 #+end_src
 
 And a function to open in Taproot:
@@ -1277,53 +1281,42 @@ And a function to open in Taproot:
              (concat "open https://taproot3.sanity.gq"
                      (substring (file-name-sans-extension (buffer-file-name)) (length taproot-dir))))
           (message "Not a Taproot buffer!"))
-      (message "Not a file buffer!")))  
+      (message "Not a file buffer!")))
+  (defun extended-org-roam-open-in-taproot ()
+    (interactive)
+    (message (substring (buffer-file-name) 0 (length org-roam-directory)))
+    (if (not (eq (buffer-file-name) nil))        
+        (if (string= (substring (buffer-file-name) 0 (length org-roam-directory)) org-roam-directory)
+            (call-process-shell-command
+             (concat "open https://taproot3.sanity.gq/corners/david"
+                     (substring (file-name-sans-extension (buffer-file-name)) (length org-roam-directory))))
+          (message "Not a Org Roam buffer!"))
+      (message "Not a file buffer!")))
 #+end_src
 
-   
-** Export
-  #+begin_src emacs-lisp :tangle "yes"
-    (use-package org-special-block-extras
-      :init
-      (org-special-block-extras-mode)
-      (org-special-block-extras-defblock collapsible (title "Details") (contents "")
-                                         (format
-                                          (pcase backend     
-                                            (_ "<details>
-                                           <summary> <i> %s </i> </summary>
-                                           %s
-                                        </details>"))
-                                          title contents)))
-    
-    (use-package org
-      :init
-      (setq org-html-text-markup-alist
-            '((bold . "<b>%s</b>")
-              (code . "<code>%s</code>")
-              (italic . "<i>%s</i>")
-              (strike-through . "<del>%s</del>")
-              (underline . "<span class=\"underline\">%s</span>")
-              (verbatim . "<kbd>%s</kbd>")))
-      (setq org-html-head "<link rel=\"stylesheet\" href=\"https://quantumish.github.io/org.css\">")
-      (setq org-html-postamble nil)
-      (setq org-export-with-section-numbers nil)
-      (setq org-export-with-toc nil)
-      (setq org-publish-project-alist
-            '(("github.io"
-               :base-directory "~/Dropbox/publicnotes/"
-               :base-extension "org"
-               :publishing-directory "~/richardfeynmanrocks.github.io/notes/"
-               :recursive t
-               :publishing-function org-html-publish-to-html
-               :headline-levels 4
-               :html-extension "html"
-               :with-toc nil
-               :section-numbers nil
-               :html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
-               :preserve-breaks t
-       ))))
-  #+end_src
-   
+* Productivity
+** Agenda
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package org
+    :init
+    (defvar org-inbox-file (concat (getenv "HOME") "/sync/org/inbox.org"))
+    (defvar org-completed-file (concat (getenv "HOME") "/sync/org/completed.org"))
+    (setq org-archive-location (concat org-completed-file "::"))
+    (setq org-agenda-files `(,org-inbox-file ,org-completed-file))
+    :general
+    ("C-c o i" #'(lambda () (interactive) (find-file org-inbox-file)))
+    ("C-c o a" #'(lambda () (interactive) (org-agenda 'a))))
+#+end_src
+
+** Projects
+   #+begin_src emacs-lisp :tangle "yes"
+     (use-package org
+       :init
+       (setq org-enforce-todo-dependencies t)
+       (setq org-enforce-todo-checkbox-dependencies t)
+       (setq org-agenda-dim-blocked-tasks t))
+   #+end_src
+
 * Development
 ** Terminal
   #+begin_src emacs-lisp :tangle "yes"
@@ -1744,6 +1737,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   (use-package rust-mode) ;; for when rustic breaks
   (use-package nim-mode)
   (use-package zig-mode)
+  (use-package julia-mode)
   (use-package typescript-mode)
   (use-package css-mode)
 #+end_src
@@ -1756,10 +1750,6 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
 (use-package modern-cpp-font-lock
   :init (modern-c++-font-lock-global-mode t))
-
-(use-package cmake-mode)
-
-(use-package cuda-mode)
 
 (use-package ccls
   ; :ensure-system-package ccls
@@ -1879,6 +1869,25 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     :straight (gdoc :type git :host github :repo "jemoka/gdoc.el"))
 #+end_src
 
+Also, Google-Docs esque comments:
+#+begin_src emacs-lisp
+ #+begin_src emacs-lisp :tangle "yes"
+   ;; Google Docs style comments
+   (use-package org-marginalia
+     :straight (:host github :repo "nobiot/org-marginalia")
+     :init (add-hook 'org-mode-hook 'org-marginalia-mode)
+     (defun org-marginalia-save-and-open (point)
+       (interactive "d")
+       (org-marginalia-save)
+       (org-marginalia-open point))
+     :bind (:map org-marginalia-mode-map
+                 ("C-c n o" . org-marginalia-save-and-open)
+                 ("C-c m" . org-marginalia-mark)
+                 ("C-c n ]" . org-marginalia-next)
+                 ("C-c n [" . org-marginalia-prev)))
+ #+end_src
+#+end_src
+
 * TODO Vanilla++
   #+begin_src emacs-lisp :tangle "yes"
     (use-package crux
@@ -1967,6 +1976,11 @@ Smudge is nice.
 #+end_src
 
 * Scratch
+#+begin_src emacs-lisp
+  (setq org-agenda-scheduled-leaders '("" ""))
+  (setq org-agenda-show-future-repeats nil)
+#+end_src
+
 * The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")

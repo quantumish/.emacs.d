@@ -27,3 +27,82 @@
 		       (format "%S" (cdr pair))))
 	       (nth 2 info))
      ("name"  . ,(or (nth 4 info) "")))))
+
+(use-package org-special-block-extras
+      :init
+      (org-special-block-extras-mode)
+      (org-special-block-extras-defblock test (title "Details") (contents "")
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: 108, 173, 96;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-list\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents)))
+
+(use-package org-special-block-extras
+      :init
+      (org-special-block-extras-mode)
+      (org-special-block-extras-defblock warning (title "Warning") (contents "")
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: 235, 195, 52;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-exclamation-triangle\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents)))
+
+(use-package org-special-block-extras
+      :init
+      (org-special-block-extras-mode)
+      (org-special-block-extras-defblock quot (title "") (contents "")
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: 173, 173, 173;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-quote-left\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents)))
+      (use-package calfw
+	:init
+	(use-package calfw-org)
+	(require 'calfw)
+ 	(require 'calfw-org))
+
+
+(org-special-block-extras-defblock asidec (title "") (contents "")
+				   (format
+				    "<details class=\"admonition admonition-note admonition-plugin\" style=\"--admonition-color: 125, 125, 125;\">
+<summary class=\"admonition-title \"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-arrow-right\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div><div class=\"collapser\"><div class=\"handle\"></div></div></summary><div class=\"admonition-content-holder\"><div class=\"admonition-content\"><p>%s</p></div></div></details>" title contents))
+
+
+
+(use-package htmlize)
+
+
+(defun org-agenda-skip-if-scheduled-later ()
+"If this function returns nil, the current match should not be skipped.
+Otherwise, the function must return a position from where the search
+should be continued."
+  (ignore-errors
+    (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+          (scheduled-seconds
+            (time-to-seconds
+              (org-time-string-to-time
+                (org-entry-get nil "deferred"))))
+          (now (time-to-seconds (current-time))))
+       (and scheduled-seconds
+            (>= scheduled-seconds now)
+            subtree-end))))
+
+(setq org-agenda-skip-function-global 'org-agenda-skip-if-scheduled-later)
+
+(use-package nroam
+  :straight '(nroam :host github
+                         :branch "master"
+                         :repo "NicolasPetton/nroam")
+  :after org-roam
+  :config
+  (add-hook 'org-mode-hook #'nroam-setup-maybe))
+
+
+(org-special-block-extras-defblock aside (title "") (contents "")
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: 173, 173, 173;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-quote-left\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents))
+
+
+(org-special-block-extras-defblock concern (title "") (contents "")
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: 235, 195, 52;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-exclamation-triangle\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents))
+
+
+
+(org-special-block-extras-defblock concern (title "") (contents "")
+				   (format
+				    "<details class=\"admonition admonition-note admonition-plugin\" style=\"--admonition-color: 235, 195, 52;\">
+<summary class=\"admonition-title \"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-exclamation-triangle\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div><div class=\"collapser\"><div class=\"handle\"></div></div></summary><div class=\"admonition-content-holder\"><div class=\"admonition-content\"><p>%s</p></div></div></details>" title contents))
