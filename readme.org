@@ -2,6 +2,7 @@
 
 * About
 My personal (and opinionated) Emacs configuration with emphasis on functionality and visuals.
+Note: *running Emacs with this configuration could potentially modify important files and install packages on your system*. It likely won't, but don't blindly run it. If you're interested, reading through and copying sections of [[./config.org][config.org]] is likely the best way to do things.
 
 * Gallery
 
