@@ -1,4 +1,4 @@
-
+)
 #+TITLE: Emacs
 #+SUBTITLE: All of my Emacs and system config.
 
@@ -372,9 +372,9 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
-    (defvar left-screen "DP-1")
-    (defvar middle-screen "HDMI-1")
-    (defvar right-screen "DP-2")
+    (defvar left-screen "DP-3")
+    (defvar middle-screen "HDMI-0")
+    (defvar right-screen "DP-5")
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
     (add-hook 'exwm-randr-screen-change-hook
@@ -740,10 +740,10 @@ Finally, update polybar config file to match monitor and make it so we have deco
       (defun centaur-tabs-hide-tab-cached (x) (centaur-tabs-hide-tab x))
       (centaur-tabs-mode)
       :hook
-      (after-change-major-mode . contextual-tabs)
+      (after-change-major-mode . contextual-tabs) 
       :bind
       ("H-l" . 'centaur-tabs-forward-tab)
-      ("H-h" . 'centaur-tabs-backward-tab))
+      ("H-h" . 'centaur-tabs-backward-tab))z
 
     (use-package treemacs
       :after doom-themes
@@ -802,7 +802,9 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
     (setq dashboard-items '((recents  . 3)
                             (projects . 3)
                             (agenda . 5)))
-    (setq dashboard-startup-banner "~/Downloads/firewatch-logo.png")
+
+    (if (file-exists-p "~/Downloads/firewatch-logo.png")
+        (setq dashboard-startup-banner "~/Downloads/firewatch-logo.png"))
     (setq dashboard-image-banner-max-height 250)
     (setq dashboard-image-banner-max-width 250)
 
@@ -908,17 +910,12 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
       (interactive)
       (other-frame -1))
 
-    (general-def 'override-global-map
-      "C-M-j" 'opposite-other-frame
-      "C-M-k" 'other-frame)
-
-    (general-def 'override-global-map
-      "M-k" 'other-window
-      "M-j" 'opposite-other-window)
-
-    (general-def 'exwm-mode-map
-      "M-k" 'other-window
-      "M-j" 'opposite-other-window)
+    (general-define-key
+     :keymaps '(exwm-mode-map override-global-map)
+     "M-k" 'other-window
+     "M-j" 'opposite-other-window
+     "C-M-j" 'opposite-other-frame
+     "C-M-k" 'other-frame)
   #+end_src
 
 ** Hydra
@@ -1965,20 +1962,36 @@ Smudge is nice.
     (setq smudge-status-location nil)
     ;; FIXME actively destructive to potential mode-line config!
     (setq global-mode-string '(("   ")))
-    :bind
-    ("C-S-s-l" . smudge-controller-next-track)
-    ("C-S-s-h" . smudge-controller-previous-track)
-    ("C-S-s-j" . smudge-controller-volume-down)
-    ("C-S-s-k" . smudge-controller-volume-up) 	
-    ("C-S-s-p" . smudge-controller-toggle-play)
-    ("C-S-s-s" . smudge-controller-toggle-shuffle)
-    ("C-S-s-r" . smudge-controller-toggle-repeat))
+    (general-define-key     
+     :keymaps '(exwm-mode-map override-global-map)
+     "C-S-s-l" 'smudge-controller-next-track
+     "C-S-s-h" 'smudge-controller-previous-track
+     "C-S-s-j" 'smudge-controller-volume-down
+     "C-S-s-k" 'smudge-controller-volume-up	
+     "C-S-s-p" 'smudge-controller-toggle-play
+     "C-S-s-s" 'smudge-controller-toggle-shuffle
+     "C-S-s-r" 'smudge-controller-toggle-repeat))
 #+end_src
 
 * Scratch
 #+begin_src emacs-lisp
+
   (setq org-agenda-scheduled-leaders '("" ""))
   (setq org-agenda-show-future-repeats nil)
+    (set-face-attribute 'telega-msg-heading nil :background nil)
+    (use-package emojify)
+    (add-hook 'telega-chat-mode-hook 'emojify-mode)
+    (add-hook 'telega-root-mode-hook 'emojify-mode)
+
+  (defun make-thought-file ()
+    (message "WHEE")
+    (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
+      (with-temp-file name)    
+      name))
+  (setq org-capture-templates
+        '(("r" "Thought" entry
+           (file make-thought-file)
+           "* %T\n#+FILETAGS: %?")))
 #+end_src
 
 * The End.
