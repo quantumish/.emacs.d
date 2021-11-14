@@ -1,4 +1,4 @@
-)
+
 #+TITLE: Emacs
 #+SUBTITLE: All of my Emacs and system config.
 
@@ -1704,14 +1704,20 @@ YASnippet is the premiere package for snippets, so let's install it.
     :config ; do whatever here
     (aas-set-snippets 'laas-mode
                       ;; set condition!
+                      "mk" (lambda () (interactive)
+                              (yas-expand-snippet "$$1$$0"))                      
                       :cond #'texmathp ; expand only while in math
                       "bff" (lambda () (interactive)
-                              (yas-expand-snippet "\\mathbf{$1}$0"))                    
+                              (yas-expand-snippet "\\mathbf{$1}$0"))
+                      "pm" (lambda () (interactive)
+                             (yas-expand-snippet "\\begin{pmatrix} $1 \\end{pmatrix} $0"))
+                      "sm" (lambda () (interactive)
+                             (yas-expand-snippet "\\left(\\begin{smallmatrix} $1 \\end{smallmatrix}\\right) $0"))
                       ;; add accent snippets
                       :cond #'laas-object-on-left-condition
                       "qq" (lambda () (interactive) (laas-wrap-previous-object "sqrt"))
                       ))
-
+  
 #+end_src
 ** Git
 Let's install the wonderful git porcelain Magit and some extra usefulness.
@@ -1975,23 +1981,27 @@ Smudge is nice.
 
 * Scratch
 #+begin_src emacs-lisp
-
+  
   (setq org-agenda-scheduled-leaders '("" ""))
   (setq org-agenda-show-future-repeats nil)
     (set-face-attribute 'telega-msg-heading nil :background nil)
     (use-package emojify)
     (add-hook 'telega-chat-mode-hook 'emojify-mode)
     (add-hook 'telega-root-mode-hook 'emojify-mode)
-
+  
   (defun make-thought-file ()
     (message "WHEE")
     (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
       (with-temp-file name)    
       name))
   (setq org-capture-templates
-        '(("r" "Thought" entry
-           (file make-thought-file)
-           "* %T\n#+FILETAGS: %?")))
+        '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
+          ("p" "Protocol" entry (file make-thought-file)
+           "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
+          ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
+          ))
+  (general-define-key
+    "C-c r" (lambda () (interactive) (org-capture nil "r")))
 #+end_src
 
 * The End.
