@@ -33,9 +33,6 @@ We're going to use ~straight.el~ for package management.
     (load bootstrap-file nil 'nomessage))
 #+end_src
 
-#+RESULTS:
-: t
-
 This configuration also uses ~use-package~ for package management: it's a macro that'll make things much easier. All that's generally important to understand right now is that code after the ~:init~ keyword argument will be evaluated as the package is initialized, code after the ~:config~ keyword arg is lazy-loaded, the ~:bind~ and ~:hook~ keyword arguments are for specifying package-related keybinds and hooks respectively.
 
 #+begin_src emacs-lisp :tangle "yes"
@@ -374,7 +371,7 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
     :init
     (defvar left-screen "DP-3")
     (defvar middle-screen "HDMI-0")
-    (defvar right-screen "DP-5")
+    (defvar right-screen "DP-1")
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
     (add-hook 'exwm-randr-screen-change-hook
@@ -675,7 +672,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
 * Interface
 ** Theming
-  #+begin_src emacs-lisp :tangle (if (eq themeage 'doom) "yes" "no")
+  #+begin_src emacs-lisp :tangle "yes"
     ;; TODO: Set up treemacs.
 
     (use-package hide-mode-line)
@@ -705,8 +702,10 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
     ;; TODO: Contextual solaire
     (use-package solaire-mode
-      :init
-      (solaire-global-mode))
+      :hook
+      (prog-mode . solaire-mode))
+
+    (fringe-mode 0)
 
     (use-package centaur-tabs
       :init
@@ -743,7 +742,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
       (after-change-major-mode . contextual-tabs) 
       :bind
       ("H-l" . 'centaur-tabs-forward-tab)
-      ("H-h" . 'centaur-tabs-backward-tab))z
+      ("H-h" . 'centaur-tabs-backward-tab))
 
     (use-package treemacs
       :after doom-themes
@@ -760,6 +759,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
       (treemacs-load-theme "all-the-icons"))
 
     (use-package olivetti
+      :config  
       :hook (prog-mode . (lambda () (olivetti-mode))))
   #+end_src
 *** Translucent
@@ -803,28 +803,24 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
                             (projects . 3)
                             (agenda . 5)))
 
-    (if (file-exists-p "~/Downloads/firewatch-logo.png")
-        (setq dashboard-startup-banner "~/Downloads/firewatch-logo.png"))
+    (setq dashboard-startup-banner "~/.config/wallpapers/firewatch-galaxy.png")
     (setq dashboard-image-banner-max-height 250)
-    (setq dashboard-image-banner-max-width 250)
+    (setq dashboard-image-banner-max-width 500)
+
 
     (setq dashboard-set-init-info nil)
-    ;; (setq dashboard-set-navigator nil)
-    ;; ;; Format: "(icon title help action face prefix suffix)"
-    ;; (setq dashboard-navigator-buttons
-    ;; 	`(;; line1
-    ;;         ((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust 0.0)
-    ;;           "Homepage"
-    ;;           "Browse homepage"
-    ;;           (lambda (&rest _) (browse-url "homepage")))
-    ;;          ("★" "Star" "Show stars" (lambda (&rest _) (show-stars)) warning)
-    ;;          ("?" "" "?/h" #'show-help nil "<" ">"))
-    ;;         ;; line 2
-    ;;         ((,(all-the-icons-faicon "linkedin" :height 1.1 :v-adjust 0.0)
-    ;;           "Linkedin"
-    ;;           ""
-    ;;           (lambda (&rest _) (browse-url "homepage")))
-    ;;          ("⚑" nil "Show flags" (lambda (&rest _) (message "flag")) error))))
+    (setq dashboard-set-navigator t)
+    ;; Format: "(icon title help action face prefix suffix)"
+    (setq dashboard-navigator-buttons
+          `(;; line1
+            ((,(all-the-icons-faicon "github" :height 1 :v-adjust 0.0)
+              "Github"
+              "Browse repo"
+              (lambda (&rest _) (browse-url "https://github.com/quantumish/.emacs.d")))
+             (,(all-the-icons-faicon "reddit-alien" :height 1 :v-adjust 0.0)
+              "r/emacs"
+              "Waste time"
+              (lambda (&rest _) (browse-url "https://reddit.com/r/emacs"))))))
     (setq dashboard-page-separator "\n\n")
     (dashboard-setup-startup-hook)
     :hook
@@ -843,13 +839,18 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
 
   (use-package ivy
     :init
-    (use-package counsel :config (counsel-mode 1))
+    (use-package counsel :config (counsel-mode 1))  
     (use-package swiper :defer t)
     (ivy-mode 1)
+    (setq counsel-search-engine 'google)
     :bind
     (("C-s"     . swiper-isearch)
      ("M-x"     . counsel-M-x)
-     ("C-x C-f" . counsel-find-file)))
+     ("C-x C-f" . counsel-find-file)
+     ("C-x C-l" . counsel-load-theme)
+     ("C-x b"   . counsel-switch-buffer)
+     ("C-h C-f" . counsel-faces)
+     ("C-x C-g" . counsel-search)))
 
   (use-package ivy-rich
     :after ivy
@@ -881,12 +882,13 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
     (advice-add 'describe-symbol :override #'helpful-symbol)
     :config
     ;; Baseline keybindings, not very opinionated
-    (global-set-key (kbd "C-h f") #'helpful-callable)
-    (global-set-key (kbd "C-h v") #'helpful-variable)
+    (global-set-key (kbd "C-h f") #'counsel-describe-function)
+    (global-set-key (kbd "C-h v") #'counsel-describe-variable)
     (global-set-key (kbd "C-h k") #'helpful-key)
     (global-set-key (kbd "C-c C-d") #'helpful-at-point)
     (global-set-key (kbd "C-h F") #'helpful-function)
     (global-set-key (kbd "C-h C") #'helpful-command)
+
     ;; Counsel integration
     (setq counsel-describe-function-function #'helpful-callable)
     (setq counsel-describe-variable-function #'helpful-variable))
@@ -897,29 +899,29 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 
 * Movement
   #+begin_src emacs-lisp :tangle "yes"
-    (use-package zygospore
-      :bind ("M-m" . 'zygospore-toggle-delete-other-windows))
-
+    (use-package zygospore)
+    
     (defun opposite-other-window ()
       "Cycle buffers in the opposite direction."
       (interactive)
       (other-window -1))
-
+    
     (defun opposite-other-frame ()
       "Cycle frames in the opposite direction."
       (interactive)
       (other-frame -1))
-
+    
     (general-define-key
      :keymaps '(exwm-mode-map override-global-map)
      "M-k" 'other-window
      "M-j" 'opposite-other-window
      "C-M-j" 'opposite-other-frame
-     "C-M-k" 'other-frame)
+     "C-M-k" 'other-frame
+     "M-m" 'zygospore-toggle-delete-other-windows)
   #+end_src
 
 ** Hydra
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
 (use-package hydra
   :init
   (global-unset-key (kbd "C-x h"))
@@ -1002,6 +1004,10 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
     ("m" (call-process-shell-command "open -a Spark" nil 0) "Spark"))
    ))
 #+end_src
+
+#+RESULTS:
+: hydra-launcher/body
+
 ** Perspectives
 * TODO Org
 First, let's set up the basics.
@@ -1238,19 +1244,19 @@ There are a variety of useful packages that make Org look nicer:
 
    #+end_src
 ** Taproot-specific
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle "yes"
 (defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
 #+end_src
 
 Let's define a function to export to Taproot:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (defun org-roam-export-to-taproot ()
     (interactive)
     (call-process-shell-command (concat "cp -R " org-roam-directory "*.org " taproot-dir "/corners/david")))
 #+end_src
 
 Also, a function to convert to file-based links would be nice.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (defun org-roam-emergency-exit (in-path out-path)
     "Emergency exit from Org Roam v2. 
      Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
@@ -1269,7 +1275,7 @@ Also, a function to convert to file-based links would be nice.
 #+end_src
 
 And a function to open in Taproot:
-#+begin_src emacs-lisp   
+#+begin_src emacs-lisp :tangle "yes"
   (defun org-roam-open-in-taproot ()
     (interactive)
     (if (not (eq (buffer-file-name) nil))
@@ -1503,7 +1509,7 @@ And a function to open in Taproot:
 #+end_src
 
 ** Compilation
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (use-package kv)
 
   (require 'kv)
@@ -1563,7 +1569,7 @@ And a function to open in Taproot:
 #+end_src
 
 ** Documentation
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (defun minimal-browse-url (url)
     "Browse an arbitrary url (as URL) in a new frameless Firefox window."
     (split-window-right)
@@ -1855,6 +1861,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
       ("C-c t p" . hl-todo-previous)
       ("C-c t n" . hl-todo-next)
       ("C-c t i" . hl-todo-insert)))
+
   #+end_src
 
   #+begin_src emacs-lisp :tangle "yes"
@@ -1862,7 +1869,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+end_src
   
 * TODO Writing
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle "yes"
   (use-package flyspell)
   (use-package lexic
     :bind
@@ -1873,7 +1880,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 #+end_src
 
 Also, Google-Docs esque comments:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle "yes"
  #+begin_src emacs-lisp :tangle "yes"
    ;; Google Docs style comments
    (use-package org-marginalia
@@ -1914,6 +1921,14 @@ Also, Google-Docs esque comments:
 
     (use-package diredfl
       :init (diredfl-global-mode))
+
+
+    (use-package anzu
+      :init
+      (global-anzu-mode)
+      :bind
+      (("M-r" . anzu-query-replace)))
+
   #+end_src
 * Fun
   FIXME
@@ -1965,6 +1980,7 @@ Smudge is nice.
     :straight (smudge :type git :host github :repo "danielfm/smudge"
                       :fork (:host github :repo "richardfeynmanrocks/smudge"))
     :init
+    (load "~/.emacs.d/straight/repos/smudge/smudge-connect.el")
     (setq smudge-status-location nil)
     ;; FIXME actively destructive to potential mode-line config!
     (setq global-mode-string '(("   ")))
@@ -1976,32 +1992,81 @@ Smudge is nice.
      "C-S-s-k" 'smudge-controller-volume-up	
      "C-S-s-p" 'smudge-controller-toggle-play
      "C-S-s-s" 'smudge-controller-toggle-shuffle
-     "C-S-s-r" 'smudge-controller-toggle-repeat))
+     "C-S-s-r" 'smudge-controller-toggle-repeat)
+    (global-smudge-remote-mode))
+
+  (use-package counsel-spotify)
+  (load "~/.emacs.d/secrets.el")
 #+end_src
 
 * Scratch
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle "yes"
+    
+      (setq org-agenda-scheduled-leaders '("" ""))
+      (setq org-agenda-show-future-repeats nil)
+        (set-face-attribute 'telega-msg-heading nil :background nil)
+        (use-package emojify)
+        (add-hook 'telega-chat-mode-hook 'emojify-mode)
+        (add-hook 'telega-root-mode-hook 'emojify-mode)
+    
+      (defun make-thought-file ()
+        (message "WHEE")
+        (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
+          (with-temp-file name)    
+          name))
+      (setq org-capture-templates
+            '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
+              ("p" "Protocol" entry (file make-thought-file)
+               "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
+              ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
+              ))
+      (general-define-key
+        "C-c r" (lambda () (interactive) (org-capture nil "r")))
+      (defun ndk/get-keyword-key-value (kwd)
+      (let ((data (cadr kwd)))
+        (list (plist-get data :key)
+              (plist-get data :value))))
+    
+    (defun org-current-buffer-get-tags ()
+      (nth 1
+           (assoc "FILETAGS"
+                  (org-element-map (org-element-parse-buffer 'greater-element)
+                      '(keyword)
+                    #'ndk/get-keyword-key-value))))
+    
+    (defun org-file-get-tags (file)
+      (with-current-buffer (find-file-noselect file)
+        (org-current-buffer-get-tags)))
+    
+    (org-file-get-tags "~/sync/dump/20211112092430.org")
+    
+    (defun (defmy-javadoc-return () 
+    "Advanced C-m for Javadoc multiline comments.   
+  Inserts `*' at the beggining of the new line if 
+  unless return was pressed outside the comment"
+    (interactive)
+    (setq last (point))
+    (setq is-inside
+          (if (search-backward "*/" nil t)
+          ;; there are some comment endings - search forward
+              (search-forward "/*" last t)
+            ;; it's the only comment - search backward
+            (goto-char last)
+            (search-backward "/*" nil t)
+        )
+      )
+    ;; go to last char position
+    (goto-char last)
+    ;; the point is inside some comment, insert `* '
+    (if is-inside
+        (progn 
+      (insert "\n* ")
+      l(indent-for-tab-command))
+      ;; else insert only new-line
+      (insert "\n")))
   
-  (setq org-agenda-scheduled-leaders '("" ""))
-  (setq org-agenda-show-future-repeats nil)
-    (set-face-attribute 'telega-msg-heading nil :background nil)
-    (use-package emojify)
-    (add-hook 'telega-chat-mode-hook 'emojify-mode)
-    (add-hook 'telega-root-mode-hook 'emojify-mode)
-  
-  (defun make-thought-file ()
-    (message "WHEE")
-    (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
-      (with-temp-file name)    
-      name))
-  (setq org-capture-templates
-        '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
-          ("p" "Protocol" entry (file make-thought-file)
-           "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
-          ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
-          ))
-  (general-define-key
-    "C-c r" (lambda () (interactive) (org-capture nil "r")))
+  (add-hook 'c-mode-common-hook (lambda () 
+                                  (local-set-key "\r" 'my-javadoc-return)))
 #+end_src
 
 * The End.
