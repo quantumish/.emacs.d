@@ -28,12 +28,31 @@
 	       (nth 2 info))
      ("name"  . ,(or (nth 4 info) "")))))
 
+(defun declare-special-block (name color icon default-name default-contents)
+  (org-special-block-extras-defblock name (title default-name) (contents default-contents)
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: %s;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas %s\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" color icon title contents))
+  (org-special-block-extras-defblock (concat name "c") (title default-name) (contents default-contents)
+	     (format
+	      "<details class=\"admonition admonition-note admonition-plugin\" style=\"--admonition-color: %s;\">
+<summary class=\"admonition-title \"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas %s\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div><div class=\"collapser\"><div class=\"handle\"></div></div></summary><div class=\"admonition-content-holder\"><div class=\"admonition-content\"><p>%s</p></div></div></details>" color icon title contents)))
+
+(declare-special-block "warning" "235, 195, 52" "fa-exclamation-triangle" "Warning" "")
+
+
+
 (use-package org-special-block-extras
       :init
       (org-special-block-extras-mode)
       (org-special-block-extras-defblock test (title "Details") (contents "")
             (format
              "<div class=\"admonition\" style=\"--admonition-color: 108, 173, 96;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-list\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents)))
+
+(org-special-block-extras-defblock detailsc (title "Details") (contents "")
+				   (format
+				    "<details class=\"admonition admonition-note admonition-plugin\" style=\"--admonition-color: 108, 173, 96;\">
+<summary class=\"admonition-title \"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-list\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div><div class=\"collapser\"><div class=\"handle\"></div></div></summary><div class=\"admonition-content-holder\"><div class=\"admonition-content\"><p>%s</p></div></div></details>" title contents))
+
 
 (use-package org-special-block-extras
       :init
@@ -45,9 +64,19 @@
 (use-package org-special-block-extras
       :init
       (org-special-block-extras-mode)
-      (org-special-block-extras-defblock quot (title "") (contents "")
+      (org-special-block-extras-defblock quot (author "") (contents "")
             (format
-             "<div class=\"admonition\" style=\"--admonition-color: 173, 173, 173;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-quote-left\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents)))
+	     "<div class=\"truequote\"> 
+  <blockquote>    
+      %s
+    </blockquote>
+<div class=\"author\">
+  %s
+</div>  
+</div>
+</div> " contents author)))
+
+
       (use-package calfw
 	:init
 	(use-package calfw-org)
@@ -100,6 +129,12 @@ should be continued."
             (format
              "<div class=\"admonition\" style=\"--admonition-color: 235, 195, 52;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-exclamation-triangle\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents))
 
+(use-package org-special-block-extras
+      :init
+      (org-special-block-extras-mode)
+      (org-special-block-extras-defblock quott (title "") (contents "")
+            (format
+             "<div class=\"admonition\" style=\"--admonition-color: 173, 173, 173;\"><div class=\"admonition-title\"><div class=\"admonition-title-content\"><div class=\"admonition-title-icon\"><i class=\"fas fa-quote-left\" aria-hidden=\"true\"></i></div><div class=\"admonition-title-markdown\">%s</div></div></div><div class=\"admonition-content-holder\"><div class=\"admonition-content\">%s</div></div></div>" title contents)))
 
 
 (org-special-block-extras-defblock concern (title "") (contents "")
