@@ -1,6 +1,7 @@
-
 #+TITLE: Emacs
-#+SUBTITLE: All of my Emacs and system config.
+#+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/admonition.css">
+#+HTML_HEAD: <link rel="Stylesheet" href="https://quantumish.github.io/org.css">
+#+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/org-htmlize.css">
 
 * Preparation
 ** Packages
@@ -9,8 +10,8 @@ First, let's set the package archives and do some basic tweaks.
   (require 'package)
   (setq package-enable-at-startup nil) ;; Speed tip taken from Doom Emacs
   (setq package-archives '(("ELPA" . "https://tromey.com/elpa/")
-			   ("gnu" . "https://elpa.gnu.org/packages/")
-			   ("melpa" . "https://melpa.org/packages/")))
+                           ("gnu" . "https://elpa.gnu.org/packages/")
+                           ("melpa" . "https://melpa.org/packages/")))
   ;; General convieniences, somewhat questionable
   (setq url-http-attempt-keepalives nil)
   (setq package-check-signature nil)
@@ -21,15 +22,15 @@ We're going to use ~straight.el~ for package management.
 #+begin_src emacs-lisp :tangle "yes"
   (defvar bootstrap-version)
   (let ((bootstrap-file
-	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-	(bootstrap-version 5))
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
     (unless (file-exists-p bootstrap-file)
       (with-current-buffer
-	  (url-retrieve-synchronously
-	   "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-	   'silent 'inhibit-cookies)
-	(goto-char (point-max))
-	(eval-print-last-sexp)))
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 #+end_src
 
@@ -160,30 +161,30 @@ Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packag
     (let (os-name (get-distro-or-os))
       ;; system-packages doesn't support yay by default, so add it.
       (when (string= os-name "Arch Linux")
-	    (add-to-list 'system-packages-supported-package-managers
-			 '(yay .
-			       ((default-sudo . nil)
-				(install . "yay -S")
-				(uninstall . "yay -Rs")
-				(update . "yay -Syu")
-				(log . "cat /var/log/pacman.log")
-				(change-log . "yay -Qc")
-				(clean-cache . "yay -Sc")
-				(get-info . "yay -Qi")
-				(get-info-remote . "yay -Si")
-				(list-files-provided-by . "yay -Ql")
-				(owning-file . "yay -Qo")
-				(verify-all-dependencies . "yay -Dk")
-				(remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
-				(list-installed-packages . "yay -Qe")
-				(list-installed-packages-all . "yay -Q")
-				(noconfirm . "--noconfirm"))))
-	    (setq system-packages-package-manager 'yay))
+            (add-to-list 'system-packages-supported-package-managers
+                         '(yay .
+                               ((default-sudo . nil)
+                                (install . "yay -S")
+                                (uninstall . "yay -Rs")
+                                (update . "yay -Syu")
+                                (log . "cat /var/log/pacman.log")
+                                (change-log . "yay -Qc")
+                                (clean-cache . "yay -Sc")
+                                (get-info . "yay -Qi")
+                                (get-info-remote . "yay -Si")
+                                (list-files-provided-by . "yay -Ql")
+                                (owning-file . "yay -Qo")
+                                (verify-all-dependencies . "yay -Dk")
+                                (remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
+                                (list-installed-packages . "yay -Qe")
+                                (list-installed-packages-all . "yay -Q")
+                                (noconfirm . "--noconfirm"))))
+            (setq system-packages-package-manager 'yay))
       (when (string= os-name "Debian GNU/Linux")
-	    (setq system-packages-use-sudo t)
-	    (setq system-packages-package-manager 'apt))
+            (setq system-packages-use-sudo t)
+            (setq system-packages-package-manager 'apt))
       (if (string= os-name "Darwin")
-	  (setq system-packages-package-manager 'brew)))
+          (setq system-packages-package-manager 'brew)))
       (setq system-packages-noconfirm t))
 #+end_src
 
@@ -217,7 +218,7 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
 #+end_src
 
 ~zsh~ is good.
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux) 
+#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux)
   # p10k instant prompt
   if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
     source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -326,7 +327,7 @@ Firefox could be prettier.
   ;; (use-package exwm
   ;;   :ensure-system-package (firefox python-pywalfox))
 #+end_src
-#+begin_src css 
+#+begin_src css
   #TabsToolbar {visibility: collapse;}
   #statuspanel[type="overLink"] #statuspanel-label {
       display:none!important;
@@ -375,23 +376,23 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
     (add-hook 'exwm-randr-screen-change-hook
-	      (lambda ()
-		(start-process-shell-command
-		 "xrandr" nil (concat "xrandr --output " left-screen
-				      " --output " middle-screen
-				      " --output " right-screen
-				      " --auto"))))
+              (lambda ()
+                (start-process-shell-command
+                 "xrandr" nil (concat "xrandr --output " left-screen
+                                      " --output " middle-screen
+                                      " --output " right-screen
+                                      " --auto"))))
     (exwm-randr-enable)
     (add-hook 'exwm-init-hook
-	      (lambda ()
-		(start-process-shell-command
-		 "xrandr" nil (concat "xrandr --output " left-screen " --rotate left")))))
+              (lambda ()
+                (start-process-shell-command
+                 "xrandr" nil (concat "xrandr --output " left-screen " --rotate left")))))
 #+end_src
 
 Next, if we're on Linux, let's do everything we need to do at startup.
 
 ~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
-#+begin_src sh :tangle (config-tangle "~/.config/X/Xmodmap" 'gnu/linux)
+#+begin_src text :tangle (config-tangle "~/.config/X/Xmodmap" 'gnu/linux)
   clear      lock
   clear   control
   clear      mod1
@@ -412,7 +413,7 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 #+end_src
 
 ~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
-#+begin_src sh :tangle (config-tangle "~/.xbindkeysrc" 'gnu/linux) 
+#+begin_src sh :tangle (config-tangle "~/.xbindkeysrc" 'gnu/linux)
   # -*- shell-script -*-
   # TODO Phase me out!
 
@@ -539,7 +540,7 @@ xcape -e "Shift_L=parenleft"
 #+end_src
 
 Let's define a quick script to reload it based on pywal, too.
-#+begin_src sh :tangle (config-tangle "~/.config/dunst/reload_dunst.sh" 'gnu/linux) 
+#+begin_src sh :tangle (config-tangle "~/.config/dunst/reload_dunst.sh" 'gnu/linux)
   . "${HOME}/.cache/wal/colors.sh"
 
   pkill dunst
@@ -568,7 +569,7 @@ blur: {
 #+end_src
 
 Finally, we actually run the startup.
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux) 
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     ; :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
     :init
@@ -658,8 +659,8 @@ Finally, update polybar config file to match monitor and make it so we have deco
    ;; TODO Use Org Babel and tangle polybar config?
    (start-process-shell-command "polybar-update" nil
        (concat "sed s/<MONITOR>/"
-	       middle-screen
-	       "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
+               middle-screen
+               "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
 
    (use-package exwm-outer-gaps
      :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
@@ -667,7 +668,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
    (use-package exwm
      :hook (exwm-init .
-	(lambda () (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
+        (lambda () (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
 #+end_src
 
 * Interface
@@ -739,7 +740,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
       (defun centaur-tabs-hide-tab-cached (x) (centaur-tabs-hide-tab x))
       (centaur-tabs-mode)
       :hook
-      (after-change-major-mode . contextual-tabs) 
+      (after-change-major-mode . contextual-tabs)
       :bind
       ("H-l" . 'centaur-tabs-forward-tab)
       ("H-h" . 'centaur-tabs-backward-tab))
@@ -759,7 +760,7 @@ Finally, update polybar config file to match monitor and make it so we have deco
       (treemacs-load-theme "all-the-icons"))
 
     (use-package olivetti
-      :config  
+      :config
       :hook (prog-mode . (lambda () (olivetti-mode))))
   #+end_src
 *** Translucent
@@ -827,7 +828,7 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
     (dashboard-mode . hide-mode-line-mode)
     (dashboard-mode . turn-off-solaire-mode))
 #+end_src
-  
+
 ** Minibuffer Completion
 Next, let's improve interactions with Emacs: things like finding files, running commands, switching buffers, etc... by using ~ivy~, a light(ish) minibuffer completion system. Ivy is one of the more popular packages for this, meaning that there's quite a bit of integration with other packages. Notably, ~counsel~ extends its functionality and ~swiper~ provides a nicer interface to interactive search.
 
@@ -839,7 +840,7 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
 
   (use-package ivy
     :init
-    (use-package counsel :config (counsel-mode 1))  
+    (use-package counsel :config (counsel-mode 1))
     (use-package swiper :defer t)
     (ivy-mode 1)
     (setq counsel-search-engine 'google)
@@ -900,17 +901,17 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 * Movement
   #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore)
-    
+
     (defun opposite-other-window ()
       "Cycle buffers in the opposite direction."
       (interactive)
       (other-window -1))
-    
+
     (defun opposite-other-frame ()
       "Cycle frames in the opposite direction."
       (interactive)
       (other-frame -1))
-    
+
     (general-define-key
      :keymaps '(exwm-mode-map override-global-map)
      "M-k" 'other-window
@@ -968,11 +969,11 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
     ("v" flycheck-verify-setup "verify setup"))))
 
 (pretty-hydra-define hydra-go-to-file
-  (:hint nil :color teal :quit-key "q" :title (with-octicon "file-symlink-file" "Go To" 1 -0.05))
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "arrow-right" "Go To" 1 -0.05))
   ("Org"
    (("oi" (find-file "~/sync/org/inbox.org") "inbox")
-    ("oc" (find-file "~/sync/org/completed.org") "home")
-    ("op" (find-file "~/sync/org/projects.org") "projects"))
+    ("oc" (find-file "~/sync/org/completed.org") "completed")
+    ("op" (find-file "~/sync/ideas.org") "ideas"))
    "Config"
    (("cc" (find-file "~/.emacs.d/config.org") "config.org")
     ("ci" (find-file "~/.emacs.d/init.el") "init.el" ))
@@ -988,11 +989,11 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 
 
 (pretty-hydra-define hydra-launcher
-  (:hint nil :color teal :quit-key "q" :title (with-faicon "arrow-right" "Launch" 1 -0.05))
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "rocket" "Launch" 1 -0.05))
   ("Shell-likes"
    (("v" vterm "Vterm")
     ("e" eshell "Eshell")
-    ("l" ielm "IELM")    
+    ("l" ielm "IELM")
     ("k" (call-process-shell-command "open -a Kitty" nil 0) "Kitty"))
    "Messaging"
    (("i" erc "ERC")
@@ -1041,26 +1042,26 @@ There are a variety of useful packages that make Org look nicer:
   ;; This is preferred over `mixed-pitch` because of small details
   (use-package org-variable-pitch
     :init (org-variable-pitch-setup))
-  
+
   ;; Better headline icons
   (use-package org-superstar
     :config
     (setq org-superstar-headline-bullets-list '("◉" "○" "◈" "◎"))
     :hook (org-mode . org-superstar-mode))
-  
+
   ;; Auto-toggle emphasis
   (use-package org-appear
     :straight (:host github :repo "awth13/org-appear")
     :hook (org-mode . org-appear-mode))
-  
+
   ;; Auto-toggle LaTeX rendering
   (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode))
-  
+
   ;; Natural bulleted lists
   (use-package org-autolist
     :hook (org-mode . org-autolist-mode))
-  
+
   ;; Centering w/ Olivetti
   (use-package olivetti
     :hook (org-mode . (lambda () (interactive) (olivetti-mode) (olivetti-set-width 100))))
@@ -1072,7 +1073,7 @@ There are a variety of useful packages that make Org look nicer:
      :config
      (defun magic-icon-fix ()
        (let ((fontset (face-attribute 'default :fontset)))
-         (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))  
+         (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
      :hook
      (org-mode . (lambda () (interactive)
                    (setq prettify-symbols-alist '(("[#A]" . "")
@@ -1093,6 +1094,7 @@ There are a variety of useful packages that make Org look nicer:
                                                   ("#+end_questionable" . "―")
                                                   ("#+begin_problem" .  "")
                                                   ("#+end_problem" . "―")
+					                ("#+EXCLUDE_TAGS:" . "") 
                                                   (":PROPERTIES:" . "\n")
                                                   (":END:" . "―")
                                                   ("#+STARTUP:" . "")
@@ -1162,13 +1164,13 @@ There are a variety of useful packages that make Org look nicer:
       (org-special-block-extras-mode)
       (org-special-block-extras-defblock collapsible (title "Details") (contents "")
                                          (format
-                                          (pcase backend     
+                                          (pcase backend
                                             (_ "<details>
                                            <summary> <i> %s </i> </summary>
                                            %s
                                         </details>"))
                                           title contents)))
-    
+
     (use-package org
       :init
       (setq org-html-text-markup-alist
@@ -1197,7 +1199,7 @@ There are a variety of useful packages that make Org look nicer:
                :preserve-breaks t
        ))))
   #+end_src
-   
+
 * Notes
   #+begin_src emacs-lisp :tangle "yes"
     (use-package org-roam
@@ -1258,12 +1260,12 @@ Let's define a function to export to Taproot:
 Also, a function to convert to file-based links would be nice.
 #+begin_src emacs-lisp :tangle "yes"
   (defun org-roam-emergency-exit (in-path out-path)
-    "Emergency exit from Org Roam v2. 
+    "Emergency exit from Org Roam v2.
      Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
     (let ((sed (if (eq system-type 'darwin) "gsed" "sed")))
-      (progn 
+      (progn
         (call-process-shell-command (concat "cp -R " in-path "*.org " out-path))
-        (dolist (pair (org-roam-db-query [:select [ID FILE] :from nodes]))      
+        (dolist (pair (org-roam-db-query [:select [ID FILE] :from nodes]))
           (call-process-shell-command (concat sed " -i \"s/id:" (car pair)
                                               "/file:" (substring (car (cdr pair)) (length in-path))
                                               "/g\" " out-path "*.org")))
@@ -1288,7 +1290,7 @@ And a function to open in Taproot:
   (defun extended-org-roam-open-in-taproot ()
     (interactive)
     (message (substring (buffer-file-name) 0 (length org-roam-directory)))
-    (if (not (eq (buffer-file-name) nil))        
+    (if (not (eq (buffer-file-name) nil))
         (if (string= (substring (buffer-file-name) 0 (length org-roam-directory)) org-roam-directory)
             (call-process-shell-command
              (concat "open https://taproot3.sanity.gq/corners/david"
@@ -1327,121 +1329,121 @@ And a function to open in Taproot:
   #+end_src
 
   #+begin_src emacs-lisp :tangle "yes"
-	 (defun dw/get-prompt-path ()
-	  (let* ((current-path (eshell/pwd))
-		 (git-output (shell-command-to-string "git rev-parse --show-toplevel"))
-		 (has-path (not (string-match "^fatal" git-output))))
-	    (if (not has-path)
-	      (abbreviate-file-name current-path)
-	      (string-remove-prefix (file-name-directory git-output) current-path))))
+         (defun dw/get-prompt-path ()
+          (let* ((current-path (eshell/pwd))
+                 (git-output (shell-command-to-string "git rev-parse --show-toplevel"))
+                 (has-path (not (string-match "^fatal" git-output))))
+            (if (not has-path)
+              (abbreviate-file-name current-path)
+              (string-remove-prefix (file-name-directory git-output) current-path))))
 
-	;; This prompt function mostly replicates my custom zsh prompt setup
-	;; that is powered by github.com/denysdovhan/spaceship-prompt.
+        ;; This prompt function mostly replicates my custom zsh prompt setup
+        ;; that is powered by github.com/denysdovhan/spaceship-prompt.
 
-    (defun dw/eshell-prompt ()  
-	  (concat
-	   "\n"
-	   (propertize "davfrei" 'face `(:foreground ,(doom-color 'orange)) 'read-only t)
-	   (propertize " " 'face `(:foreground "white") 'read-only t)
-	   (propertize (dw/get-prompt-path) 'face `(:foreground ,(doom-color 'orange)) 'read-only t)
-	   (propertize " · " 'face `(:foreground "white") 'read-only t)
-	   (propertize (format-time-string "%I:%M:%S %p") 'face `(:foreground ,(doom-color 'cyan)) 'read-only t)
-	   (if (= (user-uid) 0)
-	       (propertize "\n#" 'face `(:foreground "red2") 'read-only t)
-	     (propertize "\nλ" 'face `(:foreground ,(doom-color 'blue)) 'read-only t))
-	   (propertize " " 'face `(:foreground ,(doom-color 'fg)))
-	   ))
+    (defun dw/eshell-prompt ()
+          (concat
+           "\n"
+           (propertize "davfrei" 'face `(:foreground ,(doom-color 'orange)) 'read-only t)
+           (propertize " " 'face `(:foreground "white") 'read-only t)
+           (propertize (dw/get-prompt-path) 'face `(:foreground ,(doom-color 'orange)) 'read-only t)
+           (propertize " · " 'face `(:foreground "white") 'read-only t)
+           (propertize (format-time-string "%I:%M:%S %p") 'face `(:foreground ,(doom-color 'cyan)) 'read-only t)
+           (if (= (user-uid) 0)
+               (propertize "\n#" 'face `(:foreground "red2") 'read-only t)
+             (propertize "\nλ" 'face `(:foreground ,(doom-color 'blue)) 'read-only t))
+           (propertize " " 'face `(:foreground ,(doom-color 'fg)))
+           ))
 
-	(defun dw/eshell-configure ()
-	  (use-package xterm-color)
+        (defun dw/eshell-configure ()
+          (use-package xterm-color)
 
-	  (push 'eshell-tramp eshell-modules-list)
-	  (push 'xterm-color-filter eshell-preoutput-filter-functions)
-	  (delq 'eshell-handle-ansi-color eshell-output-filter-functions)
+          (push 'eshell-tramp eshell-modules-list)
+          (push 'xterm-color-filter eshell-preoutput-filter-functions)
+          (delq 'eshell-handle-ansi-color eshell-output-filter-functions)
 
-	  ;; Save command history when commands are entered
-	  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+          ;; Save command history when commands are entered
+          (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
 
-	  (add-hook 'eshell-before-prompt-hook
-		    (lambda ()
-		      (setq xterm-color-preserve-properties t)))
+          (add-hook 'eshell-before-prompt-hook
+                    (lambda ()
+                      (setq xterm-color-preserve-properties t)))
 
-	  ;; Truncate buffer for performance
-	  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+          ;; Truncate buffer for performance
+          (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
 
-	  ;; We want to use xterm-256color when running interactive commands
-	  ;; in eshell but not during other times when we might be launching
-	  ;; a shell command to gather its output.
-	  (add-hook 'eshell-pre-command-hook
-		    (lambda () (setenv "TERM" "xterm-256color")))
-	  (add-hook 'eshell-post-command-hook
-		    (lambda () (setenv "TERM" "dumb")))
+          ;; We want to use xterm-256color when running interactive commands
+          ;; in eshell but not during other times when we might be launching
+          ;; a shell command to gather its output.
+          (add-hook 'eshell-pre-command-hook
+                    (lambda () (setenv "TERM" "xterm-256color")))
+          (add-hook 'eshell-post-command-hook
+                    (lambda () (setenv "TERM" "dumb")))
 
-	  ;; Use completion-at-point to provide completions in eshell
-	  (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
+          ;; Use completion-at-point to provide completions in eshell
+          (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
 
-	  ;; Initialize the shell history
-	  (eshell-hist-initialize)
+          ;; Initialize the shell history
+          (eshell-hist-initialize)
 
-	  (setenv "PAGER" "cat")
+          (setenv "PAGER" "cat")
 
-	  (setq eshell-prompt-function      'dw/eshell-prompt
-		eshell-prompt-regexp        "^λ " 
-		eshell-history-size         10000
-		eshell-buffer-maximum-lines 10000
-		eshell-hist-ignoredups t
-		eshell-highlight-prompt t
-		eshell-scroll-to-bottom-on-input t
-		eshell-prefer-lisp-functions nil))
+          (setq eshell-prompt-function      'dw/eshell-prompt
+                eshell-prompt-regexp        "^λ "
+                eshell-history-size         10000
+                eshell-buffer-maximum-lines 10000
+                eshell-hist-ignoredups t
+                eshell-highlight-prompt t
+                eshell-scroll-to-bottom-on-input t
+                eshell-prefer-lisp-functions nil))
 
-	(use-package eshell
-	  :hook (eshell-first-time-mode . dw/eshell-configure)
-	  :init
-	  (setq eshell-directory-name "~/.dotfiles/.emacs.d/eshell/"
-		eshell-aliases-file (expand-file-name "~/.dotfiles/.emacs.d/eshell/alias")))
+        (use-package eshell
+          :hook (eshell-first-time-mode . dw/eshell-configure)
+          :init
+          (setq eshell-directory-name "~/.dotfiles/.emacs.d/eshell/"
+                eshell-aliases-file (expand-file-name "~/.dotfiles/.emacs.d/eshell/alias")))
 
-	(use-package eshell-z
-	  :hook ((eshell-mode . (lambda () (require 'eshell-z)))
-		 (eshell-z-change-dir .  (lambda () (eshell/pushd (eshell/pwd))))))
+        (use-package eshell-z
+          :hook ((eshell-mode . (lambda () (require 'eshell-z)))
+                 (eshell-z-change-dir .  (lambda () (eshell/pushd (eshell/pwd))))))
 
-	(use-package exec-path-from-shell
-	  :init
-	  (setq exec-path-from-shell-check-startup-files nil)
-	  :config
-	  (when (memq window-system '(mac ns x))
-	    (exec-path-from-shell-initialize)))
+        (use-package exec-path-from-shell
+          :init
+          (setq exec-path-from-shell-check-startup-files nil)
+          :config
+          (when (memq window-system '(mac ns x))
+            (exec-path-from-shell-initialize)))
 
-	(setq eshell-prompt-function 'dw/eshell-prompt)
+        (setq eshell-prompt-function 'dw/eshell-prompt)
 
-	(use-package esh-autosuggest
-	  :hook (eshell-mode . esh-autosuggest-mode))
+        (use-package esh-autosuggest
+          :hook (eshell-mode . esh-autosuggest-mode))
 
-	(use-package eshell-toggle
-	  :straight (eshell-toggle :type git :host github :repo "4DA/eshell-toggle")
-	  :init
-	  (setq eshell-toggle-size-fraction 4)
-	  (setq eshell-toggle-use-projectile-root t)
-	  (setq eshell-toggle-run-command nil))
+        (use-package eshell-toggle
+          :straight (eshell-toggle :type git :host github :repo "4DA/eshell-toggle")
+          :init
+          (setq eshell-toggle-size-fraction 4)
+          (setq eshell-toggle-use-projectile-root t)
+          (setq eshell-toggle-run-command nil))
 
-	(use-package eshell-up) ;; TODO eshell-up
+        (use-package eshell-up) ;; TODO eshell-up
 
-	;; (use-package eshell-info-banner
-	;;   :straight (eshell-info-banner :type git :host github
-	;; 								:repo "phundrak/eshell-info-banner.el")
-	;;   :hook (eshell-banner-load . eshell-info-banner-update-banner))
+        ;; (use-package eshell-info-banner
+        ;;   :straight (eshell-info-banner :type git :host github
+        ;;                                                              :repo "phundrak/eshell-info-banner.el")
+        ;;   :hook (eshell-banner-load . eshell-info-banner-update-banner))
 
-	(use-package eshell-manual
-	  :straight (eshell-manual :type git :host github
-							   :repo "nicferrier/eshell-manual"))
+        (use-package eshell-manual
+          :straight (eshell-manual :type git :host github
+                                                           :repo "nicferrier/eshell-manual"))
 
-	;; (use-package eshell-fringe-status
-	;;   :init
-	;;   (setq eshell-fringe-status-success-bitmap 'my-flycheck-fringe-indicator)
-	;;   (setq eshell-fringe-status-failure-bitmap 'my-flycheck-fringe-indicator)
-	;;   :hook (eshell-mode . eshell-fringe-status-mode))
+        ;; (use-package eshell-fringe-status
+        ;;   :init
+        ;;   (setq eshell-fringe-status-success-bitmap 'my-flycheck-fringe-indicator)
+        ;;   (setq eshell-fringe-status-failure-bitmap 'my-flycheck-fringe-indicator)
+        ;;   :hook (eshell-mode . eshell-fringe-status-mode))
 
-	;; (use-package esh-help
-	;;   :init (setup-esh-help-eldoc))
+        ;; (use-package esh-help
+        ;;   :init (setup-esh-help-eldoc))
 
   #+end_src
 
@@ -1711,10 +1713,15 @@ YASnippet is the premiere package for snippets, so let's install it.
     (aas-set-snippets 'laas-mode
                       ;; set condition!
                       "mk" (lambda () (interactive)
-                              (yas-expand-snippet "$$1$$0"))                      
+                              (yas-expand-snippet "$$1$$0"))
+                      "--" "—"
                       :cond #'texmathp ; expand only while in math
+                      "tt" (lambda () (interactive)
+                              (yas-expand-snippet "\\text{$1}$0"))
                       "bff" (lambda () (interactive)
                               (yas-expand-snippet "\\mathbf{$1}$0"))
+                      "ll" "\\left"
+                      "rr" "\\right"
                       "pm" (lambda () (interactive)
                              (yas-expand-snippet "\\begin{pmatrix} $1 \\end{pmatrix} $0"))
                       "sm" (lambda () (interactive)
@@ -1763,7 +1770,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 (use-package ccls
   ; :ensure-system-package ccls
   :hook ((c-mode c++-mode cuda-mode) .
-		 (lambda () (require 'ccls) (lsp)))
+                 (lambda () (require 'ccls) (lsp)))
   :custom
   (ccls-executable (executable-find "ccls")) ; Add ccls to path if you haven't done so
   (ccls-sem-highlight-method 'font-lock)
@@ -1771,20 +1778,20 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   :config
   (lsp-register-client
    (make-lsp-client
-	:new-connection (lsp-tramp-connection (cons ccls-executable ccls-args))
-	:major-modes '(c-mode c++-mode cuda-mode)
-	:server-id 'ccls-remote
-	:multi-root nil
-	:remote? t
-	:notification-handlers
-	(lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
-			("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-	:initialization-options (lambda () ccls-initialization-options)
-	:library-folders-fn nil)))
+        :new-connection (lsp-tramp-connection (cons ccls-executable ccls-args))
+        :major-modes '(c-mode c++-mode cuda-mode)
+        :server-id 'ccls-remote
+        :multi-root nil
+        :remote? t
+        :notification-handlers
+        (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
+                        ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
+        :initialization-options (lambda () ccls-initialization-options)
+        :library-folders-fn nil)))
 
 ;; TODO bind/investigate ccls functions
 
-(use-package cpp-auto-include)  
+(use-package cpp-auto-include)
 
   #+end_src
 *** TODO Python
@@ -1798,10 +1805,10 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
      ("pyls.plugins.pyls_mypy.live_mode" nil t)
      ("pyls.plugins.pyls_black.enabled" t t)
      ("pyls.plugins.pyls_isort.enabled" t t)
-	 ("pyls.plugins.flake8.enabled" t t)))
+         ("pyls.plugins.flake8.enabled" t t)))
 
   (setq lsp-eldoc-enable-hover nil)
-  
+
   :hook
   ((python-mode . lsp)))
 
@@ -1867,7 +1874,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+begin_src emacs-lisp :tangle "yes"
     (use-package rainbow-mode)
   #+end_src
-  
+
 * TODO Writing
 #+begin_src emacs-lisp  :tangle "yes"
   (use-package flyspell)
@@ -1881,7 +1888,6 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
 Also, Google-Docs esque comments:
 #+begin_src emacs-lisp  :tangle "yes"
- #+begin_src emacs-lisp :tangle "yes"
    ;; Google Docs style comments
    (use-package org-marginalia
      :straight (:host github :repo "nobiot/org-marginalia")
@@ -1896,7 +1902,6 @@ Also, Google-Docs esque comments:
                  ("C-c n ]" . org-marginalia-next)
                  ("C-c n [" . org-marginalia-prev)))
  #+end_src
-#+end_src
 
 * TODO Vanilla++
   #+begin_src emacs-lisp :tangle "yes"
@@ -1939,43 +1944,43 @@ Also, Google-Docs esque comments:
 ** Exit Message
    #+begin_src emacs-lisp :tangle "yes"
      (setq exit-messages '(
-	     "Please don't leave, there's more demons to toast!"
-	     "Let's beat it -- This is turning into a bloodbath!"
-	     "I wouldn't leave if I were you. Vim is much worse."
-	     "Don't leave yet -- There's a demon around that corner!"
-	     "Ya know, next time you come in here I'm gonna toast ya."
-	     "Go ahead and leave. See if I care."
-	     "Are you sure you want to quit this great editor?"
-	     "Emacs will remember that."
-	     "Emacs, Emacs never changes."
-	     "Okay, look. We've both said a lot of things you're going to regret..."
-	     "Look, bud. You leave now and you forfeit your body count!"
-	     "Get outta here and go back to your boring editors."
-	     "You're lucky I don't smack you for thinking about leaving."
-	     "Don't go now, there's a dimensional shambler waiting at the prompt!"
-	     "Just leave. When you come back I'll be waiting with a bat."
-	     "Are you a bad enough dude to stay?"
-	     "It was worth the risk... I assure you."
-	     "I'm willing to take full responsibility for the horrible events of the last 24 hours."
-	     ))
+             "Please don't leave, there's more demons to toast!"
+             "Let's beat it -- This is turning into a bloodbath!"
+             "I wouldn't leave if I were you. Vim is much worse."
+             "Don't leave yet -- There's a demon around that corner!"
+             "Ya know, next time you come in here I'm gonna toast ya."
+             "Go ahead and leave. See if I care."
+             "Are you sure you want to quit this great editor?"
+             "Emacs will remember that."
+             "Emacs, Emacs never changes."
+             "Okay, look. We've both said a lot of things you're going to regret..."
+             "Look, bud. You leave now and you forfeit your body count!"
+             "Get outta here and go back to your boring editors."
+             "You're lucky I don't smack you for thinking about leaving."
+             "Don't go now, there's a dimensional shambler waiting at the prompt!"
+             "Just leave. When you come back I'll be waiting with a bat."
+             "Are you a bad enough dude to stay?"
+             "It was worth the risk... I assure you."
+             "I'm willing to take full responsibility for the horrible events of the last 24 hours."
+             ))
 
      (defun random-choice (items)
        (let* ((size (length items))
-	      (index (random size)))
-	     (nth index items)))
+              (index (random size)))
+             (nth index items)))
 
      (defun save-buffers-kill-emacs-with-confirm ()
        (interactive)
        (if (null current-prefix-arg)
-	       (if (y-or-n-p (format "%s Quit? " (random-choice exit-messages)))
-	     (save-buffers-kill-emacs))
-	     (save-buffers-kill-emacs)))
+               (if (y-or-n-p (format "%s Quit? " (random-choice exit-messages)))
+             (save-buffers-kill-emacs))
+             (save-buffers-kill-emacs)))
 
      (global-set-key "\C-x\C-c" 'save-buffers-kill-emacs-with-confirm)
    #+end_src
 ** Spotify
-Smudge is nice. 
-#+begin_src emacs-lisp :tangle "yes" 
+Smudge is nice.
+#+begin_src emacs-lisp :tangle "yes"
   (use-package smudge
     :straight (smudge :type git :host github :repo "danielfm/smudge"
                       :fork (:host github :repo "richardfeynmanrocks/smudge"))
@@ -1984,12 +1989,12 @@ Smudge is nice.
     (setq smudge-status-location nil)
     ;; FIXME actively destructive to potential mode-line config!
     (setq global-mode-string '(("   ")))
-    (general-define-key     
+    (general-define-key
      :keymaps '(exwm-mode-map override-global-map)
      "C-S-s-l" 'smudge-controller-next-track
      "C-S-s-h" 'smudge-controller-previous-track
      "C-S-s-j" 'smudge-controller-volume-down
-     "C-S-s-k" 'smudge-controller-volume-up	
+     "C-S-s-k" 'smudge-controller-volume-up
      "C-S-s-p" 'smudge-controller-toggle-play
      "C-S-s-s" 'smudge-controller-toggle-shuffle
      "C-S-s-r" 'smudge-controller-toggle-repeat)
@@ -2001,18 +2006,17 @@ Smudge is nice.
 
 * Scratch
 #+begin_src emacs-lisp  :tangle "yes"
-    
+  
       (setq org-agenda-scheduled-leaders '("" ""))
       (setq org-agenda-show-future-repeats nil)
         (set-face-attribute 'telega-msg-heading nil :background nil)
         (use-package emojify)
         (add-hook 'telega-chat-mode-hook 'emojify-mode)
         (add-hook 'telega-root-mode-hook 'emojify-mode)
-    
+  
       (defun make-thought-file ()
-        (message "WHEE")
         (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
-          (with-temp-file name)    
+          (with-temp-file name)
           name))
       (setq org-capture-templates
             '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
@@ -2026,23 +2030,23 @@ Smudge is nice.
       (let ((data (cadr kwd)))
         (list (plist-get data :key)
               (plist-get data :value))))
-    
+  
     (defun org-current-buffer-get-tags ()
       (nth 1
            (assoc "FILETAGS"
                   (org-element-map (org-element-parse-buffer 'greater-element)
                       '(keyword)
                     #'ndk/get-keyword-key-value))))
-    
+  
     (defun org-file-get-tags (file)
       (with-current-buffer (find-file-noselect file)
         (org-current-buffer-get-tags)))
-    
+  
     (org-file-get-tags "~/sync/dump/20211112092430.org")
-    
-    (defun (defmy-javadoc-return () 
-    "Advanced C-m for Javadoc multiline comments.   
-  Inserts `*' at the beggining of the new line if 
+  
+    (defun my-javadoc-return ()
+    "Advanced C-m for Javadoc multiline comments.
+  Inserts `*' at the beggining of the new line if
   unless return was pressed outside the comment"
     (interactive)
     (setq last (point))
@@ -2059,14 +2063,16 @@ Smudge is nice.
     (goto-char last)
     ;; the point is inside some comment, insert `* '
     (if is-inside
-        (progn 
+        (progn
       (insert "\n* ")
-      l(indent-for-tab-command))
+      (indent-for-tab-command))
       ;; else insert only new-line
       (insert "\n")))
   
-  (add-hook 'c-mode-common-hook (lambda () 
+  (add-hook 'c-mode-common-hook (lambda ()
                                   (local-set-key "\r" 'my-javadoc-return)))
+  
+  (setq org-html-htmlize-output-type 'css)
 #+end_src
 
 * The End.
@@ -2082,5 +2088,3 @@ Well, that's it. We're done. Time to get going!
          gcs-done))
 
 #+end_src
-
-
