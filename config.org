@@ -1,4 +1,4 @@
-
+~
 #+TITLE: Emacs
 #+SUBTITLE: All of my Emacs and system config.
 
@@ -218,62 +218,73 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
 
 ~zsh~ is good.
 #+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux) 
+
+if [[ "$TERM" == "dumb" ]]
+then
+    unsetopt zle
+    unsetopt prompt_cr
+    unsetopt prompt_subst
+    unset zle_bracketed_paste
+    PS1='$ '
+    return
+fi
+
   # p10k instant prompt
-  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-  fi
+    if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+      source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    fi
 
-  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
+    export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
 
-  export ZSH="$HOME/.oh-my-zsh"
+    export ZSH="$HOME/.oh-my-zsh"
 
-  ZSH_THEME="powerlevel10k/powerlevel10k"
+    ZSH_THEME="powerlevel10k/powerlevel10k"
 
-  plugins=(git)
+    plugins=(git)
 
-  source $ZSH/oh-my-zsh.sh
+    source $ZSH/oh-my-zsh.sh
 
-  export EDITOR='emacs'
+    export EDITOR='emacs'
 
-  # Aliases
-  alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
-  alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
-  alias gs="git status"
-  alias nano=mg
-  alias ls="exa --icons"
-  alias hexdump=hexyl
-  alias cat=bat
-  alias rm=rip
-  alias gcc="gcc -Wall -Werror -pedantic-errors"
-  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
+    # Aliases
+    alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
+    alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
+    alias gs="git status"
+    alias nano=mg
+    alias ls="exa --icons"
+    alias hexdump=hexyl
+    alias cat=bat
+    alias rm=rip
+    alias gcc="gcc -Wall -Werror -pedantic-errors"
+    alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
 
-  function recompile() {
-      cd ~/.config/$1
-      sudo make clean install &> /dev/null
-      cd -
-  }
+    function recompile() {
+        cd ~/.config/$1
+        sudo make clean install &> /dev/null
+        cd -
+    }
 
-  function fix_titles() {
-      for a in *
-      id3v2 -t ${a%.mp3} $a
-  }
+    function fix_titles() {
+        for a in *
+        id3v2 -t ${a%.mp3} $a
+    }
 
-  function themeage() {
-      wal -i $1 &> /dev/null
-      xdotool key alt+r &> /dev/null
-      emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
-      /home/quantumish/.local/bin/pywalfox update
-      python ~/test.py colors-wal-dwm2.h
-      python ~/test.py colors-wal-dmenu2.h
-      python ~/test.py zathurarc
-      python ~/test.py colors-vis
-      recompile dmenu
-  }
+    function themeage() {
+        wal -i $1 &> /dev/null
+        xdotool key alt+r &> /dev/null
+        emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
+        /home/quantumish/.local/bin/pywalfox update
+        python ~/test.py colors-wal-dwm2.h
+        python ~/test.py colors-wal-dmenu2.h
+        python ~/test.py zathurarc
+        python ~/test.py colors-vis
+        recompile dmenu
+    }
 
-  # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-  source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+    [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+    source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 #+end_src
 
 #+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
@@ -848,7 +859,6 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
      ("M-x"     . counsel-M-x)
      ("C-x C-f" . counsel-find-file)
      ("C-x C-l" . counsel-load-theme)
-     ("C-x b"   . counsel-switch-buffer)
      ("C-h C-f" . counsel-faces)
      ("C-x C-g" . counsel-search)))
 
@@ -900,17 +910,17 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 * Movement
   #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore)
-    
+
     (defun opposite-other-window ()
       "Cycle buffers in the opposite direction."
       (interactive)
       (other-window -1))
-    
+
     (defun opposite-other-frame ()
       "Cycle frames in the opposite direction."
       (interactive)
       (other-frame -1))
-    
+
     (general-define-key
      :keymaps '(exwm-mode-map override-global-map)
      "M-k" 'other-window
@@ -918,6 +928,11 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
      "C-M-j" 'opposite-other-frame
      "C-M-k" 'other-frame
      "M-m" 'zygospore-toggle-delete-other-windows)
+
+    (use-package drag-stuff
+      (general-def
+        "M-<up>" 'drag-stuff-up
+        "M-<down>" 'drag-stuff-down))
   #+end_src
 
 ** Hydra
@@ -1197,7 +1212,6 @@ There are a variety of useful packages that make Org look nicer:
                :preserve-breaks t
        ))))
   #+end_src
-   
 * Notes
   #+begin_src emacs-lisp :tangle "yes"
     (use-package org-roam
@@ -1297,6 +1311,15 @@ And a function to open in Taproot:
       (message "Not a file buffer!")))
 #+end_src
 
+** Babel
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (C . t)
+     (nasm . t)                            ; Add asm language
+     (python . t)))
+#+end_src
 * Productivity
 ** Agenda
 #+begin_src emacs-lisp :tangle "yes"
@@ -1478,6 +1501,10 @@ And a function to open in Taproot:
     :init
     (setq lsp-ui-doc-delay 5)
     (add-hook 'flycheck-mode-hook 'lsp-ui-mode) ;; HACK
+    :bind
+    (general-def
+      :keymaps 'lsp-mode-map
+      "C-c l p" 'lsp-ui-peek-find-references)
     :config
     (eval `(set-face-attribute 'lsp-ui-doc-background nil :background ,(doom-darken 'bg .2))))
 #+end_src
@@ -1725,6 +1752,7 @@ YASnippet is the premiere package for snippets, so let's install it.
                       ))
   
 #+end_src
+
 ** Git
 Let's install the wonderful git porcelain Magit and some extra usefulness.
 
@@ -1732,9 +1760,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   ;; The ultimate Git porcelain.
   (use-package magit)
   ;; Show all TODOs in a git repo
-  (use-package magit-todos)
-  ;; Edit gitignores w/ highlighting
-  (use-package gitignore-mode)
+  (use-package magit-todos) 
 #+end_src
 ** Language-Specific
 #+begin_src emacs-lisp :tangle "yes"
@@ -1747,46 +1773,108 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   (use-package nim-mode)
   (use-package zig-mode)
   (use-package julia-mode)
+  (use-package dockerfile-mode)
   (use-package typescript-mode)
   (use-package css-mode)
+  (use-package nasm-mode)
 #+end_src
 
 *** TODO C++
   #+begin_src emacs-lisp :tangle "yes"
+    (setq c-default-style "k&r")
+    (setq-default c-basic-offset 4)
 
-(setq c-default-style "k&r")
-(setq-default c-basic-offset 4)
+    (use-package modern-cpp-font-lock
+      :init (modern-c++-font-lock-global-mode t))
 
-(use-package modern-cpp-font-lock
-  :init (modern-c++-font-lock-global-mode t))
+    (use-package ccls
+                                            ; :ensure-system-package ccls
+      :hook ((c-mode c++-mode cuda-mode) .
+             (lambda () (require 'ccls) (lsp)))
+      :custom
+      (ccls-executable (executable-find "ccls")) ; Add ccls to path if you haven't done so
+      (ccls-sem-highlight-method 'font-lock)
+      (ccls-enable-skipped-ranges nil)
+      :config
+      (lsp-register-client
+       (make-lsp-client
+        :new-connection (lsp-tramp-connection (cons ccls-executable ccls-args))
+        :major-modes '(c-mode c++-mode cuda-mode)
+        :server-id 'ccls-remote
+        :multi-root nil
+        :remote? t
+        :notification-handlers
+        (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
+                ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
+        :initialization-options (lambda () ccls-initialization-options)
+        :library-folders-fn nil))
+      (general-def
+        :keymaps 'c++-mode-map
+        "C-c l l" 'ccls-code-lens-mode))
 
-(use-package ccls
-  ; :ensure-system-package ccls
-  :hook ((c-mode c++-mode cuda-mode) .
-		 (lambda () (require 'ccls) (lsp)))
-  :custom
-  (ccls-executable (executable-find "ccls")) ; Add ccls to path if you haven't done so
-  (ccls-sem-highlight-method 'font-lock)
-  (ccls-enable-skipped-ranges nil)
-  :config
-  (lsp-register-client
-   (make-lsp-client
-	:new-connection (lsp-tramp-connection (cons ccls-executable ccls-args))
-	:major-modes '(c-mode c++-mode cuda-mode)
-	:server-id 'ccls-remote
-	:multi-root nil
-	:remote? t
-	:notification-handlers
-	(lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
-			("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-	:initialization-options (lambda () ccls-initialization-options)
-	:library-folders-fn nil)))
+    ;; TODO bind/investigate ccls functions
 
-;; TODO bind/investigate ccls functions
+    (use-package cpp-auto-include)
 
-(use-package cpp-auto-include)  
+    (defun defmy-javadoc-return () 
+      "Advanced C-m for Javadoc multiline comments.   
+     Inserts `*' at the beggining of the new line if 
+     unless return was pressed outside the comment"
+      (interactive)
+      (setq last (point))
+      (setq is-inside
+            (if (search-backward "*/" nil t)
+                ;; there are some comment endings - search forward
+                (search-forward "/*" last t)
+              ;; it's the only comment - search backward
+              (goto-char last)
+              (search-backward "/*" nil t)
+              )
+            )
+      ;; go to last char position
+      (goto-char last)
+      ;; the point is inside some comment, insert `* '
+      (if is-inside
+          (progn 
+            (insert "\n* ")
+            l(indent-for-tab-command))
+        ;; else insert only new-line
+        (insert "\n")))
+
+    (add-hook 'c-mode-common-hook (lambda () 
+                                    (local-set-key "\r" 'my-javadoc-return)))
+
 
   #+end_src
+
+*** TODO Assembly
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package x86-lookup
+    :config
+    (setq x86-lookup-pdf "~/Downloads/325383-sdm-vol-2abcd.pdf"))
+
+  (defun org-babel-execute:nasm (body params)
+    "Execute a block of NASM code with org-babel."
+    (let ((in-file (org-babel-temp-file "temp" ".s")))
+      (with-temp-file in-file
+        (if (string= (cdr (assq :snippet params)) "t")	
+            (insert "global func\nsection .text\nfunc:"))
+        (insert body))
+      (org-babel-eval
+       (format "nasm -felf64 %s -o temp.o"
+               (org-babel-process-file-name in-file))
+       "")
+      (if (string= (cdr (assq :unwrapped params)) "t")	
+          (org-babel-eval
+           "ld temp.o -o temp" "")
+        (org-babel-eval
+         "gcc ~/.emacs.d/handler.c temp.o -o temp" ""))
+      (org-babel-eval
+       "./temp" "")))
+
+  (provide 'ob-nasm)
+#+end_src
+
 *** TODO Python
   #+begin_src emacs-lisp :tangle "yes"
 (use-package ein)
@@ -1802,8 +1890,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
   (setq lsp-eldoc-enable-hover nil)
   
-  :hook
-  ((python-mode . lsp)))
+  :hook ((python-mode . lsp)))
 
 
 (use-package buftra
@@ -1869,6 +1956,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+end_src
   
 * TODO Writing
+
 #+begin_src emacs-lisp  :tangle "yes"
   (use-package flyspell)
   (use-package lexic
@@ -1881,20 +1969,19 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
 Also, Google-Docs esque comments:
 #+begin_src emacs-lisp  :tangle "yes"
- #+begin_src emacs-lisp :tangle "yes"
-   ;; Google Docs style comments
-   (use-package org-marginalia
-     :straight (:host github :repo "nobiot/org-marginalia")
-     :init (add-hook 'org-mode-hook 'org-marginalia-mode)
-     (defun org-marginalia-save-and-open (point)
-       (interactive "d")
-       (org-marginalia-save)
-       (org-marginalia-open point))
-     :bind (:map org-marginalia-mode-map
-                 ("C-c n o" . org-marginalia-save-and-open)
-                 ("C-c m" . org-marginalia-mark)
-                 ("C-c n ]" . org-marginalia-next)
-                 ("C-c n [" . org-marginalia-prev)))
+  ;; Google Docs style comments
+  (use-package org-marginalia
+    :straight (:host github :repo "nobiot/org-marginalia")
+    :init (add-hook 'org-mode-hook 'org-marginalia-mode)
+    (defun org-marginalia-save-and-open (point)
+      (interactive "d")
+      (org-marginalia-save)
+      (org-marginalia-open point))
+    :bind (:map org-marginalia-mode-map
+                ("C-c n o" . org-marginalia-save-and-open)
+                ("C-c m" . org-marginalia-mark)
+                ("C-c n ]" . org-marginalia-next)
+                ("C-c n [" . org-marginalia-prev)))
  #+end_src
 #+end_src
 
@@ -1922,6 +2009,7 @@ Also, Google-Docs esque comments:
     (use-package diredfl
       :init (diredfl-global-mode))
 
+    (use-package sudo-edit)
 
     (use-package anzu
       :init
@@ -1930,6 +2018,7 @@ Also, Google-Docs esque comments:
       (("M-r" . anzu-query-replace)))
 
   #+end_src
+  
 * Fun
   FIXME
   #+begin_src emacs-lisp :tangle "yes"
@@ -1995,79 +2084,53 @@ Smudge is nice.
      "C-S-s-r" 'smudge-controller-toggle-repeat)
     (global-smudge-remote-mode))
 
-  (use-package counsel-spotify)
+  (use-package counsel-spotify
+    (general-define-key
+     :keymaps '(exwm-mode-map override-global-map)
+     :prefix "H-s"
+     "t" 'counsel-spotify-search-track
+     "r" 'counsel-spotify-search-artist
+     "a" 'counsel-spotify-search-album
+     "q" 'counsel-spotify-search-tracks-by-artist))
   (load "~/.emacs.d/secrets.el")
 #+end_src
 
 * Scratch
 #+begin_src emacs-lisp  :tangle "yes"
-    
-      (setq org-agenda-scheduled-leaders '("" ""))
-      (setq org-agenda-show-future-repeats nil)
-        (set-face-attribute 'telega-msg-heading nil :background nil)
-        (use-package emojify)
-        (add-hook 'telega-chat-mode-hook 'emojify-mode)
-        (add-hook 'telega-root-mode-hook 'emojify-mode)
-    
-      (defun make-thought-file ()
-        (message "WHEE")
-        (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
-          (with-temp-file name)    
-          name))
-      (setq org-capture-templates
-            '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
-              ("p" "Protocol" entry (file make-thought-file)
-               "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
-              ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
-              ))
-      (general-define-key
-        "C-c r" (lambda () (interactive) (org-capture nil "r")))
-      (defun ndk/get-keyword-key-value (kwd)
-      (let ((data (cadr kwd)))
-        (list (plist-get data :key)
-              (plist-get data :value))))
-    
-    (defun org-current-buffer-get-tags ()
-      (nth 1
-           (assoc "FILETAGS"
-                  (org-element-map (org-element-parse-buffer 'greater-element)
-                      '(keyword)
-                    #'ndk/get-keyword-key-value))))
-    
-    (defun org-file-get-tags (file)
-      (with-current-buffer (find-file-noselect file)
-        (org-current-buffer-get-tags)))
-    
-    (org-file-get-tags "~/sync/dump/20211112092430.org")
-    
-    (defun (defmy-javadoc-return () 
-    "Advanced C-m for Javadoc multiline comments.   
-  Inserts `*' at the beggining of the new line if 
-  unless return was pressed outside the comment"
-    (interactive)
-    (setq last (point))
-    (setq is-inside
-          (if (search-backward "*/" nil t)
-          ;; there are some comment endings - search forward
-              (search-forward "/*" last t)
-            ;; it's the only comment - search backward
-            (goto-char last)
-            (search-backward "/*" nil t)
-        )
-      )
-    ;; go to last char position
-    (goto-char last)
-    ;; the point is inside some comment, insert `* '
-    (if is-inside
-        (progn 
-      (insert "\n* ")
-      l(indent-for-tab-command))
-      ;; else insert only new-line
-      (insert "\n")))
-  
-  (add-hook 'c-mode-common-hook (lambda () 
-                                  (local-set-key "\r" 'my-javadoc-return)))
-#+end_src
+  (setq org-agenda-scheduled-leaders '("" ""))
+  (setq org-agenda-show-future-repeats nil)
+
+  (defun make-thought-file ()
+    (message "WHEE")
+    (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
+      (with-temp-file name)    
+      name))
+  (setq org-capture-templates
+        '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
+          ("p" "Protocol" entry (file make-thought-file)
+           "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
+          ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
+          ))
+  (general-define-key
+   "C-c r" (lambda () (interactive) (org-capture nil "r")))
+  (defun ndk/get-keyword-key-value (kwd)
+    (let ((data (cadr kwd)))
+      (list (plist-get data :key)
+            (plist-get data :value))))
+
+  (defun org-current-buffer-get-tags ()
+    (nth 1
+         (assoc "FILETAGS"
+                (org-element-map (org-element-parse-buffer 'greater-element)
+                    '(keyword)
+                  #'ndk/get-keyword-key-value))))
+
+  (defun org-file-get-tags (file)
+    (with-current-buffer (find-file-noselect file)
+      (org-current-buffer-get-tags)))
+
+  (org-file-get-tags "~/sync/dump/20211112092430.org")
+  #+end_src
 
 * The End.
 Well, that's it. We're done. Time to get going!
