@@ -151,4 +151,9 @@ determine the exact padding."
 	:background modeline-bg-inactive-l
 	:box (if -modeline-pad `(:line-width ,-modeline-pad :color ,modeline-bg-inactive-l)))))
 
+(require 'dashboard)
+(setq dashboard-startup-banner "~/.emacs.d/quantumish.png")
+(setq dashboard-image-banner-max-height 300)
+(setq dashboard-image-banner-max-width 300)
+
 ;;; doom-opera-light-theme.el ends here
