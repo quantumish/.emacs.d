@@ -1,6 +1,7 @@
+
 #+TITLE: Emacs
 #+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/admonition.css">
-#+HTML_HEAD: <link rel="Stylesheet" href="https://quantumish.github.io/org.css">
+#+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/org.css">
 #+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/org-htmlize.css">
 
 * Preparation
@@ -207,6 +208,7 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
 #+begin_src conf :tangle (config-tangle "~/.config/kitty/kitty.conf")
   include ~/.cache/wal/colors-kitty.conf
   font_family IBM Plex Mono
+  cursor_shape block
   window_padding_width 10 15
   map page_up scroll_page_up
   map page_down scroll_page_down
@@ -232,23 +234,41 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
   if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
       source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
   fi
-  
+
   export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-  
+
   export ZSH="$HOME/.oh-my-zsh"
-  
+
   ZSH_THEME="powerlevel10k/powerlevel10k"
-  
+
   plugins=(git)
-  
+
   source $ZSH/oh-my-zsh.sh
-  
+
   export EDITOR='emacs'
-  
+
+  function emacs_suggest() {
+      tput setaf 1
+      echo -n "DEPRECATED: "
+      tput sgr0
+      echo -n "You should really use "
+      tput sitm
+      echo -n $1
+      tput sgr0
+      echo " instead!"
+      eval $2 $@
+  }
+
+  alias git="emacs_suggest Magit '/usr/bin/git'"
+  alias gc="emacs_suggest Magit 'git commit'"
+  alias ga="emacs_suggest Magit 'git add'"
+  alias gs="emacs_suggest Magit 'git status'"
+  alias gp="emacs_suggest Magit 'git push'"
+  alias glog="emacs_suggest Magit 'git log --oneline --decorate --graph'" 
+
   # Aliases
   alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
   alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
-  alias gs="git status"
   alias nano=mg
   alias ls="exa --icons"
   alias hexdump=hexyl
@@ -256,18 +276,18 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
   alias rm=rip
   alias gcc="gcc -Wall -Werror -pedantic-errors"
   alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-  
+
   function recompile() {
       cd ~/.config/$1
       sudo make clean install &> /dev/null
       cd -
   }
-  
+
   function fix_titles() {
       for a in *
                id3v2 -t ${a%.mp3} $a
   }
-  
+
   function themeage() {
       wal -i $1 &> /dev/null
       xdotool key alt+r &> /dev/null
@@ -279,7 +299,7 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
       python ~/test.py colors-vis
       recompile dmenu
   }
-  
+
   # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
   [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
   source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -287,22 +307,23 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
 #+end_src
 
 #+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
-export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
+  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
 
-export ZSH="$HOME/.oh-my-zsh"
+  export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="lambdamod"
+  ZSH_THEME="lambdamod"
 
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+  plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 
-source $ZSH/oh-my-zsh.sh
+  source $ZSH/oh-my-zsh.sh
 
-export EDITOR='emacs'
+  export EDITOR='emacs'
 
-alias gs="git status"
-alias nano=mg
-alias gcc="gcc -Wall -Werror -pedantic-errors"
-alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
+  alias gs="git status"
+  alias nano=mg
+  alias gcc="gcc -Wall -Werror -pedantic-errors"
+  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
+  alias sml=rlwrap /usr/local/smlnj/bin/sml $@
 #+end_src
 
 
@@ -346,7 +367,7 @@ Firefox could be prettier.
 ** Desktop
 It's time to load EXWM, the Emacs X Window Manager.
 
-#+begin_src emacs-lisp :tangle "yes" :tangle (config-tangle nil 'gnu/linux)
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
     (setq exwm-workspace-number 3)
@@ -379,23 +400,28 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
-    (defvar left-screen "DP-3")
+    (defvar left-screen "DP-5")
     (defvar middle-screen "HDMI-0")
-    (defvar right-screen "DP-1")
+    (defvar right-screen "DP-3")
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
-    (add-hook 'exwm-randr-screen-change-hook
-              (lambda ()
-                (start-process-shell-command
-                 "xrandr" nil (concat "xrandr --output " left-screen
-                                      " --output " middle-screen
-                                      " --output " right-screen
-                                      " --auto"))))
-    (exwm-randr-enable)
-    (add-hook 'exwm-init-hook
-              (lambda ()
-                (start-process-shell-command
-                 "xrandr" nil (concat "xrandr --output " left-screen " --rotate left")))))
+    (exwm-randr-enable))
+
+  ;; (use-package ivy
+  ;;   :config
+  ;;   (call-process-shell-command (concat "xrandr --output" left-screen " --left-of " middle-screen) 0)
+  ;;   (call-process-shell-command (concat "xrandr --output" left-screen " --left-of " middle-screen) 0)
+  ;;   (call-process-shell-command (concat "xrandr --output" right-screen " --right-of " middle-screen) 0)
+  ;;   (call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg")
+  ;;   (start-process-shell-command "polybar-update" nil
+  ;; 			       (concat "sed s/<MONITOR>/"
+  ;; 				       middle-screen
+  ;; 				       "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
+  ;;   (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))
+
+    (use-package exwm-outer-gaps
+      :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
+      :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))	      	      
 #+end_src
 
 Next, if we're on Linux, let's do everything we need to do at startup.
@@ -427,14 +453,14 @@ Next, if we're on Linux, let's do everything we need to do at startup.
   # TODO Phase me out!
 
   # Increase volume
-  "amixer set Master 5%+"
+  "pamixer -i 5"
   XF86AudioRaiseVolume
 
   # Decrease volume
-  "amixer set Master 5%-"
+  "pamixer -d 5"
   XF86AudioLowerVolume
 
-  "amixer set Master toggle"
+  "pamixer -t"
   XF86AudioMute
 
   "bash ~/.config/rofi/applets/menu/screenshot.sh"
@@ -594,8 +620,7 @@ Finally, we actually run the startup.
     ;; The best screenshot utility!
     (call-process-shell-command "flameshot &" nil 0)
     ;; Compositor
-    (call-process-shell-command "picom &" nil 0)
-    (call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0))
+    (call-process-shell-command "picom &" nil 0))
 #+end_src
 
 Let's make moving across monitors and workspaces a little easier.
@@ -663,27 +688,13 @@ Then, make it so EXWM buffer names contain part of the the window title based of
     (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name))
 #+end_src
 
-Finally, update polybar config file to match monitor and make it so we have decorative gaps around all of EXWM (not individual buffers/windows unfortunately).
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-   ;; TODO Use Org Babel and tangle polybar config?
-   (start-process-shell-command "polybar-update" nil
-       (concat "sed s/<MONITOR>/"
-               middle-screen
-               "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
-
-   (use-package exwm-outer-gaps
-     :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
-     :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))
-
-   (use-package exwm
-     :hook (exwm-init .
-        (lambda () (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))))
-#+end_src
-
 * Interface
 ** Theming
   #+begin_src emacs-lisp :tangle "yes"
     ;; TODO: Set up treemacs.
+
+    (set-face-attribute 'default nil :family "IBM Plex Mono")
+    (set-face-attribute 'font-lock-comment-face nil :italic t)
 
     (use-package hide-mode-line)
 
@@ -760,8 +771,18 @@ Finally, update polybar config file to match monitor and make it so we have deco
       (doom-themes-treemacs-config)
       (setq doom-themes-treemacs-theme "doom-colors")
       (setq treemacs-width 30)
+      (treemacs-project-follow-mode)
       :bind
-      ("C-c t" . treemacs))
+      ("C-c t" . treemacs)
+      :hook
+      (treemacs-mode .
+                     (lambda ()
+                             (setq header-line-format " ")
+                             (face-remap-add-relative 'header-line '(:height 20 :background "#0e121a"))
+                             )
+                     ))
+
+    (use-package treemacs-projectile)
 
     (use-package treemacs-all-the-icons
       :after treemacs
@@ -770,7 +791,14 @@ Finally, update polybar config file to match monitor and make it so we have deco
 
     (use-package olivetti
       :config
-      :hook (prog-mode . (lambda () (olivetti-mode))))
+      (setq-default olivetti-body-width 180)
+      :hook ((prog-mode . olivetti-mode)
+             (prog-mode .
+                        (lambda ()
+                          (setq header-line-format " ")
+                          (face-remap-add-relative 'header-line '(:height 100 :background "#0b0f16"))
+                          ))
+             ))
   #+end_src
 *** Translucent
 Transparency can look nice - sometimes. Polybar clashes with transparency, so disable it while we're using it.
@@ -807,7 +835,11 @@ Transparency can look nice - sometimes. Polybar clashes with transparency, so di
                                       "There's an Emacs package for that."
                                       "Rip and tear, until it is done!"
                                       "It's time to kick ass and chew bubblegum... and I'm all outta gum."
+                                      "Eight Megabytes And Constantly Swapping"
+                                      "Escape Meta Alt Control Super"
                                       "M-x butterfly"
+                                      "The thermonuclear word processor."
+                                      "The best OS!"
                                       ""))
     (setq dashboard-items '((recents  . 3)
                             (projects . 3)
@@ -849,7 +881,7 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
 
   (use-package ivy
     :init
-    (use-package counsel :config (counsel-mode 1))
+    (use-package counsel :config (counsel-mode 1))  
     (use-package swiper :defer t)
     (ivy-mode 1)
     (setq counsel-search-engine 'google)
@@ -859,11 +891,21 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
      ("C-x C-f" . counsel-find-file)
      ("C-x C-l" . counsel-load-theme)
      ("C-h C-f" . counsel-faces)
-     ("C-x C-g" . counsel-search)))
+     ("M-s g"   . counsel-search)
+     ("M-g o"   . counsel-outline)
+     ("M-g h"   . counsel-org-goto-all)
+     ("M-g i"   . counsel-imenu)
+     ("M-g a"   . counsel-linux-app)))
+
+  (use-package counsel-projectile
+    :bind
+    (("M-g p"   . counsel-projectile-switch-project))) 
 
   (use-package ivy-rich
     :after ivy
     :init (ivy-rich-mode))
+
+  (use-package all-the-icons)
 
   (use-package all-the-icons-ivy-rich
     :after ivy-rich counsel
@@ -909,17 +951,17 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 * Movement
   #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore)
-
+    
     (defun opposite-other-window ()
       "Cycle buffers in the opposite direction."
       (interactive)
       (other-window -1))
-
+    
     (defun opposite-other-frame ()
       "Cycle frames in the opposite direction."
       (interactive)
       (other-frame -1))
-
+    
     (general-define-key
      :keymaps '(exwm-mode-map override-global-map)
      "M-k" 'other-window
@@ -927,8 +969,9 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
      "C-M-j" 'opposite-other-frame
      "C-M-k" 'other-frame
      "M-m" 'zygospore-toggle-delete-other-windows)
-
+    
     (use-package drag-stuff
+      :init
       (general-def
         "M-<up>" 'drag-stuff-up
         "M-<down>" 'drag-stuff-down))
@@ -1101,13 +1144,15 @@ There are a variety of useful packages that make Org look nicer:
                                                   ("#+end_collapsible" . "―")
                                                   ("#+begin_aside" . "")
                                                   ("#+end_aside" . "―")
+                                                  ("#+begin_quote" . "")
+                                                  ("#+end_quote" . "―")
                                                   ("#+begin_defn" .  "")
                                                   ("#+end_defn" . "―")
                                                   ("#+begin_questionable" .  "")
                                                   ("#+end_questionable" . "―")
                                                   ("#+begin_problem" .  "")
                                                   ("#+end_problem" . "―")
-					                ("#+EXCLUDE_TAGS:" . "") 
+                                                  ("#+EXCLUDE_TAGS:" . "") 
                                                   (":PROPERTIES:" . "\n")
                                                   (":END:" . "―")
                                                   ("#+STARTUP:" . "")
@@ -1125,9 +1170,7 @@ There are a variety of useful packages that make Org look nicer:
                                                   ("DEADLINE:" . "")
                                                   ("#+begin_defn" .  "")
                                                   ("#+end_defn" . "―")))
-                   (prettify-symbols-mode)
-                   (let ((fontset (face-attribute 'default :fontset)))
-                     (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))))
+                   (prettify-symbols-mode))))
  #+end_src
 
 *** Property Drawers
@@ -1476,37 +1519,38 @@ And a function to open in Taproot:
 ~lsp-mode~ can do more than just provide good completions: you can jump to definitions and references with ~lsp-find-definition~ and ~lsp-find-references~ respectively, as well as most other things you'd expect from an IDE.
 
 #+begin_src emacs-lisp :tangle "yes"
-  (use-package lsp-mode
-    ; :ensure-system-package ccls
-    ; :ensure-system-package (pyls . "python -m pip install pyls")
-    ; :ensure-system-package rust-analyzer
-    :init
-    ;; Disable annoying headerline
-    (setq lsp-headerline-breadcrumb-enable nil)
-    ;; Don't show unneeded function info in completions
-    (setq lsp-completion-show-detail nil)
-    ;; Disable annoying autoformatting!
-    (setq-default lsp-enable-indentation nil)
-    (setq-default lsp-enable-on-type-formatting nil)
-    :commands lsp
-    ;; Add languages of your choice!
-    :hook ((c-mode . lsp)
-           (c++-mode . lsp)
-           (python-mode . lsp)
-           (typescript-mode . lsp)
-           (rust-mode . lsp)))
+    (use-package lsp-mode
+      ; :ensure-system-package ccls
+      ; :ensure-system-package (pyls . "python -m pip install pyls")
+      ; :ensure-system-package rust-analyzer
+      :init
+      ;; Disable annoying headerline
+      (setq lsp-headerline-breadcrumb-enable nil)
+      ;; Don't show unneeded function info in completions
+      (setq lsp-completion-show-detail nil)
+      ;; Disable annoying autoformatting!
+      (setq-default lsp-enable-indentation nil)
+      (setq-default lsp-enable-on-type-formatting nil)
+      :commands lsp
+      ;; Add languages of your choice!
+      :hook ((c-mode . lsp)
+             (c++-mode . lsp)
+             (python-mode . lsp)
+             (typescript-mode . lsp)
+             (rust-mode . lsp)
+             (lsp-mode . (lambda () (lsp-lens-mode 0)))))
 
-  (use-package lsp-ui
-    :after lsp
-    :init
-    (setq lsp-ui-doc-delay 5)
-    (add-hook 'flycheck-mode-hook 'lsp-ui-mode) ;; HACK
-    :bind
-    (general-def
-      :keymaps 'lsp-mode-map
-      "C-c l p" 'lsp-ui-peek-find-references)
-    :config
-    (eval `(set-face-attribute 'lsp-ui-doc-background nil :background ,(doom-darken 'bg .2))))
+    (use-package lsp-ui
+      :after lsp
+      :init
+      (setq lsp-ui-doc-delay 5)
+      (add-hook 'flycheck-mode-hook 'lsp-ui-mode) ;; HACK
+      (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+      (general-def
+        :keymaps 'lsp-mode-map
+        "C-c l p" 'lsp-ui-peek-find-references)
+      :config
+      (eval `(set-face-attribute 'lsp-ui-doc-background nil :background ,(doom-darken 'bg .2))))
 #+end_src
 
 ** Company
@@ -1771,79 +1815,117 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 #+begin_src emacs-lisp :tangle "yes"
   (use-package rustic)
   (use-package cuda-mode)
-  (use-package clojure-mode)
-  (use-package cmake-mode)
-  (use-package json-mode)
+  (use-package nasm-mode)
+
   (use-package rust-mode) ;; for when rustic breaks
+  (use-package clojure-mode :init (lsp-ensure-server 'clojure-lsp))
+  (use-package sml-mode)
+  (use-package json-mode :init (lsp-ensure-server 'json-ls))
+  (use-package dockerfile-mode :init (lsp-ensure-server 'dockerfile-ls))
+  (use-package css-mode :init (lsp-ensure-server 'css-ls))
+  (use-package typescript-mode)
+
+  ;; Languages that sound cool but I'll likely never use.
+  (use-package go-mode)
+  (use-package haskell-mode :init (use-package lsp-haskell))
   (use-package nim-mode)
+  (use-package d-mode)
   (use-package zig-mode)
   (use-package julia-mode)
-  (use-package dockerfile-mode)
-  (use-package typescript-mode)
-  (use-package css-mode)
-  (use-package nasm-mode)
 #+end_src
+
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package sh-script
+    :ensure nil
+    :init (lsp-ensure-server 'bash-ls)
+    :hook (after-save . executable-make-buffer-file-executable-if-script-p))
+#+end_src
+
 
 *** TODO C++
   #+begin_src emacs-lisp :tangle "yes"
-        (setq c-default-style "k&r")
-        (setq-default c-basic-offset 4)
+    (setq c-default-style "k&r")
+    (setq-default c-basic-offset 4)
     
-        (use-package modern-cpp-font-lock
-          :init (modern-c++-font-lock-global-mode t))
+    (use-package modern-cpp-font-lock
+      :init (modern-c++-font-lock-global-mode t))
     
-        (use-package ccls
+    (use-package ccls
                                             ; :ensure-system-package ccls
-          :hook ((c-mode c++-mode cuda-mode) .
-                 (lambda () (require 'ccls) (lsp)))
-          :custom
-          (ccls-executable (executable-find "ccls")) ; Add ccls to path if you haven't done so
-          (ccls-sem-highlight-method 'font-lock)
-          (ccls-enable-skipped-ranges nil)
-          :config
-          (lsp-register-client
-           (make-lsp-client
-            :new-connection (lsp-tramp-connection (cons ccls-executable ccls-args))
-            :major-modes '(c-mode c++-mode cuda-mode)
-            :server-id 'ccls-remote
-            :multi-root nil
-            :remote? t
-            :notification-handlers
-            (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
-                    ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-            :initialization-options (lambda () ccls-initialization-options)
-            :library-folders-fn nil))
-          (general-def
-            :keymaps 'c++-mode-map
-            "C-c l l" 'ccls-code-lens-mode))
+      :hook ((c-mode c++-mode cuda-mode) .
+             (lambda () (require 'ccls) (lsp)))
+      :custom
+      (ccls-executable (executable-find "ccls")) ; Add ccls to path if you haven't done so
+      (ccls-sem-highlight-method 'font-lock)
+      (ccls-enable-skipped-ranges nil)
+      :config
+      (lsp-register-client
+       (make-lsp-client
+        :new-connection (lsp-tramp-connection (cons ccls-executable ccls-args))
+        :major-modes '(c-mode c++-mode cuda-mode)
+        :server-id 'ccls-remote
+        :multi-root nil
+        :remote? t
+        :notification-handlers
+        (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
+                ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
+        :initialization-options (lambda () ccls-initialization-options)
+        :library-folders-fn nil))
+      (general-def
+        :keymaps 'c++-mode-map
+        "C-c l l" 'ccls-code-lens-mode))
     
-        (defun my-javadoc-return () 
-          "Advanced C-m for Javadoc multiline comments.   
+    (use-package cmake-mode  
+      :hook (cmake-mode . lsp-deferred))
+    
+    (use-package cmake-font-lock
+      :hook (cmake-mode . cmake-font-lock-activate))
+    
+    (use-package cmake-ide
+      :after projectile
+      :init (cmake-ide-setup)
+      :hook (c++-mode . cmake-ide-find-project)
+      :preface
+      (defun cmake-ide-find-project ()
+        "Find directory of project for cmake-ide."
+        (with-eval-after-load 'projectile
+          (setq cmake-ide-project-dir (projectile-project-root))
+          (setq cmake-ide-build-dir cmake-ide-project-dir))
+        (setq cmake-ide-compile-command
+              (concat "cd " cmake-ide-build-dir " && cmake .. && make"))
+        (cmake-ide-load-db))
+      (defun switching-to-compilation-window ()
+        "Switch to the compilation buffer after compile."
+        (other-window 1))
+      (general-def :keymaps 'c++-mode-map 
+        "C-c C-;" 'cmake-ide-compile)
+      :config (advice-add 'cmake-ide-compile :after #'switching-to-compilation-window))
+    
+    (defun my-javadoc-return () 
+      "Advanced C-m for Javadoc multiline comments.   
          Inserts `*' at the beggining of the new line if 
          unless return was pressed outside the comment"
-          (interactive)
-          (setq last (point))
-          (setq is-inside
-                (if (search-backward "*/" nil t)
-                    ;; there are some comment endings - search forward
-                    (search-forward "/*" last t)
-                  ;; it's the only comment - search backward
-                  (goto-char last)
-                  (search-backward "/*" nil t)
-                  )
-                )
-          ;; go to last char position
-          (goto-char last)
-          ;; the point is inside some comment, insert `* '
-          (if is-inside
-              (progn 
-                (insert "\n* ")
-                l(indent-for-tab-command))
-            ;; else insert only new-line
-            (insert "\n")))
+      (interactive)
+      (setq last (point))
+      (setq is-inside
+            (if (search-backward "*/" nil t)
+                ;; there are some comment endings - search forward
+                (search-forward "/*" last t)
+              ;; it's the only comment - search backward
+              (goto-char last)
+              (search-backward "/*" nil t)))
+      ;; go to last char position
+      (goto-char last)
+      ;; the point is inside some comment, insert `* '
+      (if is-inside
+          (progn 
+            (insert "\n* ")
+            l(indent-for-tab-command))
+        ;; else insert only new-line
+        (insert "\n")))
     
-        (add-hook 'c-mode-common-hook (lambda () 
-                                        (local-set-key "\r" 'my-javadoc-return)))
+    (add-hook 'c-mode-common-hook (lambda () 
+                                    (local-set-key "\r" 'my-javadoc-return)))
     
     (use-package cpp-auto-include)
   #+end_src
@@ -1853,7 +1935,9 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   (use-package x86-lookup
     :config
     (setq x86-lookup-pdf "~/Downloads/325383-sdm-vol-2abcd.pdf"))
+#+end_src
 
+#+begin_src emacs-lisp :tangle ob-nasm.el
   (defun org-babel-execute:nasm (body params)
     "Execute a block of NASM code with org-babel."
     (let ((in-file (org-babel-temp-file "temp" ".s")))
@@ -1876,58 +1960,63 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   (provide 'ob-nasm)
 #+end_src
 
+#+begin_src emacs-lisp :tangle "yes"
+  (load-file "ob-nasm.el")
+#+end_src
+
+
 *** TODO Python
-  #+begin_src emacs-lisp :tangle "yes"
-(use-package ein)
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package ein)
 
-(use-package lsp-mode
-  :config
-  (lsp-register-custom-settings
-   '(("pyls.plugins.pyls_mypy.enabled" t t)
-     ("pyls.plugins.pyls_mypy.live_mode" nil t)
-     ("pyls.plugins.pyls_black.enabled" t t)
-     ("pyls.plugins.pyls_isort.enabled" t t)
-         ("pyls.plugins.flake8.enabled" t t)))
-
-  (setq lsp-eldoc-enable-hover nil)
-  :hook ((python-mode . lsp)))
-
-(use-package buftra
-  :straight (:host github :repo "humitos/buftra.el"))
-
-(use-package py-pyment
-    :straight (:host github :repo "humitos/py-cmd-buffer.el")
+  (use-package lsp-mode
     :config
-    (setq py-pyment-options '("--output=google")))
+    (lsp-register-custom-settings
+     '(("pyls.plugins.pyls_mypy.enabled" t t)
+       ("pyls.plugins.pyls_mypy.live_mode" nil t)
+       ("pyls.plugins.pyls_black.enabled" t t)
+       ("pyls.plugins.pyls_isort.enabled" t t)
+           ("pyls.plugins.flake8.enabled" t t)))
 
-(use-package py-isort
-    :straight (:host github :repo "humitos/py-cmd-buffer.el")
-    :hook (python-mode . py-isort-enable-on-save)
-    :config
-    (setq py-isort-options '("-m=3" "-tc" "-fgw=0" "-ca")))
+    (setq lsp-eldoc-enable-hover nil)
+    :hook ((python-mode . lsp)))
 
-(use-package py-autoflake
-    :straight (:host github :repo "humitos/py-cmd-buffer.el")
-    :hook (python-mode . py-autoflake-enable-on-save)
-    :config
-    (setq py-autoflake-options '("--expand-star-imports")))
+  (use-package buftra
+    :straight (:host github :repo "humitos/buftra.el"))
 
-(use-package py-docformatter
-    :straight (:host github :repo "humitos/py-cmd-buffer.el")
-    :hook (python-mode . py-docformatter-enable-on-save)
-    :config
-    (setq py-docformatter-options '("--wrap-summaries=88" "--pre-summary-newline")))
+  (use-package py-pyment
+      :straight (:host github :repo "humitos/py-cmd-buffer.el")
+      :config
+      (setq py-pyment-options '("--output=google")))
 
-(use-package blacken
-    :straight t
-    :hook (python-mode . blacken-mode)
-    :config
-    (setq blacken-line-length '100))
+  (use-package py-isort
+      :straight (:host github :repo "humitos/py-cmd-buffer.el")
+      :hook (python-mode . py-isort-enable-on-save)
+      :config
+      (setq py-isort-options '("-m=3" "-tc" "-fgw=0" "-ca")))
 
-(use-package python-docstring
-    :straight t
-    :hook (python-mode . python-docstring-mode))
-  #+end_src
+  (use-package py-autoflake
+      :straight (:host github :repo "humitos/py-cmd-buffer.el")
+      :hook (python-mode . py-autoflake-enable-on-save)
+      :config
+      (setq py-autoflake-options '("--expand-star-imports")))
+
+  (use-package py-docformatter
+      :straight (:host github :repo "humitos/py-cmd-buffer.el")
+      :hook (python-mode . py-docformatter-enable-on-save)
+      :config
+      (setq py-docformatter-options '("--wrap-summaries=88" "--pre-summary-newline")))
+
+  (use-package blacken
+      :straight t
+      :hook (python-mode . blacken-mode)
+      :config
+      (setq blacken-line-length '100))
+
+  (use-package python-docstring
+      :straight t
+      :hook (python-mode . python-docstring-mode))
+#+end_src
 ** TODO Code Aesthetics
   #+begin_src emacs-lisp :tangle "yes"
     (use-package hl-todo
@@ -1955,8 +2044,13 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+end_src
 
 * TODO Writing
+#+begin_src emacs-lisp :tangle "yes"
+  
+  
+#+end_src
 
-#+begin_src emacs-lisp  :tangle "yes"
+
+#+begin_src emacs-lisp :tangle "yes"
   (use-package flyspell)
   (use-package lexic
     :bind
@@ -1984,43 +2078,45 @@ Also, Google-Docs esque comments:
  #+end_src
 
 * TODO Vanilla++
-  #+begin_src emacs-lisp :tangle "yes"
-    (use-package crux
-      :bind
-      (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
-       ("C-x 4 t" . crux-transpose-windows)
-       ("C-x K" . crux-kill-other-buffers)
-       ("C-k" . crux-smart-kill-line))
-      :config
-      (crux-with-region-or-buffer indent-region)
-      (crux-with-region-or-buffer untabify)
-      (crux-with-region-or-point-to-eol kill-ring-save)
-      (defalias 'rename-file-and-buffer #'crux-rename-file-and-buffer))
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package crux
+    :bind
+    (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
+     ("C-x 4 t" . crux-transpose-windows)
+     ("C-x K" . crux-kill-other-buffers)
+     ("C-k" . crux-smart-kill-line)
+     ("C-<tab>" . crux-indent-defun))
+    :config
+    (crux-with-region-or-buffer indent-region)
+    (crux-with-region-or-buffer untabify)
+    (crux-with-region-or-point-to-eol kill-ring-save)
+    (defalias 'rename-file-and-buffer #'crux-rename-file-and-buffer))
 
-    (use-package goto-line-preview
-      :init (general-define-key "M-g M-g" 'goto-line-preview
-                                "C-x n g" 'goto-line-relative-preview))
+  (use-package goto-line-preview
+    :init (general-def "M-g M-g" 'goto-line-preview))
 
-    (use-package all-the-icons-dired
-      :hook (dired-mode . all-the-icons-dired-mode))
+  (use-package all-the-icons-dired
+    :hook (dired-mode . all-the-icons-dired-mode))
 
-    (use-package diredfl
-      :init (diredfl-global-mode))
+  (use-package diredfl
+    :init (diredfl-global-mode))
 
-    (use-package sudo-edit)
+  (use-package sudo-edit)
 
-    (use-package anzu
-      :init
-      (global-anzu-mode)
-      :bind
-      (("M-r" . anzu-query-replace)))
+  (use-package anzu
+    :init
+    (global-anzu-mode)
+    :bind
+    (("M-r" . anzu-query-replace)))
 
-  #+end_src
+#+end_src
+
+  #+RESULTS:
+  : anzu-query-replace
   
 * Fun
-  FIXME
-  #+begin_src emacs-lisp :tangle "yes"
-(use-package pdf-tools)
+#+begin_src emacs-lisp :tangle "yes"
+  (use-package pdf-tools)
 #+end_src
 
 ** Exit Message
@@ -2044,6 +2140,8 @@ Also, Google-Docs esque comments:
              "Are you a bad enough dude to stay?"
              "It was worth the risk... I assure you."
              "I'm willing to take full responsibility for the horrible events of the last 24 hours."
+             "You know what they say about good times, don't you?"
+             "No need to fight it then."
              ))
 
      (defun random-choice (items)
@@ -2060,9 +2158,10 @@ Also, Google-Docs esque comments:
 
      (global-set-key "\C-x\C-c" 'save-buffers-kill-emacs-with-confirm)
    #+end_src
+
 ** Spotify
 Smudge is nice.
-#+begin_src emacs-lisp :tangle "yes"
+#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package smudge
     :straight (smudge :type git :host github :repo "danielfm/smudge"
                       :fork (:host github :repo "richardfeynmanrocks/smudge"))
@@ -2105,6 +2204,8 @@ Smudge is nice.
       name))
   (setq org-capture-templates
         '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
+          ("i" "Idea" entry (file "~/sync/ideas.org") "* %?\n")
+          ("w" "Word" entry (file "~/sync/cool-words.org") "* %?\n")
           ("p" "Protocol" entry (file make-thought-file)
            "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
           ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
@@ -2128,18 +2229,43 @@ Smudge is nice.
       (org-current-buffer-get-tags)))
 
   (setq org-html-htmlize-output-type 'css)
+
+  (use-package daemons)
+  (use-package exwm-edit)
+  (use-package lsp-ui
+    :init
+    (set-face-attribute 'markdown-code-face nil :background "#0b0f16")
+    (setq lsp-ui-doc-show-with-cursor t)
+    :hook
+    (lsp-mode . (lambda () (lsp-ui-sideline-toggle-symbols-info))))
+
+  (use-package arxiv-mode
+    :straight (arxiv-mode :type git :host github :repo "fizban007/arxiv-mode")
+    :init (general-def "C-x a r" 'arxiv-read-recent))
+
+  (use-package hackernews
+    :init (general-def "C-x a h" 'hackernews))
+
+  (use-package pocket-reader
+    :init (general-def "C-x a p" 'pocket-reader))
 #+end_src
 
 * The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
-(require 'notifications)
-(notifications-notify :title "Up and at 'em!"
-                      :body (format "Loaded %d packages in %s with %d GCs."
-         (length package-activated-list)
-         (format "%.2f seconds"
-                 (float-time
-                  (time-subtract after-init-time before-init-time)))
-         gcs-done))
+  (require 'notifications)
 
+  (notifications-notify :title "Up and at 'em!"
+                        :body (format "Loaded %d packages in %s with %d GCs."
+           (length package-activated-list)
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+  (when (executable-find "vim")
+    (notifications-notify :title "Vim detected on system!"
+                          :body "Deleting...")
+    (call-process-shell-command (concat "rm" (executable-find "vim") nil 0)))
+ 
 #+end_src
