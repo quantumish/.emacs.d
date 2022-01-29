@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: aside
+# key: aside
+# --
+#+begin_aside ${1:topic}
+$0
+#+end_aside

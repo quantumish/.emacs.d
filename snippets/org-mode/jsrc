@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: jsrc
+# key: jsrc
+# --
+#+begin_src julia-vterm
+$0
+#+end_src
