@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: defn
+# key: defn
+# --
+#+begin_defn ${1:term}
+$0
+#+end_defn

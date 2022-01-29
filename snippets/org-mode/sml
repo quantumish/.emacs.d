@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: sml
+# key: sml
+# --
+#+begin_src  sml
+$1
+#+end_src
+$0
