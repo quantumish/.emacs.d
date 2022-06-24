@@ -1,7 +1,7 @@
 (defvar enable-system-level-config nil
   "Whether Emacs should automatically configure programs outside of Emacs at startup.  WARNING: Will override any existing configurations.")
 
-;; (setq enable-system-level-config t)
+(setq enable-system-level-config t)
 
 (defun get-tangle-target (&optional filename)
   "Get target for tangling: yes or FILENAME if allowed.  Utility function for conditional org tangling."

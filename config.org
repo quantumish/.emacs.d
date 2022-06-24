@@ -300,6 +300,11 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
       recompile dmenu
   }
 
+
+  export PYENV_ROOT="$HOME/.pyenv"
+  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+
   # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
   [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
   source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -387,9 +392,10 @@ It's time to load EXWM, the Emacs X Window Manager.
             ([?\C-e] . [end])
             ([?\M-v] . [prior])
             ([?\C-v] . [next])
-            ([?\C-d] . [delete])
+            ([?\C-d] . [delete])            
             ([?\C-k] . [S-end delete])))
     ;; Allow windows to be moved across screens and interacted with normally.
+    
     (setq exwm-layout-show-all-buffers t)
     (setq exwm-workspace-show-all-buffers t)
     (exwm-enable))
@@ -402,17 +408,17 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
     :init
     (defvar left-screen "DP-5")
     (defvar middle-screen "HDMI-0")
-    (defvar right-screen "DP-3")
+    (defvar right-screen "DP-1")
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
-    (exwm-randr-enable))
+    (exwm-randr-enable)) 
 
   ;; (use-package ivy
   ;;   :config
   ;;   (call-process-shell-command (concat "xrandr --output" left-screen " --left-of " middle-screen) 0)
   ;;   (call-process-shell-command (concat "xrandr --output" left-screen " --left-of " middle-screen) 0)
   ;;   (call-process-shell-command (concat "xrandr --output" right-screen " --right-of " middle-screen) 0)
-  ;;   (call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg")
+    (call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0)
   ;;   (start-process-shell-command "polybar-update" nil
   ;; 			       (concat "sed s/<MONITOR>/"
   ;; 				       middle-screen
@@ -423,6 +429,9 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
       :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
       :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))	      	      
 #+end_src
+
+#+RESULTS:
+| (lambda nil (exwm-outer-gaps-mode)) | exwm-randr--init |
 
 Next, if we're on Linux, let's do everything we need to do at startup.
 
@@ -625,39 +634,40 @@ Finally, we actually run the startup.
 
 Let's make moving across monitors and workspaces a little easier.
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-   (defun exwm-workspace-next ()
-     (interactive)
-     (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
-         (exwm-workspace-switch (+ exwm-workspace-current-index 1))))
+  (defun exwm-workspace-next ()
+    (interactive)
+    (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
+        (exwm-workspace-switch (+ exwm-workspace-current-index 1))))
 
-   (defun exwm-workspace-prev ()
-     (interactive)
-     (if (> exwm-workspace-current-index 0)
-         (exwm-workspace-switch (- exwm-workspace-current-index 1))))
+  (defun exwm-workspace-prev ()
+    (interactive)
+    (if (> exwm-workspace-current-index 0)
+        (exwm-workspace-switch (- exwm-workspace-current-index 1))))
 
-   (general-define-key
-    "M-h" 'exwm-workspace-next
-    "M-l" 'exwm-workspace-prev)
+  (general-define-key
+   "M-h" 'exwm-workspace-next
+   "M-l" 'exwm-workspace-prev)
 
-   ;; Make mouse follow focus
-   (use-package exwm-mff
-     :init (exwm-mff-mode))
+  ;; Make mouse follow focus
+  (use-package exwm-mff
+    :init (exwm-mff-mode))
 
-   (use-package exwmsw
-     :straight (exwmsw :type git :host github :repo "Lemonbreezes/exwmsw"
-                       :fork (:host github :repo "richardfeynmanrocks/exwmsw"))
-     :init
-     (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
-     (setq exwmsw-the-right-screen right-screen)
-     (setq exwmsw-the-center-screen middle-screen)
-     (setq exwmsw-the-left-screen left-screen)
-     :general
-     (override-global-map
-               "C-M-j" #'exwmsw-cycle-screens
-               "C-M-k" #'exwmsw-cycle-screens-backward)
-     (exwm-mode-map ;; HACK
-       "C-M-j" #'exwmsw-cycle-screens
-       "C-M-k" #'exwmsw-cycle-screens-backward))
+  (use-package exwmsw
+    :straight (exwmsw :type git :host github :repo "Lemonbreezes/exwmsw"
+                      :fork (:host github :repo "richardfeynmanrocks/exwmsw"))
+    :init
+    (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
+    (setq exwmsw-the-right-screen right-screen)
+    (setq exwmsw-the-center-screen middle-screen)
+    (setq exwmsw-the-left-screen left-screen)
+    :general
+    (override-global-map
+              "C-M-j" #'exwmsw-cycle-screens
+              "C-M-k" #'exwmsw-cycle-screens-backward)
+    (exwm-mode-map ;; HACK
+      "C-M-j" #'exwmsw-cycle-screens
+      "C-M-k" #'exwmsw-cycle-screens-backward))
+ 
  #+end_src
 
 Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
@@ -951,17 +961,17 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 * Movement
   #+begin_src emacs-lisp :tangle "yes"
     (use-package zygospore)
-    
+
     (defun opposite-other-window ()
       "Cycle buffers in the opposite direction."
       (interactive)
       (other-window -1))
-    
+
     (defun opposite-other-frame ()
       "Cycle frames in the opposite direction."
       (interactive)
       (other-frame -1))
-    
+
     (general-define-key
      :keymaps '(exwm-mode-map override-global-map)
      "M-k" 'other-window
@@ -969,7 +979,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
      "C-M-j" 'opposite-other-frame
      "C-M-k" 'other-frame
      "M-m" 'zygospore-toggle-delete-other-windows)
-    
+
     (use-package drag-stuff
       :init
       (general-def
@@ -1355,12 +1365,12 @@ And a function to open in Taproot:
 #+end_src
 
 ** Babel
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "yes"
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (C . t)
-     (nasm . t)                            ; Add asm language
+;     (nasm . t)                            ; Add asm language
      (python . t)))
 #+end_src
 * Productivity
@@ -1553,6 +1563,11 @@ And a function to open in Taproot:
       (eval `(set-face-attribute 'lsp-ui-doc-background nil :background ,(doom-darken 'bg .2))))
 #+end_src
 
+** DAP?
+#+begin_src  emacs-lisp :tangle "yes"
+
+#+end_src
+
 ** Company
 ~company-mode~ provides code completions in Emacs, and will work together with ~lsp-mode~ to provide a nice experience. On top of that, let's use add-ons that allow documentation for completions to pop up and also let ~prescient~ make things better like it did with Ivy.
 
@@ -1592,6 +1607,7 @@ And a function to open in Taproot:
                    (test . "ctest")
                    (make . "make")
                    (this . "g++ $this.cpp -std=c++17 -o $this")
+				   (this-debug . "g++ $this.cpp -std=c++17 -g -o $this")
                    (this-speedy . "g++ $this.cpp -O3 -std=c++17 -o $this")
                    (this-python . "g++ -shared -std=c++17 -undefined_dynamic_lookup `python3 -m pybind11 --includes` $this.cpp -o $this`python3-config --extension-suffix` -D PYTHON -fPIC")))
       (c-mode . ((make . "make")
@@ -1759,7 +1775,7 @@ YASnippet is the premiere package for snippets, so let's install it.
       :hook (c++-mode . ass-activate-for-major-mode)
       :config
       (aas-set-snippets 'c-mode
-                        "u64" "uint64_t"~
+                        "u64" "uint64_t"
                         "u32" "uint32_t"
                         "u16" "uint16_t"
                         "u8" "uint8_t"
@@ -1776,7 +1792,9 @@ YASnippet is the premiere package for snippets, so let's install it.
                         "v2i" "Eigen::Vector2i"
                         "v3f" "Eigen::Vector3f"
                         "v3d" "Eigen::Vector3d"
-                        "v3i" "Eigen::Vector3i"))
+                        "v3i" "Eigen::Vector3i")
+      (aas-set-snippets 'org-mode
+        "w/" "with"))
   (use-package laas
     :config ; do whatever here
     (aas-set-snippets 'laas-mode
@@ -1799,7 +1817,7 @@ YASnippet is the premiere package for snippets, so let's install it.
                       :cond #'laas-object-on-left-condition
                       "qq" (lambda () (interactive) (laas-wrap-previous-object "sqrt"))
                       ))
-  
+
 #+end_src
 
 ** Git
@@ -1811,6 +1829,9 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   ;; Show all TODOs in a git repo
   (use-package magit-todos) 
 #+end_src
+
+#+RESULTS:
+
 ** Language-Specific
 #+begin_src emacs-lisp :tangle "yes"
   (use-package rustic)
@@ -1846,10 +1867,10 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+begin_src emacs-lisp :tangle "yes"
     (setq c-default-style "k&r")
     (setq-default c-basic-offset 4)
-    
+
     (use-package modern-cpp-font-lock
       :init (modern-c++-font-lock-global-mode t))
-    
+
     (use-package ccls
                                             ; :ensure-system-package ccls
       :hook ((c-mode c++-mode cuda-mode) .
@@ -1874,13 +1895,13 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
       (general-def
         :keymaps 'c++-mode-map
         "C-c l l" 'ccls-code-lens-mode))
-    
+
     (use-package cmake-mode  
       :hook (cmake-mode . lsp-deferred))
-    
+
     (use-package cmake-font-lock
       :hook (cmake-mode . cmake-font-lock-activate))
-    
+
     (use-package cmake-ide
       :after projectile
       :init (cmake-ide-setup)
@@ -1900,7 +1921,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
       (general-def :keymaps 'c++-mode-map 
         "C-c C-;" 'cmake-ide-compile)
       :config (advice-add 'cmake-ide-compile :after #'switching-to-compilation-window))
-    
+
     (defun my-javadoc-return () 
       "Advanced C-m for Javadoc multiline comments.   
          Inserts `*' at the beggining of the new line if 
@@ -1923,10 +1944,10 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
             l(indent-for-tab-command))
         ;; else insert only new-line
         (insert "\n")))
-    
-    (add-hook 'c-mode-common-hook (lambda () 
-                                    (local-set-key "\r" 'my-javadoc-return)))
-    
+
+    ;; (add-hook 'c-mode-common-hook (lambda () 
+    ;;                                 (local-set-key "\r" 'my-javadoc-return)))
+
     (use-package cpp-auto-include)
   #+end_src
 
@@ -1937,31 +1958,8 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     (setq x86-lookup-pdf "~/Downloads/325383-sdm-vol-2abcd.pdf"))
 #+end_src
 
-#+begin_src emacs-lisp :tangle ob-nasm.el
-  (defun org-babel-execute:nasm (body params)
-    "Execute a block of NASM code with org-babel."
-    (let ((in-file (org-babel-temp-file "temp" ".s")))
-      (with-temp-file in-file
-        (if (string= (cdr (assq :snippet params)) "t")	
-            (insert "global func\nsection .text\nfunc:"))
-        (insert body))
-      (org-babel-eval
-       (format "nasm -felf64 %s -o temp.o"
-               (org-babel-process-file-name in-file))
-       "")
-      (if (string= (cdr (assq :unwrapped params)) "t")	
-          (org-babel-eval
-           "ld temp.o -o temp" "")
-        (org-babel-eval
-         "gcc ~/.emacs.d/handler.c temp.o -o temp" ""))
-      (org-babel-eval
-       "./temp" "")))
-
-  (provide 'ob-nasm)
-#+end_src
-
 #+begin_src emacs-lisp :tangle "yes"
-  (load-file "ob-nasm.el")
+;  (load-file "ob-nasm.el")
 #+end_src
 
 
@@ -2079,6 +2077,9 @@ Also, Google-Docs esque comments:
 
 * TODO Vanilla++
 #+begin_src emacs-lisp :tangle "yes"
+  (setq-default tab-width 4)
+  (setq-default indent-tabs-mode t)
+
   (use-package crux
     :bind
     (("C-a" . crux-move-beginning-of-line) ;; Move to beginning of text, not line.
@@ -2192,80 +2193,131 @@ Smudge is nice.
   (load "~/.emacs.d/secrets.el")
 #+end_src
 
+#+RESULTS:
+: t
+
 * Scratch
 #+begin_src emacs-lisp  :tangle "yes"
-  (setq org-agenda-scheduled-leaders '("" ""))
-  (setq org-agenda-show-future-repeats nil)
+     (setq org-agenda-scheduled-leaders '("" ""))
+     (setq org-agenda-show-future-repeats nil)
 
-  (defun make-thought-file ()
-    (message "WHEE")
-    (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
-      (with-temp-file name)    
-      name))
-  (setq org-capture-templates
-        '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
-          ("i" "Idea" entry (file "~/sync/ideas.org") "* %?\n")
-          ("w" "Word" entry (file "~/sync/cool-words.org") "* %?\n")
-          ("p" "Protocol" entry (file make-thought-file)
-           "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
-          ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
-          ))
-  (general-define-key
-   "C-c r" (lambda () (interactive) (org-capture nil "r")))
-  (defun ndk/get-keyword-key-value (kwd)
-    (let ((data (cadr kwd)))
-      (list (plist-get data :key)
-            (plist-get data :value))))
+     (defun make-thought-file ()
+       (message "WHEE")
+       (let ((name (concat "~/sync/dump/" (format-time-string "%Y%m%d%H%M%S") ".org")))
+         (with-temp-file name)    
+         name))
+     (setq org-capture-templates
+           '(("r" "Thought" entry (file make-thought-file)  "* %T\n#+FILETAGS: %?")
+             ("i" "Idea" entry (file "~/sync/ideas.org") "* %?\n")
+             ("w" "Word" entry (file "~/sync/cool-words.org") "* %?\n")
+             ("p" "Protocol" entry (file make-thought-file)
+              "* %T\n#+FILETAGS: %?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\nSource: [[%:link][%:description]]\n\n\n")
+             ("L" "Protocol Link" entry (file make-thought-file) "* %T\n#+FILETAGS: %?\n [[%:link][%:description]]")
+             ))
+     (general-define-key
+      "C-c r" (lambda () (interactive) (org-capture nil "r")))
+     (defun ndk/get-keyword-key-value (kwd)
+       (let ((data (cadr kwd)))
+         (list (plist-get data :key)
+               (plist-get data :value))))
 
-  (defun org-current-buffer-get-tags ()
-    (nth 1
-         (assoc "FILETAGS"
-                (org-element-map (org-element-parse-buffer 'greater-element)
-                    '(keyword)
-                  #'ndk/get-keyword-key-value))))
+     (defun org-current-buffer-get-tags ()
+       (nth 1
+            (assoc "FILETAGS"
+                   (org-element-map (org-element-parse-buffer 'greater-element)
+                       '(keyword)
+                     #'ndk/get-keyword-key-value))))
 
-  (defun org-file-get-tags (file)
-    (with-current-buffer (find-file-noselect file)
-      (org-current-buffer-get-tags)))
+     (defun org-file-get-tags (file)
+       (with-current-buffer (find-file-noselect file)
+         (org-current-buffer-get-tags)))
 
-  (setq org-html-htmlize-output-type 'css)
+     (setq org-html-htmlize-output-type 'css)
 
-  (use-package daemons)
-  (use-package exwm-edit)
-  (use-package lsp-ui
-    :init
-    (set-face-attribute 'markdown-code-face nil :background "#0b0f16")
-    (setq lsp-ui-doc-show-with-cursor t)
-    :hook
-    (lsp-mode . (lambda () (lsp-ui-sideline-toggle-symbols-info))))
+     (use-package daemons)
+     (use-package exwm-edit)
+     (use-package lsp-ui
+       :init
+       (set-face-attribute 'markdown-code-face nil :background "#0b0f16")
+       (setq lsp-ui-doc-show-with-cursor t)
+       :hook
+       (lsp-mode . (lambda () (lsp-ui-sideline-toggle-symbols-info))))
 
-  (use-package arxiv-mode
-    :straight (arxiv-mode :type git :host github :repo "fizban007/arxiv-mode")
-    :init (general-def "C-x a r" 'arxiv-read-recent))
+     (use-package arxiv-mode
+       :straight (arxiv-mode :type git :host github :repo "fizban007/arxiv-mode")
+       :init (general-def "C-x a r" 'arxiv-read-recent))
 
-  (use-package hackernews
-    :init (general-def "C-x a h" 'hackernews))
+     (use-package hackernews
+       :init (general-def "C-x a h" 'hackernews))
 
-  (use-package pocket-reader
-    :init (general-def "C-x a p" 'pocket-reader))
+     (use-package pocket-reader
+       :init (general-def "C-x a p" 'pocket-reader))
+    (add-hook 'c++-mode-hook (lambda ()
+                              (setq flycheck-gcc-language-standard "c++20")
+                              (setq flycheck-clang-language-standard "c++20")))
+
+    (use-package elfeed
+      :config
+      (setq elfeed-feeds  
+            '("https://reddit.com/r/cpp.rss"
+              "https://reddit.com/r/rust.rss"
+              "https://reddit.com/r/emacs.rss"
+              "https://reddit.com/r/c_programming.rss"
+              "https://reddit.com/r/programming.rss"
+              "https://news.ycombinator.com/rss"
+              "https://lobste.rs/rss"
+              "https://20mr.substack.com/feed"
+              "https://hidonipothan.substack.com/feed"
+
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UC3azLjQuz9s5qk76KEXaTvA"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCUzQJ3JBuQ9w-po4TXRJHiA"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UC2C_jShtL725hvbm1arSV9w"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCE1jXbVAGJQEORz9nZqb5bQ"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCtHaxi4GTYDpJgMSGy7AeSw"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UC1JTQBa5QxZCpXrFSkMxmPw"
+              "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg"
+              )))
+
+  (use-package elfeed-tube
+    :straight (:host github :repo "karthink/elfeed-tube")
+    :after elfeed
+    :config
+    (elfeed-tube-setup)
+    :bind (:map elfeed-show-mode-map
+                ("F" . elfeed-tube-search)
+                ([remap save-buffer] . elfeed-tube-save)
+                :map elfeed-search-mode-map
+                ("F" . elfeed-tube-search)
+                ([remap save-buffer] . elfeed-tube-save)))
+  (use-package elfeed-tube-mpv
+    :straight (:host github :repo "karthink/elfeed-tube")
+    :bind (:map elfeed-show-mode-map
+                ("C-c C-f" . elfeed-tube-mpv-follow-mode)
+                ("C-c C-w" . elfeed-tube-mpv-where)))
+
+  ;; (use-package elfeed-summary
+  ;;   :straight (:host github :repo "SqrtMinusOne/elfeed-summary"))    
 #+end_src
 
 * The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
-  (require 'notifications)
+    (require 'notifications)
 
-  (notifications-notify :title "Up and at 'em!"
-                        :body (format "Loaded %d packages in %s with %d GCs."
-           (length package-activated-list)
-           (format "%.2f seconds"
-                   (float-time
-                    (time-subtract after-init-time before-init-time)))
-           gcs-done))
+    (notifications-notify :title "Up and at 'em!"
+                          :body (format "Loaded %d packages in %s with %d GCs."
+             (length package-activated-list)
+             (format "%.2f seconds"
+                     (float-time
+                      (time-subtract after-init-time before-init-time)))
+             gcs-done))
 
   (when (executable-find "vim")
     (notifications-notify :title "Vim detected on system!"
+                          :image-path "file:///home/quantumish/.config/dunst/images/alert.png"
                           :body "Deleting...")
-    (call-process-shell-command (concat "rm" (executable-find "vim") nil 0)))
- 
+    (call-process-shell-command (concat "rm" (executable-find "vim")) nil 0))
 #+end_src
