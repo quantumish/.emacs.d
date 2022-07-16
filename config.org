@@ -2302,6 +2302,15 @@ Smudge is nice.
   ;;   :straight (:host github :repo "SqrtMinusOne/elfeed-summary"))    
 #+end_src
 
+* Formatting
+#+begin_src emacs-lisp
+  (use-package format-all
+    :hook
+    (after-save . (lambda () (if (derived-mode-p 'prog-mode) (format-all-buffer)))))
+  (setq indent-tabs-mode nil)  
+#+end_src
+
+
 * The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
