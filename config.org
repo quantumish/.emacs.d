@@ -133,577 +133,11 @@ Emacs has some default behaviors that are generally annoying. Let's disable them
   (global-visual-line-mode)
 #+end_src
 
-* System
-** System Packages
-Let's now move on to system-level configuration. First, some utility functions for running commands and deducing distro/OS.
-
-#+begin_src emacs-lisp :tangle "yes"
-  (defun process-exit-code-and-output (program &rest args)
-    "Run PROGRAM with ARGS and return the exit code and output in a list."
-    (with-temp-buffer
-      (list (apply 'call-process program nil (current-buffer) nil args)
-            (buffer-string))))
-
-  (defun get-distro-or-os ()
-    "Return the Linux distribution or OS Emacs is running on."
-    (if (eq system-type 'darwin)
-        "Darwin"
-      (when (eq system-type 'gnu/linux)
-        (if (file-exists-p "/etc/os-release")
-            (substring (shell-command-to-string "source /etc/os-release && echo $NAME") 0 -1)
-          (substring (car (cdr (process-exit-code-and-output "uname" "-o"))) 0 -1)))))
-#+end_src
-
-Then, let's set up [[https://gitlab.com/jabranham/system-packages][system-packages]], an awesome package that lets you programmatically install packages from Emacs across operating systems.
-
-#+begin_src emacs-lisp :tangle "yes"
-  (use-package system-packages
-    :init
-    (let (os-name (get-distro-or-os))
-      ;; system-packages doesn't support yay by default, so add it.
-      (when (string= os-name "Arch Linux")
-            (add-to-list 'system-packages-supported-package-managers
-                         '(yay .
-                               ((default-sudo . nil)
-                                (install . "yay -S")
-                                (uninstall . "yay -Rs")
-                                (update . "yay -Syu")
-                                (log . "cat /var/log/pacman.log")
-                                (change-log . "yay -Qc")
-                                (clean-cache . "yay -Sc")
-                                (get-info . "yay -Qi")
-                                (get-info-remote . "yay -Si")
-                                (list-files-provided-by . "yay -Ql")
-                                (owning-file . "yay -Qo")
-                                (verify-all-dependencies . "yay -Dk")
-                                (remove-orphaned . "yay -Rsn $(pacman -Qtdq)")
-                                (list-installed-packages . "yay -Qe")
-                                (list-installed-packages-all . "yay -Q")
-                                (noconfirm . "--noconfirm"))))
-            (setq system-packages-package-manager 'yay))
-      (when (string= os-name "Debian GNU/Linux")
-            (setq system-packages-use-sudo t)
-            (setq system-packages-package-manager 'apt))
-      (if (string= os-name "Darwin")
-          (setq system-packages-package-manager 'brew)))
-      (setq system-packages-noconfirm t))
-#+end_src
-
-This package also has some nice extensions like ~use-package-ensure-system-package~ which lets you express system-level dependencies for Emacs packages, and ~helm-system-packages~ which is the ultimate package manager interface (although it unfortunately means we'll need to install all of Helm for just this).
-
-#+begin_src emacs-lisp :tangle "yes"
-  (use-package use-package-ensure-system-package)
-  (use-package helm-system-packages
-    :commands (helm-system-packages))
-#+end_src
-
-** External Programs
-~pywal~ will be our savior for theming by allowing for thematic consistency.
-#+begin_src emacs-lisp :tangle "yes"
-  ;; (use-package exwm
-  ;;   :ensure-system-package python-pywal)
-#+end_src
-
-~kitty~ is a terminal emulator that's featureful and usable.
-#+begin_src conf :tangle (config-tangle "~/.config/kitty/kitty.conf")
-  include ~/.cache/wal/colors-kitty.conf
-  font_family IBM Plex Mono
-  cursor_shape block
-  window_padding_width 10 15
-  map page_up scroll_page_up
-  map page_down scroll_page_down
-  map ctrl+shift+equal change_font_size all +2.0
-  map ctrl+shift+plus change_font_size all +2.0
-  map ctrl+shift+kp_add change_font_size all +2.0
-  initial_window_width 1000
-  initial_window_height 400
-#+end_src
-
-~zsh~ is good.
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux)   
-  if [[ "$TERM" == "dumb" ]]
-  then
-      unsetopt zle
-      unsetopt prompt_cr
-      unsetopt prompt_subst
-      unset zle_bracketed_paste
-      PS1='$ '
-      return
-  fi
-  # p10k instant prompt
-  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-      source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-  fi
-
-  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-
-  export ZSH="$HOME/.oh-my-zsh"
-
-  ZSH_THEME="powerlevel10k/powerlevel10k"
-
-  plugins=(git)
-
-  source $ZSH/oh-my-zsh.sh
-
-  export EDITOR='emacs'
-
-  function emacs_suggest() {
-      tput setaf 1
-      echo -n "DEPRECATED: "
-      tput sgr0
-      echo -n "You should really use "
-      tput sitm
-      echo -n $1
-      tput sgr0
-      echo " instead!"
-      eval $2 $@
-  }
-
-  alias git="emacs_suggest Magit '/usr/bin/git'"
-  alias gc="emacs_suggest Magit 'git commit'"
-  alias ga="emacs_suggest Magit 'git add'"
-  alias gs="emacs_suggest Magit 'git status'"
-  alias gp="emacs_suggest Magit 'git push'"
-  alias glog="emacs_suggest Magit 'git log --oneline --decorate --graph'" 
-
-  # Aliases
-  alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
-  alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
-  alias nano=mg
-  alias ls="exa --icons"
-  alias hexdump=hexyl
-  alias cat=bat
-  alias rm=rip
-  alias gcc="gcc -Wall -Werror -pedantic-errors"
-  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-
-  function recompile() {
-      cd ~/.config/$1
-      sudo make clean install &> /dev/null
-      cd -
-  }
-
-  function fix_titles() {
-      for a in *
-               id3v2 -t ${a%.mp3} $a
-  }
-
-  function themeage() {
-      wal -i $1 &> /dev/null
-      xdotool key alt+r &> /dev/null
-      emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
-      /home/quantumish/.local/bin/pywalfox update
-      python ~/test.py colors-wal-dwm2.h
-      python ~/test.py colors-wal-dmenu2.h
-      python ~/test.py zathurarc
-      python ~/test.py colors-vis
-      recompile dmenu
-  }
-
-
-  export PYENV_ROOT="$HOME/.pyenv"
-  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init -)"
-
-  # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-  source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-#+end_src
-
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
-  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-
-  export ZSH="$HOME/.oh-my-zsh"
-
-  ZSH_THEME="lambdamod"
-
-  plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-
-  source $ZSH/oh-my-zsh.sh
-
-  export EDITOR='emacs'
-
-  alias gs="git status"
-  alias nano=mg
-  alias gcc="gcc -Wall -Werror -pedantic-errors"
-  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-  alias sml=rlwrap /usr/local/smlnj/bin/sml $@
-#+end_src
-
-
-It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good.
-#+begin_src text :tangle (config-tangle "~/.config/neofetch/arch.ascii" 'gnu/linux)
-${c1}
-                   ▄
-                  ▟█▙
-                 ▟███▙
-                ▟█████▙
-               ▟███████▙
-              ▂▔▀▜██████▙
-             ▟██▅▂▝▜█████▙
-            ▟█████████████▙
-           ▟███████████████▙
-          ▟█████████████████▙
-         ▟███████████████████▙
-        ▟█████████▛▀▀▜████████▙
-       ▟████████▛      ▜███████▙
-      ▟█████████        ████████▙
-     ▟██████████        █████▆▅▄▃▂
-    ▟██████████▛        ▜█████████▙
-   ▟██████▀▀▀              ▀▀██████▙
-  ▟███▀▘                       ▝▀███▙
- ▟▛▀                               ▀▜▙
-
-#+end_src
-
-Firefox could be prettier.
-#+begin_src emacs-lisp :tangle "yes"
-  ;; (use-package exwm
-  ;;   :ensure-system-package (firefox python-pywalfox))
-#+end_src
-#+begin_src css
-  #TabsToolbar {visibility: collapse;}
-  #statuspanel[type="overLink"] #statuspanel-label {
-      display:none!important;
-  }
-#+end_src
-
-** Desktop
-It's time to load EXWM, the Emacs X Window Manager.
-
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-  (use-package exwm
-    :init
-    (setq exwm-workspace-number 3)
-    (setq exwm-input-global-keys
-          `(([?\s-r] . exwm-reset)
-            ([?\s-w] . exwm-workspace-switch)
-            ([?\s-&] . (lambda (command)
-                         (interactive (list (read-shell-command "$ ")))
-                         (start-process-shell-command command nil command)))))
-    ;; Set default simulation keys
-    (setq exwm-input-simulation-keys
-          '(([?\C-b] . [left])
-            ([?\C-f] . [right])
-            ([?\C-p] . [up])
-            ([?\C-n] . [down])
-            ([?\C-a] . [home])
-            ([?\C-e] . [end])
-            ([?\M-v] . [prior])
-            ([?\C-v] . [next])
-            ([?\C-d] . [delete])            
-            ([?\C-k] . [S-end delete])))
-    ;; Allow windows to be moved across screens and interacted with normally.
-    
-    (setq exwm-layout-show-all-buffers t)
-    (setq exwm-workspace-show-all-buffers t)
-    (exwm-enable))
-#+end_src
-
-Setting up multi-monitor support is a bit of a hack in my configuration since my input devices tend to mysteriously swap around. You'll notice I'm using ~use-package~ for the same package twice in a row here, but fear not, it merely executes them sequentially and it means I can intersperse long-winded package configuration with text without fear of accidentally breaking something one day.
-
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-  (use-package exwm
-    :init
-    (defvar left-screen "DP-5")
-    (defvar middle-screen "HDMI-0")
-    (defvar right-screen "DP-1")
-    (require 'exwm-randr)
-    (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
-    (exwm-randr-enable)) 
-
-  ;; (use-package ivy
-  ;;   :config
-  ;;   (call-process-shell-command (concat "xrandr --output" left-screen " --left-of " middle-screen) 0)
-  ;;   (call-process-shell-command (concat "xrandr --output" left-screen " --left-of " middle-screen) 0)
-  ;;   (call-process-shell-command (concat "xrandr --output" right-screen " --right-of " middle-screen) 0)
-    (call-process-shell-command "feh --bg-fill ~/.config/wallpapers/firewatch-galaxy.jpg" nil 0)
-  ;;   (start-process-shell-command "polybar-update" nil
-  ;; 			       (concat "sed s/<MONITOR>/"
-  ;; 				       middle-screen
-  ;; 				       "/g -i ~/.config/polybar/config.ini.bak > ~/.config/polybar/config.ini"))
-  ;;   (call-process-shell-command "bash ~/.config/polybar/launch.sh --docky" nil 0))
-
-    (use-package exwm-outer-gaps
-      :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
-      :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))	      	      
-#+end_src
-
-#+RESULTS:
-| (lambda nil (exwm-outer-gaps-mode)) | exwm-randr--init |
-
-Next, if we're on Linux, let's do everything we need to do at startup.
-
-~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
-#+begin_src text :tangle (config-tangle "~/.config/X/Xmodmap" 'gnu/linux)
-  clear      lock
-  clear   control
-  clear      mod1
-  clear      mod2
-  clear      mod3
-  clear      mod4
-  clear      mod5
-  keycode      37 = Hyper_L
-  keycode      66 = Control_L
-  keycode       9 = Escape
-  keycode  0xffca = Escape
-  add     control = Control_L Control_R
-  add        mod1 = Alt_L Alt_R Meta_L
-  add        mod2 = Num_Lock
-  add        mod3 = Hyper_L
-  add        mod4 = Super_L Super_R
-  add        mod5 = Mode_switch ISO_Level3_Shift
-#+end_src
-
-~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
-#+begin_src sh :tangle (config-tangle "~/.xbindkeysrc" 'gnu/linux)
-  # -*- shell-script -*-
-  # TODO Phase me out!
-
-  # Increase volume
-  "pamixer -i 5"
-  XF86AudioRaiseVolume
-
-  # Decrease volume
-  "pamixer -d 5"
-  XF86AudioLowerVolume
-
-  "pamixer -t"
-  XF86AudioMute
-
-  "bash ~/.config/rofi/applets/menu/screenshot.sh"
-  Print
-
-  "bash ~/.config/rofi/applets/menu/powermenu.sh"
-  Pause
-
-  "bash ~/.config/rofi/applets/menu/apps.sh"
-  Scroll_Lock
-
-  "bash ~/.config/rofi/launchers/text/launcher.sh"
-  alt + p
-
-  "bash ~/.config/rofi/launchers/ribbon/launcher.sh"
-  alt + shift + p
-
-  "sh ~/.config/focus.sh"
-  alt + shift + f
-
-  "python ~/.config/modeset.py 'normal'"
-  m:0x20 + c:37 + F1
-
-  "rofi -show calc -modi calc -no-show-match -no-sort"
-  XF86Calculator
-#+end_src
-
-~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as remap tapping caps-lock to escape.
-#+begin_src sh :tangle (config-tangle "~/.config/X/xcape.sh" 'gnu/linux)
-xcape -e "Control_L=Escape"
-xcape -e "Shift_R=parenright"
-xcape -e "Shift_L=parenleft"
-#+end_src
-
-~dunst~ is a great notification server.
-#+begin_src conf :tangle (config-tangle "~/.config/dunst/dunstrc" 'gnu/linux)
-  [global]
-  monitor = 0
-  follow = keyboard
-  geometry = "320x20-36+36"
-  indicate_hidden = yes
-  shrink = yes
-  transparency = 0
-  notification_height = 0
-  separator_height = 0
-  padding = 8
-  horizontal_padding = 8
-  frame_width = 2
-  frame_color = "#000000"
-  separator_color = frame
-  sort = yes
-  idle_threshold = 120
-  font = IBM Plex Mono 10
-  line_height = 0
-  markup = full
-  format = "<b>%s</b>\n<i>%b</i>"
-  alignment = left
-  show_age_threshold = 60
-  word_wrap = yes
-  ellipsize = middle
-  ignore_newline = no
-  stack_duplicates = true
-  hide_duplicate_count = false
-  show_indicators = false
-  icon_position = left
-  max_icon_size = 32
-  icon_path = /usr/share/icons/candy-icons/apps/scalable:/usr/share/icons/candy-icons/devices/scalable/
-  sticky_history = yes
-  history_length = 20
-  dmenu = /usr/bin/dmenu -p dunst:
-  browser = /usr/bin/firefox -new-tab
-  always_run_script = true
-  title = Dunst
-  class = Dunst
-  startup_notification = false
-  verbosity = mesg
-  corner_radius = 0
-  force_xinerama = false
-  mouse_left_click = close_current
-  mouse_middle_click = do_action
-  mouse_right_click = close_all
-
-  [experimental]
-  per_monitor_dpi = false
-
-  [shortcuts]
-  close = ctrl+space
-  close_all = ctrl+shift+space
-  history = ctrl+grave
-  context = ctrl+shift+grave
-
-  [urgency_low]
-  foreground = "#ffd5cd"
-  background = "#121212"
-  frame_color = "#a2c5de"
-  timeout = 10
-  icon = ~/.config/dunst/images/notification.png
-
-  [urgency_normal]
-  background = "#121212"
-  foreground = "#ffd5cd"
-  frame_color = "#a2c5de"
-  timeout = 10
-  icon = ~/.config/dunst/images/notification.png
-
-  [urgency_critical]
-  background = "#121212"
-  foreground = "#ffd5cd"
-  frame_color = "#a2c5de"
-  timeout = 0
-  icon = ~/.config/dunst/images/alert.png
-#+end_src
-
-Let's define a quick script to reload it based on pywal, too.
-#+begin_src sh :tangle (config-tangle "~/.config/dunst/reload_dunst.sh" 'gnu/linux)
-  . "${HOME}/.cache/wal/colors.sh"
-
-  pkill dunst
-  dunst \
-        -frame_width 2 \
-            -lb "${color0}" \
-            -nb "${color0}" \
-            -cb "${color0}" \
-            -lf "${color7}" \
-            -bf "${color7}" \
-            -cf "${color7}" \
-            -nf "${color7}" \
-        -frame_color "${color2}" &
-#+end_src
-
-~picom~ is a nice compositor, and will allow us to have effects like rounded corners and transparency if we want them. Dual kawase blur looks very nice, so let's use it.
-#+begin_src conf :tangle (config-tangle "~/.config/picom.conf" 'gnu/linux)
-backend = "glx";
-blur: {
-      method = "dual_kawase";
-      strength = 10;
-      background = false;
-      background-frame = false;
-      background-fixed = false;
-}
-#+end_src
-
-Finally, we actually run the startup.
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-  (use-package exwm
-    ; :ensure-system-package (xbindkeys xcape dunst flameshot unclutter polybar feh picom)
-    :init
-    ;; Rebind keys
-    (call-process-shell-command "xmodmap ~/.config/X/Xmodmap" nil 0)
-    (call-process-shell-command "xbindkeys" nil 0)
-    (call-process-shell-command "sh ~/.config/X/xcape.sh" nil 0)
-    ;; Notifications w/ dunst
-    (call-process-shell-command "dunst &" nil 0)
-    (call-process-shell-command "sh ~/.config/dunst/reload_dunst.sh" nil 0)
-    ;; Make mouse vanish when not used
-    (call-process-shell-command "unclutter &" nil 0)
-    ;; The best screenshot utility!
-    (call-process-shell-command "flameshot &" nil 0)
-    ;; Compositor
-    (call-process-shell-command "picom &" nil 0))
-#+end_src
-
-Let's make moving across monitors and workspaces a little easier.
-#+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-  (defun exwm-workspace-next ()
-    (interactive)
-    (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
-        (exwm-workspace-switch (+ exwm-workspace-current-index 1))))
-
-  (defun exwm-workspace-prev ()
-    (interactive)
-    (if (> exwm-workspace-current-index 0)
-        (exwm-workspace-switch (- exwm-workspace-current-index 1))))
-
-  (general-define-key
-   "M-h" 'exwm-workspace-next
-   "M-l" 'exwm-workspace-prev)
-
-  ;; Make mouse follow focus
-  (use-package exwm-mff
-    :init (exwm-mff-mode))
-
-  (use-package exwmsw
-    :straight (exwmsw :type git :host github :repo "Lemonbreezes/exwmsw"
-                      :fork (:host github :repo "richardfeynmanrocks/exwmsw"))
-    :init
-    (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
-    (setq exwmsw-the-right-screen right-screen)
-    (setq exwmsw-the-center-screen middle-screen)
-    (setq exwmsw-the-left-screen left-screen)
-    :general
-    (override-global-map
-              "C-M-j" #'exwmsw-cycle-screens
-              "C-M-k" #'exwmsw-cycle-screens-backward)
-    (exwm-mode-map ;; HACK
-      "C-M-j" #'exwmsw-cycle-screens
-      "C-M-k" #'exwmsw-cycle-screens-backward))
- 
- #+end_src
-
-Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
-#+begin_src emacs-lisp :tangle "yes"
-  (use-package exwm
-    :init
-
-    (defun b3n-exwm-set-buffer-name ()
-      (if (and exwm-title (string-match "\\`http[^ ]+" exwm-title))
-          (let ((url (match-string 0 exwm-title)))
-            (setq-local buffer-file-name url)
-            (setq-local exwm-title (replace-regexp-in-string
-                                    (concat (regexp-quote url) " - ")
-                                    ""
-                                    exwm-title))))
-      (setq-local exwm-title
-                  (concat
-                   exwm-class-name
-                   "<"
-                   (if (<= (length exwm-title) 50)
-                       exwm-title
-                     (concat (substring exwm-title 0 50) "…"))
-                   ">"))
-
-      (exwm-workspace-rename-buffer exwm-title))
-
-    (add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
-    (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name))
-#+end_src
-
-* Interface
 ** Theming
   #+begin_src emacs-lisp :tangle "yes"
     ;; TODO: Set up treemacs.
 
-    (set-face-attribute 'default nil :family "IBM Plex Mono")
+    (set-face-attribute 'default nil :family "Cozette")
     (set-face-attribute 'font-lock-comment-face nil :italic t)
 
     (use-package hide-mode-line)
@@ -725,11 +159,16 @@ Then, make it so EXWM buffer names contain part of the the window title based of
       :init
       (load-theme 'ewal-doom-one t))
 
-    (use-package doom-modeline
-      :init
-      (setq doom-modeline-height 40)
-      (setq doom-modeline-buffer-encoding nil)
-      (doom-modeline-mode))
+    (cl-case my/theme
+     ('minimal
+      (use-package telephone-line
+        :init (telephone-line-mode)))
+     ('classic
+      (use-package doom-modeline
+        :init
+        (setq doom-modeline-height 40)
+        (setq doom-modeline-buffer-encoding nil)
+        (doom-modeline-mode))))
 
     ;; TODO: Contextual solaire
     (use-package solaire-mode
@@ -741,10 +180,10 @@ Then, make it so EXWM buffer names contain part of the the window title based of
     (use-package centaur-tabs
       :init
       (setq centaur-tabs-height 16)
-      (setq centaur-tabs-style "bar")
+      (setq centaur-tabs-style "box")
       (setq centaur-tabs-set-icons t)
       (setq centaur-tabs-icon-scale-factor 0.7)
-      (setq centaur-tabs-set-bar 'left)
+      (setq centaur-tabs-set-bar 'nil)
       (setq x-underline-at-descent-line t)
       (defun contextual-tabs ()
             (interactive)
@@ -794,10 +233,11 @@ Then, make it so EXWM buffer names contain part of the the window title based of
 
     (use-package treemacs-projectile)
 
-    (use-package treemacs-all-the-icons
-      :after treemacs
-      :init
-      (treemacs-load-theme "all-the-icons"))
+    (if (not (eql my/theme 'minimal))
+        (use-package treemacs-all-the-icons
+          :after treemacs
+          :init
+          (treemacs-load-theme "all-the-icons")))
 
     (use-package olivetti
       :config
@@ -917,9 +357,10 @@ On top of this, ~prescient~ allows for completions to be even more useful by bas
 
   (use-package all-the-icons)
 
-  (use-package all-the-icons-ivy-rich
-    :after ivy-rich counsel
-    :init (all-the-icons-ivy-rich-mode))
+  (if (not (eql my/theme 'minimal))
+      (use-package all-the-icons-ivy-rich
+        :after ivy-rich counsel
+        :init (all-the-icons-ivy-rich-mode)))
 
   (use-package ivy-prescient
     :after ivy prescient
@@ -1106,8 +547,10 @@ There are a variety of useful packages that make Org look nicer:
   (setq org-latex-create-formula-image-program 'dvisvgm)
   ;; Smart mixing of variable pitch and monospace
   ;; This is preferred over `mixed-pitch` because of small details
-  (use-package org-variable-pitch
-    :init (org-variable-pitch-setup))
+
+  (if (not (eql my/theme 'minimal))
+     (use-package org-variable-pitch
+       :init (org-variable-pitch-setup)))
 
   ;; Better headline icons
   (use-package org-superstar
