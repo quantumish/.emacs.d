@@ -219,119 +219,6 @@ This package also has some nice extensions like ~use-package-ensure-system-packa
   initial_window_height 400
 #+end_src
 
-~zsh~ is good.
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'gnu/linux)   
-  if [[ "$TERM" == "dumb" ]]
-  then
-      unsetopt zle
-      unsetopt prompt_cr
-      unsetopt prompt_subst
-      unset zle_bracketed_paste
-      PS1='$ '
-      return
-  fi
-  # p10k instant prompt
-  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-      source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-  fi
-
-  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-
-  export ZSH="$HOME/.oh-my-zsh"
-
-  ZSH_THEME="powerlevel10k/powerlevel10k"
-
-  plugins=(git)
-
-  source $ZSH/oh-my-zsh.sh
-
-  export EDITOR='emacs'
-
-  function emacs_suggest() {
-      tput setaf 1
-      echo -n "DEPRECATED: "
-      tput sgr0
-      echo -n "You should really use "
-      tput sitm
-      echo -n $1
-      tput sgr0
-      echo " instead!"
-      eval $2 $@
-  }
-
-  alias git="emacs_suggest Magit '/usr/bin/git'"
-  alias gc="emacs_suggest Magit 'git commit'"
-  alias ga="emacs_suggest Magit 'git add'"
-  alias gs="emacs_suggest Magit 'git status'"
-  alias gp="emacs_suggest Magit 'git push'"
-  alias glog="emacs_suggest Magit 'git log --oneline --decorate --graph'" 
-
-  # Aliases
-  alias ydl="youtube-dl --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s'"
-  alias neofetch="neofetch --ascii ~/.config/neofetch/arch.ascii"
-  alias nano=mg
-  alias ls="exa --icons"
-  alias hexdump=hexyl
-  alias cat=bat
-  alias rm=rip
-  alias gcc="gcc -Wall -Werror -pedantic-errors"
-  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-
-  function recompile() {
-      cd ~/.config/$1
-      sudo make clean install &> /dev/null
-      cd -
-  }
-
-  function fix_titles() {
-      for a in *
-               id3v2 -t ${a%.mp3} $a
-  }
-
-  function themeage() {
-      wal -i $1 &> /dev/null
-      xdotool key alt+r &> /dev/null
-      emacsclient --eval "(load-theme 'ewal-doom-one)" &> /dev/null
-      /home/quantumish/.local/bin/pywalfox update
-      python ~/test.py colors-wal-dwm2.h
-      python ~/test.py colors-wal-dmenu2.h
-      python ~/test.py zathurarc
-      python ~/test.py colors-vis
-      recompile dmenu
-  }
-
-
-  export PYENV_ROOT="$HOME/.pyenv"
-  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init -)"
-
-  # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-  source  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-#+end_src
-
-#+begin_src sh :tangle (config-tangle "~/.zshrc" 'darwin)
-  export PATH=$PATH:$HOME/.local/bin/:$HOME/.cargo/bin/
-
-  export ZSH="$HOME/.oh-my-zsh"
-
-  ZSH_THEME="lambdamod"
-
-  plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-
-  source $ZSH/oh-my-zsh.sh
-
-  export EDITOR='emacs'
-
-  alias gs="git status"
-  alias nano=mg
-  alias gcc="gcc -Wall -Werror -pedantic-errors"
-  alias g++="g++ -Wall -Weffc++ -Werror -pedantic-errors"
-  alias sml=rlwrap /usr/local/smlnj/bin/sml $@
-#+end_src
-
-
 It is clearly of top priority to ensure the Arch logo in ~neofetch~ looks good.
 #+begin_src text :tangle (config-tangle "~/.config/neofetch/arch.ascii" 'gnu/linux)
 ${c1}
@@ -481,8 +368,11 @@ Next, if we're on Linux, let's do everything we need to do at startup.
   "bash ~/.config/rofi/applets/menu/apps.sh"
   Scroll_Lock
 
-  "bash ~/.config/rofi/launchers/text/launcher.sh"
+  "bash ~/.config/rofi/launchers/type-4/launcher.sh"
   alt + p
+
+  "betterlockscreen -l blur"
+  alt + shift + l
 
   "bash ~/.config/rofi/launchers/ribbon/launcher.sh"
   alt + shift + p
@@ -1079,26 +969,26 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 * TODO Org
 First, let's set up the basics.
 #+begin_src emacs-lisp :tangle "yes"
-  (use-package org
-    :init
-    (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
-    (setq org-modules (append org-modules '(org-habit org-id)))  )
+  ;; (use-package org
+  ;;   :init
+  ;;   (setq org-todo-keywords '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "NOPE(n)")))
+  ;;   (setq org-modules (append org-modules '(org-habit org-id)))  )
 #+end_src
 
 ** Aesthetics
 Let's add aesthetics for normal prose-style Org usage.
 #+begin_src emacs-lisp :tangle "yes"
-  (use-package org
-    :config
-    (setq org-fontify-quote-and-verse-blocks t)
-    (setq org-fontify-emphasized-text t)
-    (setq org-hide-emphasis-markers t)
-    (setq org-ellipsis " ")
-    (setq org-hide-leading-stars t)
-    (set-face-attribute 'org-document-title nil
-                        :height 2.0
-                        :weight 'bold)
-    :hook (org-mode . org-indent-mode))
+  ;; (use-package org
+  ;;   :config
+  ;;   (setq org-fontify-quote-and-verse-blocks t)
+  ;;   (setq org-fontify-emphasized-text t)
+  ;;   (setq org-hide-emphasis-markers t)
+  ;;   (setq org-ellipsis " ")
+  ;;   (setq org-hide-leading-stars t)
+  ;;   (set-face-attribute 'org-document-title nil
+  ;;                       :height 2.0
+  ;;                       :weight 'bold)
+  ;;   :hook (org-mode . org-indent-mode))
 #+end_src
 
 There are a variety of useful packages that make Org look nicer:
@@ -1135,52 +1025,52 @@ There are a variety of useful packages that make Org look nicer:
 
 *** Icons
  #+begin_src emacs-lisp :tangle "yes"
-   (use-package org
-     :config
-     (defun magic-icon-fix ()
-       (let ((fontset (face-attribute 'default :fontset)))
-         (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
-     :hook
-     (org-mode . (lambda () (interactive)
-                   (setq prettify-symbols-alist '(("[#A]" . "")
-                                                  ("[#B]" . "")
-                                                  ("[#C]" . "")
-                                                  ("[ ]" . "")
-                                                  ("[X]" . "")
-                                                  ("[-]" . "")
-                                                  ("#+begin_src" . "")
-                                                  ("#+end_src" . "―")
-                                                  ("#+begin_collapsible" . "")
-                                                  ("#+end_collapsible" . "―")
-                                                  ("#+begin_aside" . "")
-                                                  ("#+end_aside" . "―")
-                                                  ("#+begin_quote" . "")
-                                                  ("#+end_quote" . "―")
-                                                  ("#+begin_defn" .  "")
-                                                  ("#+end_defn" . "―")
-                                                  ("#+begin_questionable" .  "")
-                                                  ("#+end_questionable" . "―")
-                                                  ("#+begin_problem" .  "")
-                                                  ("#+end_problem" . "―")
-                                                  ("#+EXCLUDE_TAGS:" . "") 
-                                                  (":PROPERTIES:" . "\n")
-                                                  (":END:" . "―")
-                                                  ("#+STARTUP:" . "")
-                                                  ("#+TITLE: " . "")
-                                                  ("#+title: " . "")
-                                                  ("#+RESULTS:" . "")
-                                                  ("#+NAME:" . "")
-                                                  ("#+ROAM_TAGS:" . "")
-                                                  ("#+FILETAGS:" . "")
-                                                  ("#+HTML_HEAD:" . "")
-                                                  ("#+SUBTITLE:" . "")
-                                                  ("#+AUTHOR:" . "")
-                                                  (":Effort:" . "")
-                                                  ("SCHEDULED:" . "")
-                                                  ("DEADLINE:" . "")
-                                                  ("#+begin_defn" .  "")
-                                                  ("#+end_defn" . "―")))
-                   (prettify-symbols-mode))))
+   ;; (use-package org
+   ;;   :config
+   ;;   (defun magic-icon-fix ()
+   ;;     (let ((fontset (face-attribute 'default :fontset)))
+   ;;       (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)))
+   ;;   :hook
+   ;;   (org-mode . (lambda () (interactive)
+   ;;                 (setq prettify-symbols-alist '(("[#A]" . "")
+   ;;                                                ("[#B]" . "")
+   ;;                                                ("[#C]" . "")
+   ;;                                                ("[ ]" . "")
+   ;;                                                ("[X]" . "")
+   ;;                                                ("[-]" . "")
+   ;;                                                ("#+begin_src" . "")
+   ;;                                                ("#+end_src" . "―")
+   ;;                                                ("#+begin_collapsible" . "")
+   ;;                                                ("#+end_collapsible" . "―")
+   ;;                                                ("#+begin_aside" . "")
+   ;;                                                ("#+end_aside" . "―")
+   ;;                                                ("#+begin_quote" . "")
+   ;;                                                ("#+end_quote" . "―")
+   ;;                                                ("#+begin_defn" .  "")
+   ;;                                                ("#+end_defn" . "―")
+   ;;                                                ("#+begin_questionable" .  "")
+   ;;                                                ("#+end_questionable" . "―")
+   ;;                                                ("#+begin_problem" .  "")
+   ;;                                                ("#+end_problem" . "―")
+   ;;                                                ("#+EXCLUDE_TAGS:" . "") 
+   ;;                                                (":PROPERTIES:" . "\n")
+   ;;                                                (":END:" . "―")
+   ;;                                                ("#+STARTUP:" . "")
+   ;;                                                ("#+TITLE: " . "")
+   ;;                                                ("#+title: " . "")
+   ;;                                                ("#+RESULTS:" . "")
+   ;;                                                ("#+NAME:" . "")
+   ;;                                                ("#+ROAM_TAGS:" . "")
+   ;;                                                ("#+FILETAGS:" . "")
+   ;;                                                ("#+HTML_HEAD:" . "")
+   ;;                                                ("#+SUBTITLE:" . "")
+   ;;                                                ("#+AUTHOR:" . "")
+   ;;                                                (":Effort:" . "")
+   ;;                                                ("SCHEDULED:" . "")
+   ;;                                                ("DEADLINE:" . "")
+   ;;                                                ("#+begin_defn" .  "")
+   ;;                                                ("#+end_defn" . "―")))
+   ;;                 (prettify-symbols-mode))))
  #+end_src
 
 *** Property Drawers
@@ -1229,41 +1119,41 @@ There are a variety of useful packages that make Org look nicer:
       :init
       (org-special-block-extras-mode)
       (org-special-block-extras-defblock collapsible (title "Details") (contents "")
-                                         (format
-                                          (pcase backend
-                                            (_ "<details>
-                                           <summary> <i> %s </i> </summary>
-                                           %s
-                                        </details>"))
-                                          title contents)))
+					 (format
+					  (pcase backend
+					    (_ "<details>
+					   <summary> <i> %s </i> </summary>
+					   %s
+					</details>"))
+					  title contents)))
 
-    (use-package org
-      :init
-      (setq org-html-text-markup-alist
-            '((bold . "<b>%s</b>")
-              (code . "<code>%s</code>")
-              (italic . "<i>%s</i>")
-              (strike-through . "<del>%s</del>")
-              (underline . "<span class=\"underline\">%s</span>")
-              (verbatim . "<kbd>%s</kbd>")))
-      (setq org-html-head "<link rel=\"stylesheet\" href=\"file:///Users/davfrei/org.css\"><link rel=\"stylesheet\" href=\"https://quantumish.github.io/admonition.css\"><script src=\"https://kit.fontawesome.com/76c5ce8bda.js\" crossorigin=\"anonymous\"")
-      (setq org-html-postamble nil)
-      (setq org-export-with-section-numbers nil)
-      (setq org-export-with-toc nil)
-      (setq org-publish-project-alist
-            '(("github.io"
-               :base-directory "~/Dropbox/publicnotes/"
-               :base-extension "org"
-               :publishing-directory "~/richardfeynmanrocks.github.io/notes/"
-               :recursive t
-               :publishing-function org-html-publish-to-html
-               :headline-levels 4
-               :html-extension "html"
-               :with-toc nil
-               :section-numbers nil
-               :html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
-               :preserve-breaks t
-       ))))
+    ;; (use-package org
+    ;;   :init
+    ;;   (setq org-html-text-markup-alist
+    ;;         '((bold . "<b>%s</b>")
+    ;;           (code . "<code>%s</code>")
+    ;;           (italic . "<i>%s</i>")
+    ;;           (strike-through . "<del>%s</del>")
+    ;;           (underline . "<span class=\"underline\">%s</span>")
+    ;;           (verbatim . "<kbd>%s</kbd>")))
+    ;;   (setq org-html-head "<link rel=\"stylesheet\" href=\"file:///Users/davfrei/org.css\"><link rel=\"stylesheet\" href=\"https://quantumish.github.io/admonition.css\"><script src=\"https://kit.fontawesome.com/76c5ce8bda.js\" crossorigin=\"anonymous\"")
+    ;;   (setq org-html-postamble nil)
+    ;;   (setq org-export-with-section-numbers nil)
+    ;;   (setq org-export-with-toc nil)
+    ;;   (setq org-publish-project-alist
+    ;;         '(("github.io"
+    ;;            :base-directory "~/Dropbox/publicnotes/"
+    ;;            :base-extension "org"
+    ;;            :publishing-directory "~/richardfeynmanrocks.github.io/notes/"
+    ;;            :recursive t
+    ;;            :publishing-function org-html-publish-to-html
+    ;;            :headline-levels 4
+    ;;            :html-extension "html"
+    ;;            :with-toc nil
+    ;;            :section-numbers nil
+    ;;            :html-head "<link rel=\"stylesheet\" href=\"https://richardfeynmanrocks.github.io/org.css\">"
+    ;;            :preserve-breaks t
+    ;;    ))))
   #+end_src
 * Notes
   #+begin_src emacs-lisp :tangle "yes"
@@ -1310,90 +1200,27 @@ There are a variety of useful packages that make Org look nicer:
                     "\\)")))
 
    #+end_src
-** Taproot-specific
-#+begin_src emacs-lisp  :tangle "yes"
-(defvar taproot-dir (concat (getenv "HOME") "/taproot3"))
-#+end_src
-
-Let's define a function to export to Taproot:
-#+begin_src emacs-lisp :tangle "yes"
-  (defun org-roam-export-to-taproot ()
-    (interactive)
-    (call-process-shell-command (concat "cp -R " org-roam-directory "*.org " taproot-dir "/corners/david")))
-#+end_src
-
-Also, a function to convert to file-based links would be nice.
-#+begin_src emacs-lisp :tangle "yes"
-  (defun org-roam-emergency-exit (in-path out-path)
-    "Emergency exit from Org Roam v2.
-     Returns list of commands to convert notes in IN-PATH to traditional format in OUT-PATH."
-    (let ((sed (if (eq system-type 'darwin) "gsed" "sed")))
-      (progn
-        (call-process-shell-command (concat "cp -R " in-path "*.org " out-path))
-        (dolist (pair (org-roam-db-query [:select [ID FILE] :from nodes]))
-          (call-process-shell-command (concat sed " -i \"s/id:" (car pair)
-                                              "/file:" (substring (car (cdr pair)) (length in-path))
-                                              "/g\" " out-path "*.org")))
-        (message (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
-        (call-process-shell-command (concat sed " -i \"/:PROPERTIES:/d\" " out-path "*.org"))
-        (call-process-shell-command (concat sed " -i \"/:ID:/d\" " out-path "*.org"))
-        (call-process-shell-command (concat sed " -i \"/:END:/d\" " out-path "*.org")))))
-  ;; (org-roam-emergency-exit (concat org-roam-directory "/") (concat taproot-dir "/corners/david/"))
-#+end_src
-
-And a function to open in Taproot:
-#+begin_src emacs-lisp :tangle "yes"
-  (defun org-roam-open-in-taproot ()
-    (interactive)
-    (if (not (eq (buffer-file-name) nil))
-        (if (string= (substring (buffer-file-name) 0 (length taproot-dir)) taproot-dir)
-            (call-process-shell-command
-             (concat "open https://taproot3.sanity.gq"
-                     (substring (file-name-sans-extension (buffer-file-name)) (length taproot-dir))))
-          (message "Not a Taproot buffer!"))
-      (message "Not a file buffer!")))
-  (defun extended-org-roam-open-in-taproot ()
-    (interactive)
-    (message (substring (buffer-file-name) 0 (length org-roam-directory)))
-    (if (not (eq (buffer-file-name) nil))
-        (if (string= (substring (buffer-file-name) 0 (length org-roam-directory)) org-roam-directory)
-            (call-process-shell-command
-             (concat "open https://taproot3.sanity.gq/corners/david"
-                     (substring (file-name-sans-extension (buffer-file-name)) (length org-roam-directory))))
-          (message "Not a Org Roam buffer!"))
-      (message "Not a file buffer!")))
-#+end_src
-
-** Babel
-#+begin_src emacs-lisp :tangle "yes"
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (C . t)
-;     (nasm . t)                            ; Add asm language
-     (python . t)))
-#+end_src
 * Productivity
 ** Agenda
 #+begin_src emacs-lisp :tangle "yes"
-  (use-package org
-    :init
-    (defvar org-inbox-file (concat (getenv "HOME") "/sync/org/inbox.org"))
-    (defvar org-completed-file (concat (getenv "HOME") "/sync/org/completed.org"))
-    (setq org-archive-location (concat org-completed-file "::"))
-    (setq org-agenda-files `(,org-inbox-file ,org-completed-file))
-    :general
-    ("C-c o i" #'(lambda () (interactive) (find-file org-inbox-file)))
-    ("C-c o a" #'(lambda () (interactive) (org-agenda 'a))))
+  ;; (use-package org
+  ;;   :init
+  ;;   (defvar org-inbox-file (concat (getenv "HOME") "/sync/org/inbox.org"))
+  ;;   (defvar org-completed-file (concat (getenv "HOME") "/sync/org/completed.org"))
+  ;;   (setq org-archive-location (concat org-completed-file "::"))
+  ;;   (setq org-agenda-files `(,org-inbox-file ,org-completed-file))
+  ;;   :general
+  ;;   ("C-c o i" #'(lambda () (interactive) (find-file org-inbox-file)))
+  ;;   ("C-c o a" #'(lambda () (interactive) (org-agenda 'a))))
 #+end_src
 
 ** Projects
    #+begin_src emacs-lisp :tangle "yes"
-     (use-package org
-       :init
-       (setq org-enforce-todo-dependencies t)
-       (setq org-enforce-todo-checkbox-dependencies t)
-       (setq org-agenda-dim-blocked-tasks t))
+     ;; (use-package org
+     ;;     :init
+     ;;     (setq org-enforce-todo-dependencies t)
+     ;;     (setq org-enforce-todo-checkbox-dependencies t)
+     ;;     (setq org-agenda-dim-blocked-tasks t))
    #+end_src
 
 * Development
@@ -1505,10 +1332,6 @@ And a function to open in Taproot:
         ;;   :straight (eshell-info-banner :type git :host github
         ;;                                                              :repo "phundrak/eshell-info-banner.el")
         ;;   :hook (eshell-banner-load . eshell-info-banner-update-banner))
-
-        (use-package eshell-manual
-          :straight (eshell-manual :type git :host github
-                                                           :repo "nicferrier/eshell-manual"))
 
         ;; (use-package eshell-fringe-status
         ;;   :init
