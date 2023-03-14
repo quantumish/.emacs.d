@@ -4,6 +4,7 @@
 #+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/org.css">
 #+HTML_HEAD: <link rel="stylesheet" href="https://quantumish.github.io/org-htmlize.css">
 
+
 * Preparation
 ** Packages
 First, let's set the package archives and do some basic tweaks.
@@ -294,7 +295,7 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
     :init
-    (defvar left-screen "DP-5")
+    (defvar left-screen "DP-3")
     (defvar middle-screen "HDMI-0")
     (defvar right-screen "DP-1")
     (require 'exwm-randr)
@@ -389,7 +390,8 @@ Next, if we're on Linux, let's do everything we need to do at startup.
   XF86Calculator
 #+end_src
 
-~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as remap tapping caps-lock to escape.
+
+~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as r=)emap tapping caps-lock to escape.
 #+begin_src sh :tangle (config-tangle "~/.config/X/xcape.sh" 'gnu/linux)
 xcape -e "Control_L=Escape"
 xcape -e "Shift_R=parenright"
@@ -595,7 +597,7 @@ Then, make it so EXWM buffer names contain part of the the window title based of
   #+begin_src emacs-lisp :tangle "yes"
 	;; TODO: Set up treemacs.
 
-	(set-face-attribute 'default nil :family "ProggyVector")
+	(set-face-attribute 'default nil :family "ttyp0")
 	(set-face-attribute 'font-lock-comment-face nil :italic t)
 
 	(use-package hide-mode-line)
@@ -623,7 +625,7 @@ Then, make it so EXWM buffer names contain part of the the window title based of
 	  (setq doom-modeline-buffer-encoding nil)
 	  (doom-modeline-mode))
 
-	;; TODO: Contextual solairex
+	;; TODO: Contextual solaire
 	(use-package solaire-mode
 	  :hook
 	  (prog-mode . solaire-mode))
@@ -695,11 +697,11 @@ Then, make it so EXWM buffer names contain part of the the window title based of
 	  :config
 	  (setq-default olivetti-body-width 180)
 	  :hook ((prog-mode . olivetti-mode)
-			 (prog-mode .
-						(lambda ()
-						  (setq header-line-format " ")
-						  (face-remap-add-relative 'header-line '(:height 100 :background "#0b0f16"))
-						  ))
+			 ;; (prog-mode .
+			 ;;            (lambda ()
+			 ;;              (setq header-line-format " ")
+			 ;;              (face-remap-add-relative 'header-line '(:height 100 :background "#0b0f16"))
+			 ;;              ))
 			 ))
   #+end_src
 *** Translucent
@@ -976,7 +978,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 : hydra-launcher/body
 
 ** Perspectives
-* TODO Org
+* COMMENT TODO Org
 First, let's set up the basics.
 #+begin_src emacs-lisp :tangle "yes"
   ;; (use-package org
@@ -1001,7 +1003,7 @@ Let's add aesthetics for normal prose-style Org usage.
   ;;   :hook (org-mode . org-indent-mode))
 #+end_src
 
-There are a variety of useful packages that make Org look nicer:
+There are a variety of useful packages that make Org look nicer: 
 #+begin_src emacs-lisp :tangle "yes"
   (setq org-latex-create-formula-image-program 'dvisvgm)
   ;; Smart mixing of variable pitch and monospace
@@ -1165,7 +1167,7 @@ There are a variety of useful packages that make Org look nicer:
     ;;            :preserve-breaks t
     ;;    ))))
   #+end_src
-* Notes
+* COMMENT Notes
   #+begin_src emacs-lisp :tangle "yes"
     (use-package org-roam
       :init
@@ -1210,7 +1212,7 @@ There are a variety of useful packages that make Org look nicer:
                     "\\)")))
 
    #+end_src
-* Productivity
+* COMMENT Productivity
 ** Agenda
 #+begin_src emacs-lisp :tangle "yes"
   ;; (use-package org
@@ -1233,7 +1235,7 @@ There are a variety of useful packages that make Org look nicer:
      ;;     (setq org-agenda-dim-blocked-tasks t))
    #+end_src
 
-* Development
+* COMMENT Development
 ** Terminal
   #+begin_src emacs-lisp :tangle "yes"
  (use-package vterm)
@@ -1874,7 +1876,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     (use-package rainbow-mode)
   #+end_src
 
-* TODO Writing
+* COMMENT TODO Writing
 #+begin_src emacs-lisp :tangle "yes"
   
   
@@ -1891,24 +1893,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     :straight (gdoc :type git :host github :repo "jemoka/gdoc.el"))
 #+end_src
 
-Also, Google-Docs esque comments:
-#+begin_src emacs-lisp  :tangle "yes"
-  ;; Google Docs style comments
-  (use-package org-marginalia
-    :straight (:host github :repo "nobiot/org-marginalia")
-    :init (add-hook 'org-mode-hook 'org-marginalia-mode)
-    (defun org-marginalia-save-and-open (point)
-      (interactive "d")
-      (org-marginalia-save)
-      (org-marginalia-open point))
-    :bind (:map org-marginalia-mode-map
-                ("C-c n o" . org-marginalia-save-and-open)
-                ("C-c m" . org-marginalia-mark)
-                ("C-c n ]" . org-marginalia-next)
-                ("C-c n [" . org-marginalia-prev)))
- #+end_src
-
-* TODO Vanilla++
+* COMMENT TODO Vanilla++
 #+begin_src emacs-lisp :tangle "yes"
   (setq-default tab-width 4)
   (setq-default indent-tabs-mode t)
@@ -1948,7 +1933,7 @@ Also, Google-Docs esque comments:
   #+RESULTS:
   : anzu-query-replace
   
-* Fun
+* COMMENT Fun
 #+begin_src emacs-lisp :tangle "yes"
   (use-package pdf-tools)
 #+end_src
@@ -1996,39 +1981,40 @@ Also, Google-Docs esque comments:
 ** Spotify
 Smudge is nice.
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
-  (use-package smudge
-    :straight (smudge :type git :host github :repo "danielfm/smudge"
-                      :fork (:host github :repo "richardfeynmanrocks/smudge"))
-    :init
-    (load "~/.emacs.d/straight/repos/smudge/smudge-connect.el")
-    (setq smudge-status-location nil)
-    ;; FIXME actively destructive to potential mode-line config!
-    (setq global-mode-string '(("   ")))
-    (general-define-key
-     :keymaps '(exwm-mode-map override-global-map)
-     "C-S-s-l" 'smudge-controller-next-track
-     "C-S-s-h" 'smudge-controller-previous-track
-     "C-S-s-j" 'smudge-controller-volume-down
-     "C-S-s-k" 'smudge-controller-volume-up
-     "C-S-s-p" 'smudge-controller-toggle-play
-     "C-S-s-s" 'smudge-controller-toggle-shuffle
-     "C-S-s-r" 'smudge-controller-toggle-repeat))
+  ;; (use-package smudge
+  ;;   :straight (smudge :type git :host github :repo "danielfm/smudge"
+  ;;                     :fork (:host github :repo "richardfeynmanrocks/smudge"))
+  ;;   :init
+  ;;   (load "~/.emacs.d/straight/repos/smudge/smudge-connect.el")
+  ;;   (setq smudge-status-location nil)
+  ;;   ;; FIXME actively destructive to potential mode-line config!
+  ;;   (setq global-mode-string '(("   ")))
+  ;;   (general-define-key
+  ;;    :keymaps '(exwm-mode-map override-global-map)
+  ;;    "C-S-s-l" 'smudge-controller-next-track
+  ;;    "C-S-s-h" 'smudge-controller-previous-track
+  ;;    "C-S-s-j" 'smudge-controller-volume-down
+  ;;    "C-S-s-k" 'smudge-controller-volume-up
+  ;;    "C-S-s-p" 'smudge-controller-toggle-play
+  ;;    "C-S-s-s" 'smudge-controller-toggle-shuffle
+  ;;    "C-S-s-r" 'smudge-controller-toggle-repeat)
+  ;;   (global-smudge-remote-mode))
 
-  (use-package counsel-spotify
-    (general-define-key
-     :keymaps '(exwm-mode-map override-global-map)
-     :prefix "H-s"
-     "t" 'counsel-spotify-search-track
-     "r" 'counsel-spotify-search-artist
-     "a" 'counsel-spotify-search-album
-     "q" 'counsel-spotify-search-tracks-by-artist))
-  (load "~/.emacs.d/secrets.el")
+  ;; (use-package counsel-spotify
+  ;;   (general-define-key
+  ;;    :keymaps '(exwm-mode-map override-global-map)
+  ;;    :prefix "H-s"
+  ;;    "t" 'counsel-spotify-search-track
+  ;;    "r" 'counsel-spotify-search-artist
+  ;;    "a" 'counsel-spotify-search-album
+  ;;    "q" 'counsel-spotify-search-tracks-by-artist))
+  ;; (load "~/.emacs.d/secrets.el")
 #+end_src
 
 #+RESULTS:
 : t
 
-* Scratch
+* COMMENT Scratch
 #+begin_src emacs-lisp  :tangle "yes"
      (setq org-agenda-scheduled-leaders '("" ""))
      (setq org-agenda-show-future-repeats nil)
@@ -2134,7 +2120,7 @@ Smudge is nice.
   ;;   :straight (:host github :repo "SqrtMinusOne/elfeed-summary"))    
 #+end_src
 
-* Formatting
+* COMMENT Formatting
 #+begin_src emacs-lisp
   (use-package format-all
     :hook
@@ -2143,7 +2129,7 @@ Smudge is nice.
 #+end_src
 
 
-* The End.
+* COMMENT The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
     (require 'notifications)
@@ -2163,3 +2149,12 @@ Well, that's it. We're done. Time to get going!
 			  :body "Deleting...")
     (call-process-shell-command (concat "rm" (executable-find "vim")) nil 0))
 #+end_src
+
+* Uh
+
+#+begin_src emacs-lisp :tangle "yes"
+(use-package vterm)
+(load-org-babel "~/.emacs.d/modules/intro.org")
+#+end_src
+
+

@@ -53,5 +53,9 @@ Options:
 (defvar quanta-load-only-essentials nil
   "Whether quanta should load only the core of its configuration.")
 
-(org-babel-tangle-file "~/.emacs.d/config.org")
-(org-babel-load-file "~/.emacs.d/config.org")
+(require 'ob-tangle)
+(defun load-org-babel (file)
+  (org-babel-tangle-file file)
+  (org-babel-load-file file))
+
+(load-org-babel "~/.emacs.d/config.org")
