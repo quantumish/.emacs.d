@@ -17,6 +17,11 @@
 	"no")
     (get-tangle-target filename)))
 
+(call-process-shell-command "kitty cava" nil 0)
+
 (require 'ob-tangle)
-(org-babel-tangle-file "~/.emacs.d/config.org")
-(org-babel-load-file "~/.emacs.d/config.org")
+(defun load-org-babel (file)
+  (org-babel-tangle-file file)
+  (org-babel-load-file file))
+
+(load-org-babel "~/.emacs.d/config.org")
