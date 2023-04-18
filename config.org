@@ -49,14 +49,15 @@ This configuration also uses ~use-package~ for package management: it's a macro 
   (use-package general)
   (use-package projectile)
   (use-package s)
+  (setq org-confirm-babel-evaluate nil)
 #+end_src
 
 Are we using native-comp? If so, let's actually native compile things. Also, the popup compilation warnings are really bothersome, so turn those off, too.
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "NATIVE_COMP") system-configuration-features) "yes" "no")
-    (setq package-native-compile t)
-    (setq comp-deferred-compilation t)
-    (setq native-comp-deferred-compilation-deny-list nil)
-    (setq warning-suppress-log-types '((comp)))
+  (setq package-native-compile t)
+  (setq comp-deferred-compilation t)
+  (setq native-comp-deferred-compilation-deny-list nil)
+  (setq warning-suppress-log-types '((comp)))
 #+end_src
 
 ** Speed
@@ -262,31 +263,31 @@ It's time to load EXWM, the Emacs X Window Manager.
 
 #+begin_src emacs-lisp :tangle (config-tangle nil 'gnu/linux)
   (use-package exwm
-    :init
-    (setq exwm-workspace-number 3)
-    (setq exwm-input-global-keys
-          `(([?\s-r] . exwm-reset)
-            ([?\s-w] . exwm-workspace-switch)
-            ([?\s-&] . (lambda (command)
-                         (interactive (list (read-shell-command "$ ")))
-                         (start-process-shell-command command nil command)))))
-    ;; Set default simulation keys
-    (setq exwm-input-simulation-keys
-          '(([?\C-b] . [left])
-            ([?\C-f] . [right])
-            ([?\C-p] . [up])
-            ([?\C-n] . [down])
-            ([?\C-a] . [home])
-            ([?\C-e] . [end])
-            ([?\M-v] . [prior])
-            ([?\C-v] . [next])
-            ([?\C-d] . [delete])            
-            ([?\C-k] . [S-end delete])))
-    ;; Allow windows to be moved across screens and interacted with normally.
-    
-    (setq exwm-layout-show-all-buffers t)
-    (setq exwm-workspace-show-all-buffers t)
-    (exwm-enable))
+	:init
+	(setq exwm-workspace-number 3)
+	(setq exwm-input-global-keys
+		  `(([?\s-r] . exwm-reset)
+			([?\s-w] . exwm-workspace-switch)
+			([?\s-&] . (lambda (command)
+						 (interactive (list (read-shell-command "$ ")))
+						 (start-process-shell-command command nil command)))))
+	;; Set default simulation keys
+	(setq exwm-input-simulation-keys
+		  '(([?\C-b] . [left])
+			([?\C-f] . [right])
+			([?\C-p] . [up])
+			([?\C-n] . [down])
+			([?\C-a] . [home])
+			([?\C-e] . [end])
+			([?\M-v] . [prior])
+			([?\C-v] . [next])
+			([?\C-d] . [delete])            
+			([?\C-k] . [S-end delete])))
+	;; Allow windows to be moved across screens and interacted with normally.
+
+	(setq exwm-layout-show-all-buffers t)
+	(setq exwm-workspace-show-all-buffers t)
+	(exwm-enable))
 #+end_src
 
 Setting up multi-monitor support is a bit of a hack in my configuration since my input devices tend to mysteriously swap around. You'll notice I'm using ~use-package~ for the same package twice in a row here, but fear not, it merely executes them sequentially and it means I can intersperse long-winded package configuration with text without fear of accidentally breaking something one day.
@@ -315,7 +316,8 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
 
     (use-package exwm-outer-gaps
       :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
-      :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))	      	      
+      :hook (exwm-init
+ . (lambda () (exwm-outer-gaps-mode))))	      	      
 #+end_src
 
 #+RESULTS:
@@ -787,49 +789,57 @@ Next, let's improve interactions with Emacs: things like finding files, running 
 
 On top of this, ~prescient~ allows for completions to be even more useful by basing them off of history and sorting them better. Finally, we can add some icons and extra text to make it all prettier.
 
-#+begin_src emacs-lisp :tangle "yes"
+#+begin_src emacs-lisp :tangle (if (eq quanta-completion 'vertico) "yes" "no")
+  (org-babel-tangle-file "~/.emacs.d/completion.org")
+  (org-babel-load-file "~/.emacs.d/completion.org")
+#+end_src
+
+#+begin_src emacs-lisp :tangle (if (eq quanta-completion 'ivy) "yes" "no")
   (use-package prescient
-    :init (setq prescient-persist-mode t))
+	:init (setq prescient-persist-mode t))
 
   (use-package ivy
-    :init
-    (use-package counsel :config (counsel-mode 1))  
-    (use-package swiper :defer t)
-    (ivy-mode 1)
-    (setq counsel-search-engine 'google)
-    :bind
-    (("C-s"     . swiper-isearch)
-     ("M-x"     . counsel-M-x)
-     ("C-x C-f" . counsel-find-file)
-     ("C-x C-l" . counsel-load-theme)
-     ("C-h C-f" . counsel-faces)
-     ("M-s g"   . counsel-search)
-     ("M-g o"   . counsel-outline)
-     ("M-g h"   . counsel-org-goto-all)
-     ("M-g i"   . counsel-imenu)
-     ("M-g a"   . counsel-linux-app)))
+	:init
+	(use-package counsel :config (counsel-mode 1))  
+	(use-package swiper :defer t)
+	(ivy-mode 1)
+	(setq counsel-search-engine 'google)
+	:bind
+	(("C-s"     . swiper-isearch)
+	 ("M-x"     . counsel-M-x)
+	 ("C-x C-f" . counsel-find-file)
+	 ("C-x C-l" . counsel-load-theme)
+	 ("C-h C-f" . counsel-faces)
+	 ("M-s g"   . counsel-search)
+	 ("M-g o"   . counsel-outline)
+	 ("M-g h"   . counsel-org-goto-all)
+	 ("M-g i"   . counsel-imenu)
+	 ("M-g a"   . counsel-linux-app)))
 
   (use-package counsel-projectile
-    :bind
-    (("M-g p"   . counsel-projectile-switch-project))) 
+	:bind
+	(("M-g p"   . counsel-projectile-switch-project))) 
 
   (use-package ivy-rich
-    :after ivy
-    :init (ivy-rich-mode))
+	:after ivy
+	:init (ivy-rich-mode))
 
   (use-package all-the-icons)
 
   (use-package all-the-icons-ivy-rich
-    :after ivy-rich counsel
-    :init (all-the-icons-ivy-rich-mode))
+	:after ivy-rich counsel
+	:init (all-the-icons-ivy-rich-mode))
 
   (use-package ivy-prescient
-    :after ivy prescient
-    :init (ivy-prescient-mode))
+	:after ivy prescient
+	:init (ivy-prescient-mode))
 
   (use-package marginalia
-    :config (marginalia-mode))
+	:config (marginalia-mode))
 #+end_src
+
+#+RESULTS:
+: t
 
 ** Help
 In order to make some parts of exploring Emacs slightly nicer, let's install ~helpful~ which overhauls the Help interface, and ~which-key~ which helps you discover keybinds.
@@ -2148,19 +2158,20 @@ Smudge is nice.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
     (require 'notifications)
+  (exwm-init)
 
     (notifications-notify :title "Up and at 'em!"
-                          :body (format "Loaded %d packages in %s with %d GCs."
-             (length package-activated-list)
-             (format "%.2f seconds"
-                     (float-time
-                      (time-subtract after-init-time before-init-time)))
-             gcs-done))
+			  :body (format "Loaded %d packages in %s with %d GCs."
+	     (length package-activated-list)
+	     (format "%.2f seconds"
+		     (float-time
+		      (time-subtract after-init-time before-init-time)))
+	     gcs-done))
 
   (when (executable-find "vim")
     (notifications-notify :title "Vim detected on system!"
-                          :image-path "file:///home/quantumish/.config/dunst/images/alert.png"
-                          :body "Deleting...")
+			  :image-path "file:///home/quantumish/.config/dunst/images/alert.png"
+			  :body "Deleting...")
     (call-process-shell-command (concat "rm" (executable-find "vim")) nil 0))
 #+end_src
 
