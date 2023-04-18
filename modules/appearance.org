@@ -1,0 +1,8 @@
+
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil :family "ttyp0")
+(set-face-attribute 'font-lock-comment-face nil :italic t)
+
+(use-package hide-mode-line)
+#+end_src
+

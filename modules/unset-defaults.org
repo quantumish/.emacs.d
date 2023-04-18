@@ -1,0 +1,45 @@
+Emacs has some default behaviors that are generally annoying. Let's disable them!
+
+#+begin_src emacs-lisp :tangle "yes"
+  ;; Turn off all unnecessary GUI elements.
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+
+  ;; Unless something is actively exploding, I do not care.
+  (setq warning-minimum-level :emergency)
+
+  ;; customize is the worst.
+  (setq custom-file "/dev/null")
+  (setq package-selected-packages "/dev/null/")
+
+  ;; These keybinds suspend Emacs (in order to mimic terminal behavior).
+  ;; This has *only* caused me trouble in GUI Emacs.
+  (when (display-graphic-p)
+    (global-unset-key (kbd "C-z"))
+    (global-unset-key (kbd "C-x C-z")))
+
+  ;; Stop making backup files everywhere, put them all in one place!
+  (setq backup-directory-alist `(("." . "~/.saves")))
+  (setq backup-by-copying t)
+
+  ;; Stop Emacs from bothering you about disabled commands.
+  (setq disabled-command-function nil)
+
+  ;; Prevent any attempts to resize the frame.
+  (setq frame-inhibit-implied-resize t)
+
+  ;; Stop Emacs from trying to use dialog boxes.
+  (setq use-dialog-box nil)
+
+  ;; Prefer y/n over yes/no.
+  (fset 'yes-or-no-p 'y-or-n-p)
+
+  ;; Mouse behavior tweaks? TODO look into me
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
+  (setq mouse-wheel-progressive-speed nil)
+
+  ;; Visual line mode is just better.
+  (global-visual-line-mode)
+#+end_src
+

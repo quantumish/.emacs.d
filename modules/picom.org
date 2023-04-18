@@ -1,0 +1,11 @@
+~picom~ is a nice compositor, and will allow us to have effects like rounded corners and transparency if we want them. Dual kawase blur looks very nice, so let's use it. Note that blur requires a recent version of ~picom~.
+#+begin_src conf :tangle (config-tangle "~/.config/picom.conf" 'gnu/linux)
+backend = "glx";
+blur: {
+      method = "dual_kawase";
+      strength = 3;
+      background = false;
+      background-frame = false;
+      background-fixed = false;
+}
+#+end_src

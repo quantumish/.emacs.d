@@ -1,0 +1,71 @@
+~xmodmap~ lets you modify the keys, so let's make things a lot nicer for Emacs.
+#+begin_src text :tangle "~/.config/X/Xmodmap"
+  clear      lock
+  clear   control
+  clear      mod1
+  clear      mod2
+  clear      mod3
+  clear      mod4
+  clear      mod5
+  keycode      37 = Hyper_L
+  keycode      66 = Control_L
+  keycode       9 = Escape
+  keycode  0xffca = Escape
+  add     control = Control_L Control_R
+  add        mod1 = Alt_L Alt_R Meta_L
+  add        mod2 = Num_Lock
+  add        mod3 = Hyper_L
+  add        mod4 = Super_L Super_R
+  add        mod5 = Mode_switch ISO_Level3_Shift
+#+end_src
+
+~xbindkeys~ allows for customizing system-wide keybinds which can be useful when you're in a pickle. Most of this is legacy config from back before I started using EXWM.
+#+begin_src sh :tangle "~/.xbindkeysrc"
+  # -*- shell-script -*-
+  # TODO Phase me out!
+
+  # Increase volume
+  "pamixer -i 5"
+  XF86AudioRaiseVolume
+
+  # Decrease volume
+  "pamixer -d 5"
+  XF86AudioLowerVolume
+
+  "pamixer -t"
+  XF86AudioMute
+
+  "bash ~/.config/rofi/applets/menu/screenshot.sh"
+  Print
+
+  "bash ~/.config/rofi/applets/menu/powermenu.sh"
+  Pause
+
+  "bash ~/.config/rofi/applets/menu/apps.sh"
+  Scroll_Lock
+
+  "bash ~/.config/rofi/launchers/type-4/launcher.sh"
+  alt + p
+
+  "betterlockscreen -l blur"
+  alt + shift + l
+
+  "bash ~/.config/rofi/launchers/ribbon/launcher.sh"
+  alt + shift + p
+
+  "sh ~/.config/focus.sh"
+  alt + shift + f
+
+  "python ~/.config/modeset.py 'normal'"
+  m:0x20 + c:37 + F1
+
+  "rofi -show calc -modi calc -no-show-match -no-sort"
+  XF86Calculator
+#+end_src
+
+~xcape~ allows for "dual-function" keys that can act as one key when held down, and another when tapped. It's niche but useful. We'll remap tapping left-shift and right-shift to left and right parentheses respectively, as well as r=)emap tapping caps-lock to escape.
+#+begin_src sh :tangle "~/.config/X/xcape.sh"
+xcape -e "Control_L=Escape"
+xcape -e "Shift_R=parenright"
+xcape -e "Shift_L=parenleft"
+#+end_src

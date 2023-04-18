@@ -1,0 +1,113 @@
+#+TITLE: EXWM
+
+EXWM: The Emacs X Window Manager! Imagine windows were like any other buffer.
+
+#+begin_src emacs-lisp
+  (use-package exwm
+    :init
+    (setq exwm-workspace-number 3) ;; set init number of workspaces
+    (setq exwm-input-global-keys
+          `(([?\s-r] . exwm-reset)
+            ([?\s-w] . exwm-workspace-switch)
+            ([?\s-&] . (lambda (command)
+                         (interactive (list (read-shell-command "$ ")))
+                         (start-process-shell-command command nil command)))))
+    ;; Set default simulation keys
+    (setq exwm-input-simulation-keys
+          '(([?\C-a] . [home])
+            ([?\C-e] . [end])
+            ([?\M-v] . [prior])
+            ([?\C-v] . [next])
+            ([?\C-d] . [delete])            
+            ([?\C-k] . [S-end delete])))
+    ;; Allow windows to be moved across screens and interacted with normally.    
+    (setq exwm-layout-show-all-buffers t)
+    (setq exwm-workspace-show-all-buffers t)
+    (exwm-enable))
+#+end_src
+
+Setting up multi-monitor support is a bit of a hack in my configuration since my input devices tend to mysteriously swap around. You'll notice I'm using ~use-package~ for the same package twice in a row here, but fear not, as it merely executes them sequentially and it means I can intersperse long-winded package configuration with text without accidentally breaking something one day.
+
+#+begin_src emacs-lisp
+  (use-package exwm
+    :init
+    (defvar left-screen "DP-3")
+    (defvar middle-screen "HDMI-0")
+    (defvar right-screen "DP-1")
+    (require 'exwm-randr)
+    (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
+    (exwm-randr-enable)) 
+#+end_src
+
+Gaps! ...kind of. Only around the outside, but hey, it's better than nothing.
+#+begin_src emacs-lisp
+    (use-package exwm-outer-gaps
+      :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
+      :hook (exwm-init . (lambda () (exwm-outer-gaps-mode))))	      	   
+#+end_src
+
+Let's make moving across monitors and workspaces a little easier.
+#+begin_src emacs-lisp
+  (defun exwm-workspace-next ()
+    (interactive)
+    (if (< exwm-workspace-current-index (- exwm-workspace-number 1))
+        (exwm-workspace-switch (+ exwm-workspace-current-index 1))))
+
+  (defun exwm-workspace-prev ()
+    (interactive)
+    (if (> exwm-workspace-current-index 0)
+        (exwm-workspace-switch (- exwm-workspace-current-index 1))))
+
+  (general-define-key
+   "M-h" 'exwm-workspace-next
+   "M-l" 'exwm-workspace-prev)
+
+  ;; Make mouse follow focus
+  (use-package exwm-mff
+    :init (exwm-mff-mode))
+
+  (use-package exwmsw
+    :straight (exwmsw :type git :host github :repo "Lemonbreezes/exwmsw"
+                      :fork (:host github :repo "richardfeynmanrocks/exwmsw"))
+    :init
+    (setq exwmsw-active-workspace-plist `(,middle-screen 0 ,right-screen 0 ,left-screen 0))
+    (setq exwmsw-the-right-screen right-screen)
+    (setq exwmsw-the-center-screen middle-screen)
+    (setq exwmsw-the-left-screen left-screen)
+    :general
+    (override-global-map
+              "C-M-j" #'exwmsw-cycle-screens
+              "C-M-k" #'exwmsw-cycle-screens-backward)
+    (exwm-mode-map ;; HACK
+      "C-M-j" #'exwmsw-cycle-screens
+      "C-M-k" #'exwmsw-cycle-screens-backward)) 
+#+end_src
+
+Then, make it so EXWM buffer names contain part of the the window title based off [[https://www.reddit.com/r/emacs/comments/mb8u1m/weekly_tipstricketc_thread/gs55kqw?utm_source=share&utm_medium=web2x&context=3][this great tip]] from [[https://www.reddit.com/r/emacs][r/emacs]].
+#+begin_src emacs-lisp
+  (use-package exwm
+    :init
+
+    (defun b3n-exwm-set-buffer-name ()
+      (if (and exwm-title (string-match "\\`http[^ ]+" exwm-title))
+          (let ((url (match-string 0 exwm-title)))
+            (setq-local buffer-file-name url)
+            (setq-local exwm-title (replace-regexp-in-string
+                                    (concat (regexp-quote url) " - ")
+                                    ""
+                                    exwm-title))))
+      (setq-local exwm-title
+                  (concat
+                   exwm-class-name
+                   "<"
+                   (if (<= (length exwm-title) 50)
+                       exwm-title
+                     (concat (substring exwm-title 0 50) "…"))
+                   ">"))
+
+      (exwm-workspace-rename-buffer exwm-title))
+
+    (add-hook 'exwm-update-class-hook 'b3n-exwm-set-buffer-name)
+    (add-hook 'exwm-update-title-hook 'b3n-exwm-set-buffer-name))
+#+end_src
+

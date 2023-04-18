@@ -1,0 +1,11 @@
+#+begin_src sh :tangle "~/.xinitrc"
+xmodmap ~/.config/X/Xmodmap
+xbindkeys
+sh ~/.config/X/xcape.sh
+dunst &
+sh ~/.config/dunst/reload_dunst.sh
+unclutter &
+flameshot &
+picom &
+exec emacs
+#+end_src

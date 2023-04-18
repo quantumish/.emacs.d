@@ -296,7 +296,7 @@ Setting up multi-monitor support is a bit of a hack in my configuration since my
     :init
     (defvar left-screen "DP-3")
     (defvar middle-screen "HDMI-0")
-    (defvar right-screen "DP-1")
+    (defvar right-screen "DP-5")
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen 2 ,right-screen))
     (exwm-randr-enable)) 
@@ -350,11 +350,11 @@ Next, if we're on Linux, let's do everything we need to do at startup.
   # TODO Phase me out!
 
   # Increase volume
-  "pamixer -i 5"
+  "pulsemixer --change-volume +5"
   XF86AudioRaiseVolume
 
   # Decrease volume
-  "pamixer -d 5"
+  "pulsemixer --change-volume -5"
   XF86AudioLowerVolume
 
   "pamixer -t"
@@ -386,6 +386,15 @@ Next, if we're on Linux, let's do everything we need to do at startup.
 
   "rofi -show calc -modi calc -no-show-match -no-sort"
   XF86Calculator
+ 
+  "sp play"
+  alt+shift+control+p
+
+  "sp next"
+  alt+shift+control+l
+ 
+  "sp prev"
+  alt+shift+control+h
 #+end_src
 
 
@@ -595,7 +604,7 @@ Then, make it so EXWM buffer names contain part of the the window title based of
   #+begin_src emacs-lisp :tangle "yes"
 	;; TODO: Set up treemacs.
 
-	(set-face-attribute 'default nil :family "CozetteVector")
+	(set-face-attribute 'default nil :family "ttyp0")
 	(set-face-attribute 'font-lock-comment-face nil :italic t)
 
 	(use-package hide-mode-line)
@@ -672,6 +681,7 @@ Then, make it so EXWM buffer names contain part of the the window title based of
 	  :init
 	  (doom-themes-treemacs-config)
 	  (setq doom-themes-treemacs-theme "doom-colors")
+	  (setq doom-themes-treemacs-enable-variable-pitch nil)
 	  (setq treemacs-width 30)
 	  (treemacs-project-follow-mode)
 	  :bind
@@ -968,7 +978,7 @@ In order to make some parts of exploring Emacs slightly nicer, let's install ~he
 : hydra-launcher/body
 
 ** Perspectives
-* COMMENT TODO Org
+*  TODO Org
 First, let's set up the basics.
 #+begin_src emacs-lisp :tangle "yes"
   ;; (use-package org
@@ -1157,7 +1167,7 @@ There are a variety of useful packages that make Org look nicer:
     ;;            :preserve-breaks t
     ;;    ))))
   #+end_src
-* COMMENT Notes
+*  Notes
   #+begin_src emacs-lisp :tangle "yes"
     (use-package org-roam
       :init
@@ -1202,7 +1212,7 @@ There are a variety of useful packages that make Org look nicer:
                     "\\)")))
 
    #+end_src
-* COMMENT Productivity
+*  Productivity
 ** Agenda
 #+begin_src emacs-lisp :tangle "yes"
   ;; (use-package org
@@ -1225,7 +1235,7 @@ There are a variety of useful packages that make Org look nicer:
      ;;     (setq org-agenda-dim-blocked-tasks t))
    #+end_src
 
-* COMMENT Development
+*  Development
 ** Terminal
   #+begin_src emacs-lisp :tangle "yes"
  (use-package vterm)
@@ -1388,6 +1398,8 @@ There are a variety of useful packages that make Org look nicer:
       (eval `(set-face-attribute 'lsp-ui-doc-background nil :background ,(doom-darken 'bg .2))))
 #+end_src
 
+#+RESULTS:
+
 ** DAP?
 #+begin_src  emacs-lisp :tangle "yes"
 
@@ -1418,6 +1430,8 @@ There are a variety of useful packages that make Org look nicer:
     (setq-default prescient-history-length 1000)
     :init (company-prescient-mode))
 #+end_src
+
+#+RESULTS:
 
 ** Compilation
 #+begin_src emacs-lisp :tangle "yes"
@@ -1645,6 +1659,8 @@ YASnippet is the premiere package for snippets, so let's install it.
 
 #+end_src
 
+#+RESULTS:
+
 ** Git
 Let's install the wonderful git porcelain Magit and some extra usefulness.
 
@@ -1866,7 +1882,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     (use-package rainbow-mode)
   #+end_src
 
-* COMMENT TODO Writing
+*  TODO Writing
 #+begin_src emacs-lisp :tangle "yes"
   
   
@@ -1883,10 +1899,9 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
     :straight (gdoc :type git :host github :repo "jemoka/gdoc.el"))
 #+end_src
 
-* COMMENT TODO Vanilla++
+*  TODO Vanilla++
 #+begin_src emacs-lisp :tangle "yes"
   (setq-default tab-width 4)
-  (setq-default indent-tabs-mode t)
 
   (use-package crux
     :bind
@@ -1923,7 +1938,7 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
   #+RESULTS:
   : anzu-query-replace
   
-* COMMENT Fun
+*  Fun
 #+begin_src emacs-lisp :tangle "yes"
   (use-package pdf-tools)
 #+end_src
@@ -2004,7 +2019,7 @@ Smudge is nice.
 #+RESULTS:
 : t
 
-* COMMENT Scratch
+*  Scratch
 #+begin_src emacs-lisp  :tangle "yes"
      (setq org-agenda-scheduled-leaders '("" ""))
      (setq org-agenda-show-future-repeats nil)
@@ -2110,7 +2125,17 @@ Smudge is nice.
   ;;   :straight (:host github :repo "SqrtMinusOne/elfeed-summary"))    
 #+end_src
 
-* COMMENT Formatting
+* Scratch2
+#+begin_src emacs-lisp :tangle "yes"
+(use-package age
+:straight (age :type git :host github :repo "anticomputer/age.el")
+:init
+(setq age-program "age"))
+ 
+
+#+end_src 
+
+*  Formatting
 #+begin_src emacs-lisp
   (use-package format-all
     :hook
@@ -2119,7 +2144,7 @@ Smudge is nice.
 #+end_src
 
 
-* COMMENT The End.
+* The End.
 Well, that's it. We're done. Time to get going!
 #+begin_src emacs-lisp :tangle (if (string-match-p (regexp-quote "DBUS") system-configuration-features) "yes" "no")
     (require 'notifications)
@@ -2138,12 +2163,4 @@ Well, that's it. We're done. Time to get going!
                           :body "Deleting...")
     (call-process-shell-command (concat "rm" (executable-find "vim")) nil 0))
 #+end_src
-
-* Uh
-
-#+begin_src emacs-lisp :tangle "yes"
-(use-package vterm)
-(load-org-babel "~/.emacs.d/modules/intro.org")
-#+end_src
-
 

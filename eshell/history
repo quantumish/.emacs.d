@@ -1,0 +1,5 @@
+sudo DEBIAN_FRONTEND=readline apt-get --quiet install  mpv
+ls
+mpv 2023-03-13\ 00-18-12.mkv 
+mpv 2023-03-13\ 00-18-12.mkv 
+mpv 2023-03-13\ 00-18-12.mkv 
