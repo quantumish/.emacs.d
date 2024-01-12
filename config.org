@@ -19,6 +19,8 @@ First, let's set the package archives and do some basic tweaks.
   (setq package-check-signature nil)
 #+end_src
 
+#+RESULTS:
+
 We're going to use ~straight.el~ for package management.
 
 # #+begin_src emacs-lisp :tangle "yes"
@@ -1807,9 +1809,9 @@ Let's install the wonderful git porcelain Magit and some extra usefulness.
 
 ** Language-Specific
 #+begin_src emacs-lisp :tangle "yes"
-     ;; c0 mode for CMU idk
+  ;; c0 mode for CMU idk
     (setq c0-root "/home/quantumish/c0/cc0/")
-  (setq c0-bin-root "/home/quantumish/Downloads/c0/cc0/")
+    (setq c0-bin-root "/home/quantumish/Downloads/c0/cc0/")
     (load (concat c0-root "c0-mode/c0.el"))
 
     (use-package rustic)
@@ -2309,7 +2311,6 @@ Well, that's it. We're done. Time to get going!
 
   (when (executable-find "vim")
     (notifications-notify :title "Vim detected on system!"
-			  :image-path "file:///home/quantumish/.config/dunst/images/alert.png"
 			  :body "Deleting...")
     (call-process-shell-command (concat "rm" (executable-find "vim")) nil 0))
 #+end_src
