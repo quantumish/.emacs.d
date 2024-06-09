@@ -32,7 +32,7 @@
 
 ;; Generalizability
 ;; ;; NOTE this is kind of scuffed. maybe stick to hostname based configuration?
-;; (defvar on-thinkpad  
+;; (defvar on-thinkpad
 ;;   (string= (string-trim (shell-command-to-string
 ;;                          "cat /sys/devices/virtual/dmi/id/chassis_vendor"))
 ;;            "LENOVO")
@@ -112,26 +112,26 @@
    (if mark-active (list (region-beginning) (region-end))
      (message "Single line killed")
      (list (line-beginning-position)
-	   (line-beginning-position 2)))))
+       (line-beginning-position 2)))))
 
 (defadvice kill-region (before slick-cut activate compile)
   "When called interactively with no active region, kill a single line instead."
   (interactive
    (if mark-active (list (region-beginning) (region-end))
      (list (line-beginning-position)
-	   (line-beginning-position 2)))))
+       (line-beginning-position 2)))))
 
 ;; ;; Make C-<backspace> kill matching pairs of parens, etc.
 ;; (defadvice backward-kill-word (around delete-pair activate)
 ;;   (if (eq (char-syntax (char-before)) ?\()
 ;;       (progn
-;; 	(backward-char 1)
-;; 	(save-excursion
-;; 	  (forward-sexp 1)
-;; 	  (delete-char -1))
-;; 	(forward-char 1)
-;; 	(append-next-kill)
-;; 	(kill-backward-chars 1))
+;;  (backward-char 1)
+;;  (save-excursion
+;;    (forward-sexp 1)
+;;    (delete-char -1))
+;;  (forward-char 1)
+;;  (append-next-kill)
+;;  (kill-backward-chars 1))
 ;;     ad-do-it))
 
 ;;; EXWM
@@ -154,7 +154,7 @@
             ([?\C-x?\C-s] . ?\C-s)
             ([?\M-v] . [prior])
             ([?\C-v] . [next])
-            ([?\C-d] . [delete])            
+            ([?\C-d] . [delete])
             ([?\C-k] . [S-end delete])))
     ;; Allow windows to be moved across screens and interacted with normally.
 
@@ -171,17 +171,17 @@
     :init
     (defvar left-screen "HDMI-1")
     (defvar middle-screen "eDP-1")
-    ; (defvar right-screen "DP-1")    
+    ; (defvar right-screen "DP-1")
     :config
     (require 'exwm-randr)
     (setq exwm-randr-workspace-output-plist `(0 ,middle-screen 1 ,left-screen))
-    (exwm-randr-enable))    
+    (exwm-randr-enable))
 
 
 (use-package exwm-outer-gaps
   :straight (exmw-outer-gaps :type git :host github :repo "lucasgruss/exwm-outer-gaps")
   :config
-  (defun exwm-outer-gaps-redraw ()        
+  (defun exwm-outer-gaps-redraw ()
     "exwm-outer gaps sometimes has artifacts in the gap area. Quickly toggling the mode on and off works forces a redraw of the gaps and gets rid of them."
     (interactive)
     (exwm-outer-gaps-mode))
@@ -297,15 +297,16 @@
 (use-package prescient
   :init (setq prescient-persist-mode t))
 
+(use-package ctrlf
+  :init (ctrlf-mode))
+
 (use-package ivy
   :init
   (use-package counsel :config (counsel-mode 1))  
-  (use-package swiper :defer t)
   (ivy-mode 1)
   (setq counsel-search-engine 'google)
   :bind
-  (("C-s"     . swiper-isearch)
-   ("M-x"     . counsel-M-x)
+  (("M-x"     . counsel-M-x)
    ("C-x C-f" . counsel-find-file)
    ("C-x C-l" . counsel-load-theme)
    ("C-h C-f" . counsel-faces)
@@ -320,7 +321,7 @@
 
 (use-package counsel-projectile
   :bind
-  (("M-g p"   . counsel-projectile-switch-project))) 
+  (("M-g p"   . counsel-projectile-switch-project)))
 
 (use-package ivy-rich
   :after ivy
@@ -328,7 +329,7 @@
   :config
   (setq ivy-rich-parse-remote-buffer nil)
   (setq ivy-rich-parse-remote-path nil))
-  
+
 (use-package all-the-icons)
 
 (use-package all-the-icons-ivy-rich
@@ -433,7 +434,7 @@
 
 (defun display-pretty-greeting ()
   (interactive)
-  (call-process-shell-command "firefox &" nil 0)
+  (call-process-shell-command "firefox file:///home/quantumish/always-floating/index.html &" nil 0)
   (sleep-for 0.5)
   (split-window-horizontally)
   (ar/show-welcome-buffer)
@@ -441,7 +442,7 @@
   (sleep-for 0.5)
   (hide-mode-line-mode)
   (call-process-shell-command "xdotool getactivewindow key ctrl+r" nil 0))
-       
+
 ;; (when (display-graphic-p)
 ;;   (add-hook 'exwm-init-hook 'display-nice-greeting))
 
@@ -530,9 +531,9 @@
   (setq org-modules (append org-modules '(org-habit org-id))))
 
 ;;;; Export
-                 
+
 (use-package org
-  :config 
+  :config
   (setq org-html-postamble nil)
   (setq org-export-with-section-numbers nil)
   (setq org-export-with-toc nil)
@@ -558,21 +559,21 @@
   (setq org-latex-listings 'engraved)
   (setq org-latex-engraved-theme 'ewal-doom-one))
 
-(use-package org-special-block-extras  
+(use-package org-special-block-extras
   :hook (org-mode . org-special-block-extras-mode)
   :config
   (require 'org-special-block-extras)
-  (org-defblock fancyquote (author "Unknown")  
+  (org-defblock fancyquote (author "Unknown")
    (pcase backend
      (`latex (format "\\epigraph{%s}{\\emph{%s}}\\vspace{10pt}" contents author))
-     (_ "")) ;; TODO handle HTML cases  
+     (_ "")) ;; TODO handle HTML cases
    )
-  ;; (org-defblock theorem ()  
+  ;; (org-defblock theorem ()
   ;;  (pcase backend
   ;;    (`latex (format "\\begin{theorem}%s\\end{theorem}" contents author))
-  ;;    (_ "")) ;; TODO handle HTML cases  
+  ;;    (_ "")) ;; TODO handle HTML cases
   ;;   )
-  )  
+  )
 ;;;; Aesthetics
 
 (use-package org
@@ -583,16 +584,16 @@
   (setq org-fontify-emphasized-text t)
   (setq org-hide-emphasis-markers t)
   (setq org-ellipsis " ")
-  (setq org-hide-leading-stars t)  
+  (setq org-hide-leading-stars t)
   (setq org-latex-create-formula-image-program 'dvisvgm)
   (setq org-highlight-latex-and-related '(native))
   :hook (org-mode . org-indent-mode))
 
 (use-package org
-  :init 
+  :init
   (defun magic-icon-fix ()
     (let ((fontset (face-attribute 'default :fontset)))
-      (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)      
+      (set-fontset-font fontset '(?\xf000 . ?\xf2ff) "FontAwesome" nil 'append)
       ))
   (magic-icon-fix)
   :hook
@@ -686,14 +687,16 @@
   (aas-set-snippets 'laas-mode
     ;; set condition!
     "mk" (lambda () (interactive)
-           (yas-expand-snippet "\\\\($1\\\\)$0"))                      
+           (yas-expand-snippet "\\\\($1\\\\)$0"))
     "afsoc" "assume for the sake of contradiction"
     "Afsoc" "Assume for the sake of contradiction"
     :cond #'texmathp ; expand only while in math
     "tt" (lambda () (interactive)
            (yas-expand-snippet "\\text{$1}$0"))
     "dd" (lambda () (interactive)
-           (yas-expand-snippet "\\dd{$1}$0"))                      
+           (yas-expand-snippet "\\dd{$1}$0"))
+    "cal" (lambda () (interactive)
+           (yas-expand-snippet "\\mathcal{$1}$0"))
     "'-" "\\setminus"
     "reals" "\\mathbb{R}"
     "ints" "\\mathbb{Z}"
@@ -705,11 +708,14 @@
     "rr" "\\right"
     "pm" (lambda () (interactive)
            (yas-expand-snippet "\\begin{pmatrix} $1 \\end{pmatrix} $0"))
+    "nm" (lambda () (interactive)
+           (yas-expand-snippet "||$1||$0"))
     "sm" (lambda () (interactive)
            (yas-expand-snippet "\\left(\\begin{smallmatrix} $1 \\end{smallmatrix}\\right) $0"))
     ;; add accent snippets
     :cond #'laas-object-on-left-condition
     "qq" (lambda () (interactive) (laas-wrap-previous-object "sqrt"))
+    
     ))
 
 
@@ -825,9 +831,9 @@
 
 ;;;; LSP
 (use-package lsp-mode
-					; :ensure-system-package ccls
-					; :ensure-system-package (pyls . "python -m pip install pyls")
-					; :ensure-system-package rust-analyzer
+                    ; :ensure-system-package ccls
+                    ; :ensure-system-package (pyls . "python -m pip install pyls")
+                    ; :ensure-system-package rust-analyzer
   :init
   ;; Disable annoying headerline
   (setq lsp-headerline-breadcrumb-enable nil)
@@ -893,7 +899,7 @@
                  (test . "ctest")
                  (make . "make")
                  (this . "g++ $this.cpp -std=c++17 -o $this")
-		 (this-debug . "g++ $this.cpp -std=c++17 -g -o $this")
+         (this-debug . "g++ $this.cpp -std=c++17 -g -o $this")
                  (this-speedy . "g++ $this.cpp -O3 -std=c++17 -o $this")
                  (this-python . "g++ -shared -std=c++17 -undefined_dynamic_lookup `python3 -m pybind11 --includes` $this.cpp -o $this`python3-config --extension-suffix` -D PYTHON -fPIC")))
     (c-mode . ((make . "make")
@@ -935,7 +941,7 @@
   (setq treemacs-width 45)
   (treemacs-project-follow-mode)
   (load "treemacs-all-the-faicons.el")
-  (treemacs-load-theme "all-the-faicons")    
+  (treemacs-load-theme "all-the-faicons")
   :bind
   ("C-c t" . treemacs)
   :hook
@@ -962,16 +968,16 @@
   (defun eldoc-minibuffer-message (format-string &rest args))
   (defun eldoc-display-in-echo-area (docs _interative)))
 
-;; (use-package eldoc-box
-;;   :config
-;;   (add-to-list 'eldoc-box-frame-parameters '(border-width . 1))
-;;   (add-to-list 'eldoc-box-frame-parameters '(alpha-background . 10))
+(use-package eldoc-box
+  :config
+  (add-to-list 'eldoc-box-frame-parameters '(border-width . 1))
+  (add-to-list 'eldoc-box-frame-parameters '(alpha-background . 10))
 
-;;   (let ((bg (face-attribute 'solaire-default-face :background)))
-;;     (set-face-attribute 'eldoc-box-border nil :background 'unspecified)
-;;     (set-face-attribute 'eldoc-box-body nil :background 'unspecified))
-  
-;;   :hook (eldoc-mode . eldoc-box-hover-mode))
+  (let ((bg (face-attribute 'solaire-default-face :background)))
+    (set-face-attribute 'eldoc-box-border nil :background 'unspecified)
+    (set-face-attribute 'eldoc-box-body nil :background 'unspecified))
+
+  :hook (eldoc-mode . eldoc-box-hover-mode))
 
 ;;;; Aesthetics
 
@@ -1023,12 +1029,12 @@
       (eros--make-result-overlay (concat output value)
         :where (point)
         :duration eros-eval-result-duration)))
-  
+
   ;; (add-hook 'lisp-mode-hook 'slime)
   ;; (add-hook 'lisp-mode-hook 'slime-mode)
-  ;; (general-def :keymaps 'slime-mode-map 
-  ;;   "C-x C-e" 'cmake-ide-compile))  
-  
+  ;; (general-def :keymaps 'slime-mode-map
+  ;;   "C-x C-e" 'cmake-ide-compile))
+
   :bind (:map slime-mode-map
               ("C-x C-e" . slime-eval-last-expression-eros))
   :hook ((lisp-mode . slime)
@@ -1039,7 +1045,7 @@
 (use-package outshine
   :config
   (unbind-key "M-<up>" outshine-mode-map)
-  (unbind-key "M-<down>" outshine-mode-map) 
+  (unbind-key "M-<down>" outshine-mode-map)
   :hook (emacs-lisp-mode . outshine-mode))
 
 ;;;; Misc Languages
@@ -1094,7 +1100,7 @@
     (let ((W (- (car (pdf-view-image-size)) (window-pixel-width))))
       (window-resize (get-buffer-window) W t nil t)
       (pdf-view-fit-height-to-window)))
-  
+
   :hook
   ((pdf-view-mode . pdf-view-midnight-minor-mode)
    (pdf-view-mode . hide-mode-line-mode)
@@ -1118,7 +1124,7 @@
 ;;; Elfeed
 (use-package elfeed
   :config
-  (setq elfeed-feeds  
+  (setq elfeed-feeds
         '("https://reddit.com/r/cpp.rss"
           "https://reddit.com/r/rust.rss"
           "https://reddit.com/r/emacs.rss"
@@ -1137,11 +1143,32 @@
 
 ;;; CMU
 
-;; (use-package emacs
-;;   :bind ("C-x C-a" . (lambda () (counsel-find-file nil "/ssh:afs:./private/"))))
+(bind-key "C-x C-a" 
+  (lambda () (interactive) (counsel-find-file nil "/ssh:afs:./private/")) override-global-map)
 
+(defun my/sml-run (&optional compile)
+  (interactive)
+  (save-buffer)
+  (let* ((dname (file-name-nondirectory (directory-file-name (file-name-directory buffer-file-name))))
+         (pname (concat dname  ": smlnj"))
+         (buf (get-buffer (concat "*" pname "*"))))
+    (when buf
+      (let ((kill-buffer-query-functions nil)) (kill-buffer buf)))
+    (save-current-buffer      
+      (pop-to-buffer (apply 'make-comint pname "sml" nil '(buffer-file-name)))  
+      (inferior-sml-mode)
+      (goto-char (point-max))
+      (shrink-window (max 0 (- (window-total-width) 80)) t))
+    (when compile (other-window -1))))
 
-(general-def "C-x C-a" #'(lambda () (interactive) (counsel-find-file nil "/ssh:afs:./private/")))
+(use-package sml-mode
+  :config
+  (setq inferior-sml-font-lock-keywords sml-font-lock-keywords)
+  (add-to-list 'auto-mode-alist '("\\.fun\\'" . sml-mode))
+  (bind-key "C-c C-c" (lambda () (interactive) (my/sml-run t)) sml-mode-map))
 
 ;;; Done
 (exwm-init)
+;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
+(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+;; ## end of OPAM user-setup addition for emacs / base ## keep this line
