@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: c0dump
+# key: c0dump
+# --
+print("$1"); printint($1); print("\n");
