@@ -1,4 +1,5 @@
 (use-package ini)
+(require 'ini)
 (require 'sqlite)
 
 (defvar firefox-app-name "firefox-esr<"
@@ -41,19 +42,12 @@
                                       "firefox"
                                       (cdr firefox-current-profile))))
 
-(defun firefox-switch-profile ()
-  "Switch the selected Firefox profile."
-  (interactive)
-  (let* ((cands (firefox--profiles-info))
-         (chosen (completing-read "Profile: " cands nil nil)))
-    (setq firefox-current-profile (assoc chosen cands))))
-
 (defvar firefox-command
   "env MOZ_USE_XINPUT2=1 firefox-esr --new-window"
   "Shell command to run to launch Firefox.")
 
 (defvar firefox-search-format
-  "https://www.google.com/search?q=%s"
+  "https://www.google.com/search?q=%s&udm=14"
   "Format string to use for searching non-URL queries.")
 
 (defvar firefox-title-postprocessor
@@ -75,7 +69,7 @@
 (defvar firefox--places-data nil
   "Cached browsing history completion candidates.")
 
-(add-to-list 'savehist-additional-variables 'firefox--places-data)
+;; (add-to-list 'savehist-additional-variables 'firefox--places-data)
 
 (defvar firefox-history-sql-where
   "last_visit_date IS NOT NULL AND (visit_count > 1 or unixepoch() - last_visit < 2628000)"
@@ -107,6 +101,14 @@
     (if (cadr row)
         (setf (cadr row) (funcall firefox-title-postprocessor (cadr row)))))
   (setq firefox--places-data (mapcar 'firefox--make-completion firefox--places-data)))
+
+(defun firefox-switch-profile ()
+  "Switch the selected Firefox profile."
+  (interactive)
+  (let* ((cands (firefox--profiles-info))
+         (chosen (completing-read "Profile: " cands nil nil)))
+    (setq firefox-current-profile (assoc chosen cands))
+	(firefox--set-data-cache)))
 
 (defun firefox--urlify (input)
   "Coerces INPUT to a URL by either adding a https prefix or converting to a search query."

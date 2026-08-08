@@ -3,8 +3,6 @@
 
 (use-package ready-player :ensure t
   :init (ready-player-mode)
-  :config
-
   (defun now-playing ()
     (let ((out (ignore-errors
                  (with-current-buffer (ready-player--active-buffer)
@@ -19,6 +17,7 @@
                            (t "")))))))
       (if out out "")))
 
+  :config
   (setq ready-player-ask-for-project-sustainability nil)
   (setq ready-player-my-media-collection-location (expand-file-name "~/soul"))
 

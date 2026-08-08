@@ -2,7 +2,7 @@
 ;;; Configuration for system related functionality.
 
 (use-package exwm
-  :config
+  :init
   (setq exwm-workspace-number 2)
   (setq exwm-input-global-keys  `(([?\s-r] . exwm-reset)))
   (setq exwm-input-simulation-keys
