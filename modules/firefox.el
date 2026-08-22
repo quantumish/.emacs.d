@@ -1,8 +1,7 @@
-(use-package ini)
-(require 'ini)
 (require 'sqlite)
+(require 'ini)
 
-(defvar firefox-app-name "firefox-esr<"
+(defvar firefox-app-name "firefox<"
   "String that firefox window buffers will be prefixed with.")
 
 (defvar firefox--title-name-regex
@@ -43,7 +42,7 @@
                                       (cdr firefox-current-profile))))
 
 (defvar firefox-command
-  "env MOZ_USE_XINPUT2=1 firefox-esr --new-window"
+  "env MOZ_USE_XINPUT2=1 firefox --new-window"
   "Shell command to run to launch Firefox.")
 
 (defvar firefox-search-format
@@ -144,8 +143,9 @@
         (vertico-sort-function nil)
         (cands firefox--places-data))
     (call-process-shell-command
-     (format "%s \"%s\""
+     (format "%s -P %s \"%s\""
              firefox-command
+			 (car firefox-current-profile)
              (firefox--get-url-from-completion
               (completing-read "New tab: " cands nil nil)))
      nil 0)))

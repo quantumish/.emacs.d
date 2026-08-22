@@ -19,6 +19,11 @@
 (load-module "introspection")
 (load-module "ide")
 (load-module "org")
-(load-module "firefox")
+
+;; dumb hack to avoid figuring out how dependencies work
+(use-package ini
+  :init (load-module "firefox"))
+
+(message "huh")
 (load-module "pdf")
 (load-module "music")

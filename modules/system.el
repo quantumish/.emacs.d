@@ -95,18 +95,19 @@
     (bind-named-cmd "M-s M-s" flameshot
                     "flameshot gui -r | xclip -selection clipboard -t image/png"))
 
-  ;; Emulate various DWM behaviors.
-  (use-package dmenu
-    :init (bind-exwm-key "M-p" 'dmenu))
   (bind-exwm-key "M-k" 'other-window)
   (bind-exwm-key "M-j" (lambda () (interactive) (other-window -1)))
   (bind-exwm-key "C-M-j" 'other-frame)
   (bind-exwm-key "C-M-k" (lambda () (interactive) (other-frame -1)))
 
+  (exwm-enable)
+  
   :hook
   ((exwm-update-class . b3n-exwm-set-buffer-name)
-   (exwm-update-title . b3n-exwm-set-buffer-name))
-  :init (exwm-enable))
+   (exwm-update-title . b3n-exwm-set-buffer-name)))
+
+(use-package dmenu
+  :init (bind-exwm-key "M-p" 'dmenu))
 
 (use-package prodigy :demand t
   :config
